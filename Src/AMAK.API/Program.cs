@@ -14,10 +14,16 @@ builder.Services.AddControllers();
 
 // TODO: Database Connection
 builder.Services.AddCustomizedDatabase(builder.Configuration, builder.Environment);
-builder.Services.AddCustomizedHealthCheck(builder.Configuration, builder.Environment);
+builder.Services.AddHealthChecks();
 
 // TODO: Auto Mapper
 builder.Services.AddAutoMapperConfig();
+
+// TODO: Identity
+builder.Services.CustomIdentity();
+
+builder.Services.AddDIScope();
+
 
 var app = builder.Build();
 
@@ -28,6 +34,7 @@ if (app.Environment.IsDevelopment()) {
 }
 
 app.UseHttpsRedirection();
+app.MiddlewareCustom();
 app.MapControllers();
 app.Run();
 
