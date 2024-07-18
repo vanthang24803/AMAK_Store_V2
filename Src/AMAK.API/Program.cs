@@ -20,8 +20,15 @@ builder.Services.AddHealthChecks();
 builder.Services.AddAutoMapperConfig();
 
 // TODO: Identity
-builder.Services.CustomIdentity();
+builder.Services.AddIdentity();
 
+// TODO: JWT
+builder.Services.AddJwt(builder.Configuration);
+
+// TODO: Authorization
+builder.Services.AddAuthorization();
+
+// TODO: Inject Dependency
 builder.Services.AddDIScope();
 
 
@@ -34,7 +41,9 @@ if (app.Environment.IsDevelopment()) {
 }
 
 app.UseHttpsRedirection();
-app.MiddlewareCustom();
+app.AddMiddleware();
+app.UseAuthentication();
+app.UseAuthorization();
 app.MapControllers();
 app.Run();
 
