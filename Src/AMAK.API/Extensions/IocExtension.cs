@@ -1,6 +1,7 @@
 using AMAK.Application.Interfaces;
 using AMAK.Application.Services.Authentication;
 using AMAK.Application.Services.Category;
+using AMAK.Application.Services.Mail;
 using AMAK.Domain.Models;
 using AMAK.Infrastructure.Repository;
 using Microsoft.AspNetCore.Identity;
@@ -14,6 +15,8 @@ namespace AMAK.API.Common.Extensions {
             services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 
             services.AddScoped<ICategoryService, CategoryService>();
+
+            services.AddScoped<IMailService, MailService>();
 
             return services;
         }

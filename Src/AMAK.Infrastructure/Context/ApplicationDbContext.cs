@@ -1,3 +1,4 @@
+using AMAK.Application.Common.Constants;
 using AMAK.Domain.Enums;
 using AMAK.Domain.Models;
 using Microsoft.AspNetCore.Identity;
@@ -125,24 +126,9 @@ namespace AMAK.Infrastructure.Context {
             // TODO: Seed Data  
 
             modelBuilder.Entity<IdentityRole>().HasData(
-                new IdentityRole() {
-                    Id = Guid.NewGuid().ToString(),
-                    Name = "Admin",
-                    NormalizedName = "admin",
-                    ConcurrencyStamp = Guid.NewGuid().ToString(),
-                },
-                new IdentityRole() {
-                    Id = Guid.NewGuid().ToString(),
-                    Name = "Manager",
-                    NormalizedName = "manager",
-                    ConcurrencyStamp = Guid.NewGuid().ToString(),
-                },
-                new IdentityRole() {
-                    Id = Guid.NewGuid().ToString(),
-                    Name = "Customer",
-                    NormalizedName = "customer",
-                    ConcurrencyStamp = Guid.NewGuid().ToString(),
-                }
+                new IdentityRole(StaticRole.ADMIN),
+                new IdentityRole(StaticRole.CUSTOMER),
+                new IdentityRole(StaticRole.MANAGER)
             );
 
         }
