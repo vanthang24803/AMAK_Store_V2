@@ -1,5 +1,6 @@
 using AMAK.Domain.Enums;
 using AMAK.Domain.Models;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
@@ -120,6 +121,30 @@ namespace AMAK.Infrastructure.Context {
                         .HasOne(rp => rp.Review)
                         .WithMany(r => r.Photos)
                         .HasForeignKey(rp => rp.ReviewId);
+
+            // TODO: Seed Data  
+
+            modelBuilder.Entity<IdentityRole>().HasData(
+                new IdentityRole() {
+                    Id = Guid.NewGuid().ToString(),
+                    Name = "Admin",
+                    NormalizedName = "admin",
+                    ConcurrencyStamp = Guid.NewGuid().ToString(),
+                },
+                new IdentityRole() {
+                    Id = Guid.NewGuid().ToString(),
+                    Name = "Manager",
+                    NormalizedName = "manager",
+                    ConcurrencyStamp = Guid.NewGuid().ToString(),
+                },
+                new IdentityRole() {
+                    Id = Guid.NewGuid().ToString(),
+                    Name = "Customer",
+                    NormalizedName = "customer",
+                    ConcurrencyStamp = Guid.NewGuid().ToString(),
+                }
+            );
+
         }
     }
 }
