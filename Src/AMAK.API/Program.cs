@@ -1,5 +1,6 @@
 using AMAK.API.Configurations;
 using AMAK.API.Extensions;
+using AMAK.API.Common.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -29,7 +30,7 @@ builder.Services.AddJwt(builder.Configuration);
 builder.Services.AddAuthorization();
 
 // TODO: Inject Dependency
-builder.Services.AddDIScope();
+builder.Services.AddApplication();
 
 
 var app = builder.Build();

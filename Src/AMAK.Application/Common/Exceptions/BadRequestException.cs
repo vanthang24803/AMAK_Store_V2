@@ -1,4 +1,4 @@
-namespace AMAK.Domain.Common.Exceptions {
+namespace AMAK.Application.Common.Exceptions {
     public class BadRequestException : Exception {
         public BadRequestException() {
         }

@@ -1,5 +1,5 @@
 using AMAK.Application.Dtos.Auth;
-using AMAK.Application.Interfaces;
+using AMAK.Application.Services.Authentication;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AMAK.API.Controllers {

@@ -21,6 +21,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\AMAK.Domain\AMAK.Domain.csproj" />
+    <ProjectReference Include="..\AMAK.Application\AMAK.Application.csproj" />
   </ItemGroup>
 
 </Project>

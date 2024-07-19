@@ -1,6 +1,6 @@
 using Newtonsoft.Json;
 
-namespace AMAK.Domain.Common.Helpers {
+namespace AMAK.Application.Common.Helpers {
     public class ApiError {
         [JsonProperty("status")]
         public int Status { get; set; }

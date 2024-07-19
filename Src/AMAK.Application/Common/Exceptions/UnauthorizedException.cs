@@ -1,7 +1,7 @@
 using System.Net;
-using AMAK.Domain.Common.Helpers;
+using AMAK.Application.Common.Helpers;
 
-namespace AMAK.Domain.Common.Exceptions {
+namespace AMAK.Application.Common.Exceptions {
     public class UnauthorizedException(string message = "Unauthorized") : Exception(message) {
         public ApiError ToApiError() {
             return new ApiError {

@@ -1,9 +1,8 @@
 using AMAK.Application.Dtos.Auth;
-using AMAK.Application.Interfaces;
 using AMAK.Domain.Models;
 using Microsoft.AspNetCore.Identity;
 
-namespace AMAK.Application.Services {
+namespace AMAK.Application.Services.Authentication {
     public class AuthService : IAuthService {
 
         private readonly UserManager<ApplicationUser> _userManager;
@@ -13,8 +12,6 @@ namespace AMAK.Application.Services {
         }
 
         public async Task<string> RegisterAsync(RegisterRequest request) {
-
-
             var newUser = new ApplicationUser() {
                 Email = request.Email,
                 UserName = request.Username,

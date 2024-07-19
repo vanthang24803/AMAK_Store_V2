@@ -1,4 +1,4 @@
-namespace AMAK.Domain.Common.Exceptions {
+namespace AMAK.Application.Common.Exceptions {
     public class NotFoundException : Exception {
         public NotFoundException() {
         }

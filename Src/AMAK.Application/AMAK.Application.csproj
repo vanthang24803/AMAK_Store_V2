@@ -12,7 +12,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\AMAK.Infrastructure\AMAK.Infrastructure.csproj" />
     <ProjectReference Include="..\AMAK.Domain\AMAK.Domain.csproj" />
   </ItemGroup>
 
