@@ -3,6 +3,7 @@ using System;
 using AMAK.Infrastructure.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace AMAK.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240718135500_Init_Database")]
+    partial class Init_Database
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -188,103 +191,6 @@ namespace AMAK.Infrastructure.Migrations
                     b.ToTable("Categories");
                 });
 
-            modelBuilder.Entity("AMAK.Domain.Models.Option", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("CreateAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<double>("IsActive")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("double precision")
-                        .HasDefaultValue(1.0);
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(256)
-                        .HasColumnType("character varying(256)");
-
-                    b.Property<double>("Price")
-                        .HasColumnType("double precision");
-
-                    b.Property<Guid>("ProductId")
-                        .HasColumnType("uuid");
-
-                    b.Property<int>("Quantity")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("Sale")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTime>("UpdateAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ProductId");
-
-                    b.ToTable("Options", (string)null);
-                });
-
-            modelBuilder.Entity("AMAK.Domain.Models.Order", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Address")
-                        .HasMaxLength(256)
-                        .HasColumnType("character varying(256)");
-
-                    b.Property<DateTime>("CreateAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("Customer")
-                        .HasMaxLength(128)
-                        .HasColumnType("character varying(128)");
-
-                    b.Property<string>("Email")
-                        .HasMaxLength(128)
-                        .HasColumnType("character varying(128)");
-
-                    b.Property<int>("Payment")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasDefaultValue(0);
-
-                    b.Property<int>("Quantity")
-                        .HasColumnType("integer");
-
-                    b.Property<bool>("Shipping")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
-                        .HasDefaultValue(true);
-
-                    b.Property<int>("Status")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasDefaultValue(0);
-
-                    b.Property<double>("TotalPrice")
-                        .HasColumnType("double precision");
-
-                    b.Property<DateTime>("UpdateAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("Orders", (string)null);
-                });
-
             modelBuilder.Entity("AMAK.Domain.Models.Photo", b =>
                 {
                     b.Property<Guid>("Id")
@@ -323,18 +229,8 @@ namespace AMAK.Infrastructure.Migrations
                     b.Property<DateTime>("CreateAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("Introduction")
-                        .HasColumnType("text");
-
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasMaxLength(256)
-                        .HasColumnType("character varying(256)");
-
-                    b.Property<long>("Sold")
-                        .HasColumnType("bigint");
-
-                    b.Property<string>("Specifications")
                         .HasColumnType("text");
 
                     b.Property<string>("Thumbnail")
@@ -344,9 +240,6 @@ namespace AMAK.Infrastructure.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("Name")
-                        .IsUnique();
 
                     b.ToTable("Products");
                 });
@@ -364,139 +257,6 @@ namespace AMAK.Infrastructure.Migrations
                     b.HasIndex("ProductId");
 
                     b.ToTable("ProductCategory");
-                });
-
-            modelBuilder.Entity("AMAK.Domain.Models.ProductOrder", b =>
-                {
-                    b.Property<Guid>("OrderId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("ProductId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("OrderId", "ProductId");
-
-                    b.HasIndex("ProductId");
-
-                    b.ToTable("ProductOrder");
-                });
-
-            modelBuilder.Entity("AMAK.Domain.Models.ProductVoucher", b =>
-                {
-                    b.Property<Guid>("ProductId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("VoucherId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("ProductId", "VoucherId");
-
-                    b.HasIndex("VoucherId");
-
-                    b.ToTable("ProductVoucher");
-                });
-
-            modelBuilder.Entity("AMAK.Domain.Models.Review", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Content")
-                        .HasColumnType("text");
-
-                    b.Property<DateTime>("CreateAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid>("ProductId")
-                        .HasColumnType("uuid");
-
-                    b.Property<float>("Star")
-                        .HasColumnType("real");
-
-                    b.Property<DateTime>("UpdateAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ProductId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("Reviews");
-                });
-
-            modelBuilder.Entity("AMAK.Domain.Models.ReviewPhoto", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("CreateAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("PublicId")
-                        .HasColumnType("text");
-
-                    b.Property<Guid>("ReviewId")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("UpdateAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("Url")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ReviewId");
-
-                    b.ToTable("ReviewPhotos");
-                });
-
-            modelBuilder.Entity("AMAK.Domain.Models.Voucher", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Code")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<DateTime>("CreateAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<int>("Day")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("Discount")
-                        .HasColumnType("integer");
-
-                    b.Property<bool>("IsExpire")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<int>("Quantity")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTime>("ShelfLife")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTime>("UpdateAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Vouchers");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -642,28 +402,6 @@ namespace AMAK.Infrastructure.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("AMAK.Domain.Models.Option", b =>
-                {
-                    b.HasOne("AMAK.Domain.Models.Product", "Product")
-                        .WithMany("Options")
-                        .HasForeignKey("ProductId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Product");
-                });
-
-            modelBuilder.Entity("AMAK.Domain.Models.Order", b =>
-                {
-                    b.HasOne("AMAK.Domain.Models.ApplicationUser", "User")
-                        .WithMany("Orders")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("AMAK.Domain.Models.Photo", b =>
                 {
                     b.HasOne("AMAK.Domain.Models.Product", "Product")
@@ -688,66 +426,6 @@ namespace AMAK.Infrastructure.Migrations
                         .HasForeignKey("ProductId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-                });
-
-            modelBuilder.Entity("AMAK.Domain.Models.ProductOrder", b =>
-                {
-                    b.HasOne("AMAK.Domain.Models.Order", null)
-                        .WithMany()
-                        .HasForeignKey("OrderId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("AMAK.Domain.Models.Product", null)
-                        .WithMany()
-                        .HasForeignKey("ProductId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("AMAK.Domain.Models.ProductVoucher", b =>
-                {
-                    b.HasOne("AMAK.Domain.Models.Product", null)
-                        .WithMany()
-                        .HasForeignKey("ProductId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("AMAK.Domain.Models.Voucher", null)
-                        .WithMany()
-                        .HasForeignKey("VoucherId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("AMAK.Domain.Models.Review", b =>
-                {
-                    b.HasOne("AMAK.Domain.Models.Product", "Product")
-                        .WithMany("Reviews")
-                        .HasForeignKey("ProductId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("AMAK.Domain.Models.ApplicationUser", "User")
-                        .WithMany("Reviews")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Product");
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("AMAK.Domain.Models.ReviewPhoto", b =>
-                {
-                    b.HasOne("AMAK.Domain.Models.Review", "Review")
-                        .WithMany("Photos")
-                        .HasForeignKey("ReviewId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Review");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -804,22 +482,9 @@ namespace AMAK.Infrastructure.Migrations
             modelBuilder.Entity("AMAK.Domain.Models.ApplicationUser", b =>
                 {
                     b.Navigation("Addresses");
-
-                    b.Navigation("Orders");
-
-                    b.Navigation("Reviews");
                 });
 
             modelBuilder.Entity("AMAK.Domain.Models.Product", b =>
-                {
-                    b.Navigation("Options");
-
-                    b.Navigation("Photos");
-
-                    b.Navigation("Reviews");
-                });
-
-            modelBuilder.Entity("AMAK.Domain.Models.Review", b =>
                 {
                     b.Navigation("Photos");
                 });

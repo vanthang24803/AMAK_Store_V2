@@ -3,6 +3,7 @@ using System;
 using AMAK.Infrastructure.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace AMAK.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240718144859_Update_Table_Voucher")]
+    partial class Update_Table_Voucher
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -366,21 +369,6 @@ namespace AMAK.Infrastructure.Migrations
                     b.ToTable("ProductCategory");
                 });
 
-            modelBuilder.Entity("AMAK.Domain.Models.ProductOrder", b =>
-                {
-                    b.Property<Guid>("OrderId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("ProductId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("OrderId", "ProductId");
-
-                    b.HasIndex("ProductId");
-
-                    b.ToTable("ProductOrder");
-                });
-
             modelBuilder.Entity("AMAK.Domain.Models.ProductVoucher", b =>
                 {
                     b.Property<Guid>("ProductId")
@@ -393,7 +381,7 @@ namespace AMAK.Infrastructure.Migrations
 
                     b.HasIndex("VoucherId");
 
-                    b.ToTable("ProductVoucher");
+                    b.ToTable("ProductVouchers", (string)null);
                 });
 
             modelBuilder.Entity("AMAK.Domain.Models.Review", b =>
@@ -496,7 +484,7 @@ namespace AMAK.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Vouchers");
+                    b.ToTable("ProductVoucher");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -680,21 +668,6 @@ namespace AMAK.Infrastructure.Migrations
                     b.HasOne("AMAK.Domain.Models.Category", null)
                         .WithMany()
                         .HasForeignKey("CategoryId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("AMAK.Domain.Models.Product", null)
-                        .WithMany()
-                        .HasForeignKey("ProductId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("AMAK.Domain.Models.ProductOrder", b =>
-                {
-                    b.HasOne("AMAK.Domain.Models.Order", null)
-                        .WithMany()
-                        .HasForeignKey("OrderId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
