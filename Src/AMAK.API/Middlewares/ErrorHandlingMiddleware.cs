@@ -1,6 +1,6 @@
 using System.Net;
-using AMAK.Domain.Common.Exceptions;
-using AMAK.Domain.Common.Helpers;
+using AMAK.Application.Common.Exceptions;
+using AMAK.Application.Common.Helpers;
 using Newtonsoft.Json;
 
 namespace AMAK.API.Middlewares {

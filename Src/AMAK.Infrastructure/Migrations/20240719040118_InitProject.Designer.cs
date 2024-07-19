@@ -3,6 +3,7 @@ using System;
 using AMAK.Infrastructure.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace AMAK.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240719040118_InitProject")]
+    partial class InitProject
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -523,29 +526,6 @@ namespace AMAK.Infrastructure.Migrations
                         .HasDatabaseName("RoleNameIndex");
 
                     b.ToTable("AspNetRoles", (string)null);
-
-                    b.HasData(
-                        new
-                        {
-                            Id = "cef4d931-76df-4102-913f-d8aa7decc66c",
-                            ConcurrencyStamp = "c14070bc-c209-43b1-bf2f-cae89ae070e0",
-                            Name = "Admin",
-                            NormalizedName = "admin"
-                        },
-                        new
-                        {
-                            Id = "063695b7-fab4-4ffe-a82c-4dc7f3a137b9",
-                            ConcurrencyStamp = "b966621e-bba6-4a61-b246-e35075c612d5",
-                            Name = "Manager",
-                            NormalizedName = "manager"
-                        },
-                        new
-                        {
-                            Id = "2d625ae2-6ce8-4268-8aba-52b945a96ecf",
-                            ConcurrencyStamp = "ce1ab039-d7e4-488d-b640-fc6137b3f27a",
-                            Name = "Customer",
-                            NormalizedName = "customer"
-                        });
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>

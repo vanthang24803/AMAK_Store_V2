@@ -1,7 +1,7 @@
 using System.Net;
-using AMAK.Domain.Common.Helpers;
+using AMAK.Application.Common.Helpers;
 
-namespace AMAK.Domain.Common.Exceptions {
+namespace AMAK.Application.Common.Exceptions {
     public class InternalServerErrorException(string message = "Internal Server Error") : Exception(message) {
         public ApiError ToApiError() {
             return new ApiError {

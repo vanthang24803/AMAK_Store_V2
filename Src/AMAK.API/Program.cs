@@ -1,13 +1,14 @@
 using AMAK.API.Configurations;
 using AMAK.API.Extensions;
+using AMAK.API.Common.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 // TODO: Swagger
-builder.Services.AddSwaggerGen();
-builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen()
+                .AddEndpointsApiExplorer();
 
 // TODO: Controller
 builder.Services.AddControllers();
@@ -29,7 +30,10 @@ builder.Services.AddJwt(builder.Configuration);
 builder.Services.AddAuthorization();
 
 // TODO: Inject Dependency
-builder.Services.AddDIScope();
+builder.Services.AddApplication();
+
+// TODO: API Version
+builder.Services.AddAPIVersion();
 
 
 var app = builder.Build();

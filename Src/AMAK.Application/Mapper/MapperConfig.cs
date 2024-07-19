@@ -5,7 +5,7 @@ namespace AMAK.Application.Mapper {
             return
             [
                 typeof(DomainToViewModelMappingProfile),
-            typeof(ViewModelToDomainMappingProfile),
+                typeof(ViewModelToDomainMappingProfile),
         ];
         }
     }
