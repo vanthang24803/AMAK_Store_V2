@@ -11,6 +11,7 @@ namespace AMAK.Application.Services.Authentication.Dtos {
         public string LastName { get; set; } = null!;
 
         [Required]
+        [EmailAddress]
         [StringLength(128, ErrorMessage = "Email length can't be more than 128.")]
         public string Email { get; set; } = null!;
 

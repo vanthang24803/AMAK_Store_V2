@@ -32,6 +32,23 @@ namespace AMAK.Application.Services.Mail {
             }
         }
 
+        public async void SendMailResetPassword(string email, string userId, string token) {
+            try {
+                MailRequest mailRequest = new() {
+                    ToEmail = email,
+                    Subject = "Verify account",
+                    Message = "<a href='" + "http://localhost:3000/" + "/reset-password?userId=" + userId + "&token=" + token
+                   + "' target='_blank'>Click here to reset password</a>"
+
+                };
+
+                await SendMailAsync(mailRequest);
+
+            } catch (Exception ex) {
+                throw new BadRequestException(ex.Message);
+            }
+        }
+
         public async Task SendMailAsync(MailRequest mailRequest) {
             var email = new MimeMessage {
                 Sender = MailboxAddress.Parse(mailSettings.Email)
@@ -50,5 +67,7 @@ namespace AMAK.Application.Services.Mail {
             await smtp.SendAsync(email);
             await smtp.DisconnectAsync(true);
         }
+
+
     }
 }
