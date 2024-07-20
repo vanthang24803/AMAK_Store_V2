@@ -14,7 +14,7 @@ namespace AMAK.Domain.Models {
 
         public IEnumerable<Order> Orders { get; set; } = [];
 
-        public DateTime CreateAt { get; set; } = DateTime.Now;
-        public DateTime UpdateAt { get; set; } = DateTime.Now;
+        public DateTime CreateAt { get; set; } = DateTime.UtcNow;
+        public DateTime UpdateAt { get; set; } = DateTime.UtcNow;
     }
 }

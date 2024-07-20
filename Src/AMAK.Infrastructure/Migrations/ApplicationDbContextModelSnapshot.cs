@@ -527,24 +527,18 @@ namespace AMAK.Infrastructure.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "cef4d931-76df-4102-913f-d8aa7decc66c",
-                            ConcurrencyStamp = "c14070bc-c209-43b1-bf2f-cae89ae070e0",
-                            Name = "Admin",
-                            NormalizedName = "admin"
+                            Id = "f202be9c-fa4e-42da-b7c1-a86689a7f3fd",
+                            Name = "ADMIN"
                         },
                         new
                         {
-                            Id = "063695b7-fab4-4ffe-a82c-4dc7f3a137b9",
-                            ConcurrencyStamp = "b966621e-bba6-4a61-b246-e35075c612d5",
-                            Name = "Manager",
-                            NormalizedName = "manager"
+                            Id = "5f0226c3-79f2-4b86-a633-e03d24fce3d1",
+                            Name = "CUSTOMER"
                         },
                         new
                         {
-                            Id = "2d625ae2-6ce8-4268-8aba-52b945a96ecf",
-                            ConcurrencyStamp = "ce1ab039-d7e4-488d-b640-fc6137b3f27a",
-                            Name = "Customer",
-                            NormalizedName = "customer"
+                            Id = "a3812289-dc8c-4e4c-a51a-f255d0cdbab4",
+                            Name = "MANAGER"
                         });
                 });
 
