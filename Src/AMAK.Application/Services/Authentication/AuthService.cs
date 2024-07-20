@@ -3,7 +3,7 @@ using AMAK.Application.Common.Exceptions;
 using AMAK.Application.Common.Helpers;
 using AMAK.Application.Interfaces;
 using AMAK.Application.Services.Authentication.Dtos;
-using AMAK.Application.Services.Mail;
+using AMAK.Application.Providers.Mail;
 using AMAK.Domain.Models;
 using AutoMapper;
 using Microsoft.AspNetCore.Identity;

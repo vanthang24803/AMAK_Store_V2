@@ -1,7 +1,7 @@
 using AMAK.Application.Interfaces;
 using AMAK.Application.Services.Authentication;
 using AMAK.Application.Services.Category;
-using AMAK.Application.Services.Mail;
+using AMAK.Application.Providers.Mail;
 using AMAK.Domain.Models;
 using AMAK.Infrastructure.Repository;
 using AMAK.Infrastructure.Token;

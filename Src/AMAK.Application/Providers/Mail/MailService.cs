@@ -3,16 +3,13 @@ using Microsoft.Extensions.Options;
 using MimeKit;
 
 
-namespace AMAK.Application.Services.Mail {
+namespace AMAK.Application.Providers.Mail {
     public class MailService : IMailService {
 
         private readonly MailSettings mailSettings;
 
-        private readonly Client.Domain _client;
-
-        public MailService(IOptions<MailSettings> options, IOptions<Client.Domain> opt) {
+        public MailService(IOptions<MailSettings> options) {
             mailSettings = options.Value;
-            _client = opt.Value;
         }
 
         public async void SendEmailConfirmationAccount(string email, string userId, string token) {

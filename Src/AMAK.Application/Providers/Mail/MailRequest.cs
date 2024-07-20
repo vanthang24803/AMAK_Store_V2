@@ -1,4 +1,4 @@
-namespace AMAK.Application.Services.Mail {
+namespace AMAK.Application.Providers.Mail {
     public class MailRequest {
         public string ToEmail { get; set; } = null!;
 

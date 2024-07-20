@@ -1,5 +1,5 @@
 
-namespace AMAK.Application.Services.Mail {
+namespace AMAK.Application.Providers.Mail {
     public class MailSettings {
         public string Email { get; set; } = null!;
 

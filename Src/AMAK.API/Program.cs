@@ -1,7 +1,7 @@
 using AMAK.API.Configurations;
 using AMAK.API.Extensions;
 using AMAK.API.Common.Extensions;
-using AMAK.Application.Services.Mail;
+using AMAK.Application.Providers.Mail;
 
 var builder = WebApplication.CreateBuilder(args);
 
