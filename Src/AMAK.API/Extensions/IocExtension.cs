@@ -6,6 +6,8 @@ using AMAK.Domain.Models;
 using AMAK.Infrastructure.Repository;
 using AMAK.Infrastructure.Token;
 using Microsoft.AspNetCore.Identity;
+using AMAK.Application.Services.Me;
+using AMAK.Application.Providers.Upload;
 
 namespace AMAK.API.Common.Extensions {
     public static class IocExtension {
@@ -13,13 +15,16 @@ namespace AMAK.API.Common.Extensions {
             // TODO: Authentication
             services.AddScoped<UserManager<ApplicationUser>>();
             services.AddScoped<IAuthService, AuthService>();
-            
+
             // TODO:Repository
             services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 
             // TODO: Service
-            services.AddScoped<IMailService, MailService>();
             services.AddScoped<ICategoryService, CategoryService>();
+            services.AddScoped<IMeService, MeService>();
+
+            services.AddSingleton<IUploadService, UploadService>();
+            services.AddSingleton<IMailService, MailService>();
             services.AddSingleton<ITokenService, TokenService>();
 
             return services;

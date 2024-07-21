@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace AMAK.Domain.Models {
     public class Option : BaseEntity<Guid> {
-        public string Name { get; set; } = string.Empty;
+        public string Name { get; set; } = null!;
 
         public int Sale { get; set; }
 

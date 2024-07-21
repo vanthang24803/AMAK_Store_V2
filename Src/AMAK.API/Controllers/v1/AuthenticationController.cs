@@ -67,7 +67,7 @@ namespace AMAK.API.Controllers.v1 {
         }
 
         [HttpGet]
-        [Route("Verify")]
+        [Route("VerifyAccount")]
         [AllowAnonymous]
 
         public async Task<IActionResult> VerifyAccount([FromQuery] string userId, [FromQuery] string token) {

@@ -1,7 +1,6 @@
 using AMAK.API.Configurations;
 using AMAK.API.Extensions;
 using AMAK.API.Common.Extensions;
-using AMAK.Application.Providers.Mail;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -36,10 +35,8 @@ builder.Services.AddApplication();
 // TODO: API Version
 builder.Services.AddAPIVersion();
 
-// TODO: Mail Settings
-builder.Services.Configure<MailSettings>(builder.Configuration.GetSection("MailSettings"));
-
-
+// TODO: Providers
+builder.Services.AddProviders(builder.Configuration);
 
 var app = builder.Build();
 

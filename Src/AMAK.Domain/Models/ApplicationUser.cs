@@ -2,11 +2,11 @@ using Microsoft.AspNetCore.Identity;
 
 namespace AMAK.Domain.Models {
     public class ApplicationUser : IdentityUser {
-        public string FirstName { get; set; } = string.Empty;
+        public string FirstName { get; set; } = null!;
 
-        public string LastName { get; set; } = string.Empty;
+        public string LastName { get; set; } = null!;
 
-        public string Avatar { get; set; } = string.Empty;
+        public string Avatar { get; set; } = null!;
 
         public IEnumerable<Address> Addresses { get; set; } = [];
 
