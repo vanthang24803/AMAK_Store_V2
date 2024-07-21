@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace AMAK.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20240718144859_Update_Table_Voucher")]
-    partial class Update_Table_Voucher
+    [Migration("20240721125238_Update_NotNull")]
+    partial class Update_NotNull
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -34,7 +34,13 @@ namespace AMAK.Infrastructure.Migrations
                     b.Property<DateTime>("CreateAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<DateTime>("DeleteAt")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
 
                     b.Property<string>("Name")
@@ -64,7 +70,6 @@ namespace AMAK.Infrastructure.Migrations
                         .HasColumnType("integer");
 
                     b.Property<string>("Avatar")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("ConcurrencyStamp")
@@ -152,6 +157,12 @@ namespace AMAK.Infrastructure.Migrations
                     b.Property<DateTime>("CreateAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<DateTime>("DeleteAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
                     b.Property<string>("PublicId")
                         .HasColumnType("text");
 
@@ -179,6 +190,12 @@ namespace AMAK.Infrastructure.Migrations
                     b.Property<DateTime>("CreateAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<DateTime>("DeleteAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("text");
@@ -200,10 +217,16 @@ namespace AMAK.Infrastructure.Migrations
                     b.Property<DateTime>("CreateAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<double>("IsActive")
+                    b.Property<DateTime>("DeleteAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsActive")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("double precision")
-                        .HasDefaultValue(1.0);
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(true);
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -249,9 +272,15 @@ namespace AMAK.Infrastructure.Migrations
                         .HasMaxLength(128)
                         .HasColumnType("character varying(128)");
 
+                    b.Property<DateTime>("DeleteAt")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<string>("Email")
                         .HasMaxLength(128)
                         .HasColumnType("character varying(128)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
 
                     b.Property<int>("Payment")
                         .ValueGeneratedOnAdd()
@@ -297,6 +326,12 @@ namespace AMAK.Infrastructure.Migrations
                     b.Property<DateTime>("CreateAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<DateTime>("DeleteAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
                     b.Property<Guid>("ProductId")
                         .HasColumnType("uuid");
 
@@ -326,8 +361,14 @@ namespace AMAK.Infrastructure.Migrations
                     b.Property<DateTime>("CreateAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<DateTime>("DeleteAt")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<string>("Introduction")
                         .HasColumnType("text");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -369,6 +410,21 @@ namespace AMAK.Infrastructure.Migrations
                     b.ToTable("ProductCategory");
                 });
 
+            modelBuilder.Entity("AMAK.Domain.Models.ProductOrder", b =>
+                {
+                    b.Property<Guid>("OrderId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("ProductId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("OrderId", "ProductId");
+
+                    b.HasIndex("ProductId");
+
+                    b.ToTable("ProductOrder");
+                });
+
             modelBuilder.Entity("AMAK.Domain.Models.ProductVoucher", b =>
                 {
                     b.Property<Guid>("ProductId")
@@ -381,7 +437,7 @@ namespace AMAK.Infrastructure.Migrations
 
                     b.HasIndex("VoucherId");
 
-                    b.ToTable("ProductVouchers", (string)null);
+                    b.ToTable("ProductVoucher");
                 });
 
             modelBuilder.Entity("AMAK.Domain.Models.Review", b =>
@@ -395,6 +451,12 @@ namespace AMAK.Infrastructure.Migrations
 
                     b.Property<DateTime>("CreateAt")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("DeleteAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
 
                     b.Property<Guid>("ProductId")
                         .HasColumnType("uuid");
@@ -426,6 +488,12 @@ namespace AMAK.Infrastructure.Migrations
 
                     b.Property<DateTime>("CreateAt")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("DeleteAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
 
                     b.Property<string>("PublicId")
                         .HasColumnType("text");
@@ -463,8 +531,14 @@ namespace AMAK.Infrastructure.Migrations
                     b.Property<int>("Day")
                         .HasColumnType("integer");
 
+                    b.Property<DateTime>("DeleteAt")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<int>("Discount")
                         .HasColumnType("integer");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
 
                     b.Property<bool>("IsExpire")
                         .HasColumnType("boolean");
@@ -484,7 +558,7 @@ namespace AMAK.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("ProductVoucher");
+                    b.ToTable("Vouchers");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -668,6 +742,21 @@ namespace AMAK.Infrastructure.Migrations
                     b.HasOne("AMAK.Domain.Models.Category", null)
                         .WithMany()
                         .HasForeignKey("CategoryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("AMAK.Domain.Models.Product", null)
+                        .WithMany()
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("AMAK.Domain.Models.ProductOrder", b =>
+                {
+                    b.HasOne("AMAK.Domain.Models.Order", null)
+                        .WithMany()
+                        .HasForeignKey("OrderId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 

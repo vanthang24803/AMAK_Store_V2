@@ -92,7 +92,7 @@ namespace AMAK.Application.Services.Address {
                 throw new BadRequestException("You can only update your address!");
             }
 
-            _mapper.Map(existingAddress, request);
+            _mapper.Map(request, existingAddress);
 
             _addressRepository.Update(existingAddress);
 

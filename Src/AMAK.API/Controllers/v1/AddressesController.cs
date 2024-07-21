@@ -2,18 +2,13 @@ using AMAK.Application.Common.Constants;
 using AMAK.Application.Common.Query;
 using AMAK.Application.Services.Address;
 using AMAK.Application.Services.Address.Dtos;
-using AMAK.Application.Validations;
-using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AMAK.API.Controllers.v1 {
-    [ApiController]
-    [ApiVersion(1)]
-    [ValidateModelState]
+  
     [Authorize]
-    [Route("api/v{version:apiVersion}/[controller]")]
-    public class AddressesController : ControllerBase {
+    public class AddressesController : BaseController {
         private readonly IAddressService _addressService;
 
         public AddressesController(IAddressService addressService) {

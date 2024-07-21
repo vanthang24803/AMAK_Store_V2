@@ -6,7 +6,7 @@ namespace AMAK.Domain.Models {
 
         public string LastName { get; set; } = null!;
 
-        public string Avatar { get; set; } = null!;
+        public string? Avatar { get; set; } 
 
         public ICollection<Address> Addresses { get; set; } = [];
 

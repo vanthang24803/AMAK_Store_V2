@@ -1,8 +1,15 @@
+using AMAK.Application.Common.Helpers;
+using AMAK.Application.Services.Category.Dtos;
 
 namespace AMAK.Application.Services.Category {
     public interface ICategoryService {
-        Task<string> SaveAsync(string name);
+        Task<Response<List<CategoryResponse>>> GetAllAsync();
 
-        Task<List<Domain.Models.Category>> GetAllAsync(string? search);
+        Task<Response<CategoryResponse>> GetAsync(Guid id);
+
+        Task<Response<CategoryResponse>> CreateAsync(CategoryRequest request);
+        Task<Response<CategoryResponse>> UpdateAsync(Guid id, CategoryRequest request);
+
+        Task<Response<string>> DeleteAsync(Guid id);
     }
 }

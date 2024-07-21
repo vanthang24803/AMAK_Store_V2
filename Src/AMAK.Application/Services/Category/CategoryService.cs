@@ -1,4 +1,9 @@
+using System.Net;
+using AMAK.Application.Common.Exceptions;
+using AMAK.Application.Common.Helpers;
 using AMAK.Application.Interfaces;
+using AMAK.Application.Services.Category.Dtos;
+using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 
 namespace AMAK.Application.Services.Category {
@@ -6,30 +11,75 @@ namespace AMAK.Application.Services.Category {
 
         private readonly IRepository<Domain.Models.Category> _categoryRepository;
 
-        public CategoryService(IRepository<Domain.Models.Category> categoryRepository) {
+        private readonly IMapper _mapper;
+
+        public CategoryService(IRepository<Domain.Models.Category> categoryRepository, IMapper mapper) {
             _categoryRepository = categoryRepository;
+            _mapper = mapper;
         }
 
-        public async Task<List<Domain.Models.Category>> GetAllAsync(string? search) {
+        public async Task<Response<CategoryResponse>> CreateAsync(CategoryRequest request) {
+            var newCategory = _mapper.Map<Domain.Models.Category>(request);
 
-            var query = _categoryRepository.GetAll();
-
-            if (!string.IsNullOrEmpty(search)) {
-                query = query.Where(x => x.Name.Contains(search));
-            }
-
-            return await query.ToListAsync();
-        }
-
-        public async Task<string> SaveAsync(string name) {
-
-            var newCategory = new Domain.Models.Category() { Id = Guid.NewGuid(), Name = name };
+            newCategory.Id = Guid.NewGuid();
 
             _categoryRepository.Add(newCategory);
 
             await _categoryRepository.SaveChangesAsync();
 
-            return $"Category created Name is ${newCategory.Name}";
+            return new Response<CategoryResponse>(HttpStatusCode.Created, _mapper.Map<CategoryResponse>(newCategory));
+        }
+
+        public async Task<Response<string>> DeleteAsync(Guid id) {
+            var existCategory = await _categoryRepository.GetById(id) ?? throw new NotFoundException("Category not found!");
+
+            if (existCategory.IsDeleted) {
+                throw new NotFoundException("Category not found!");
+            }
+
+            existCategory.IsDeleted = true;
+
+            await _categoryRepository.SaveChangesAsync();
+
+            return new Response<string>(HttpStatusCode.OK, "Category deleted successfully!");
+        }
+
+        public async Task<Response<List<CategoryResponse>>> GetAllAsync() {
+            var categories = await _categoryRepository
+                                .GetAll()
+                                .Where(x => !x.IsDeleted)
+                                .OrderByDescending(x => x.CreateAt)
+                                .ToArrayAsync();
+
+            return new Response<List<CategoryResponse>>(HttpStatusCode.OK, _mapper.Map<List<CategoryResponse>>(categories));
+        }
+
+        public async Task<Response<CategoryResponse>> GetAsync(Guid id) {
+            var existCategory = await _categoryRepository.GetById(id) ?? throw new NotFoundException("Category not found!");
+
+            if (existCategory.IsDeleted) {
+                throw new NotFoundException("Category not found!");
+            }
+
+            return new Response<CategoryResponse>(HttpStatusCode.OK, _mapper.Map<CategoryResponse>(existCategory));
+        }
+
+        public async Task<Response<CategoryResponse>> UpdateAsync(Guid id, CategoryRequest request) {
+
+            var existCategory = await _categoryRepository.GetById(id) ?? throw new NotFoundException("Category not found!");
+
+            if (existCategory.IsDeleted) {
+                throw new NotFoundException("Category not found!");
+            }
+
+            _mapper.Map(request, existCategory);
+
+            _categoryRepository.Update(existCategory);
+
+            await _categoryRepository.SaveChangesAsync();
+
+            return new Response<CategoryResponse>(HttpStatusCode.OK, _mapper.Map<CategoryResponse>(existCategory));
+
         }
     }
 }

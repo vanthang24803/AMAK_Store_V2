@@ -1,18 +1,11 @@
 using AMAK.Application.Services.Authentication;
 using AMAK.Application.Services.Authentication.Dtos;
-using AMAK.Application.Validations;
-using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AMAK.API.Controllers.v1 {
-    [ApiController]
-    [ApiVersion(1)]
-    [ValidateModelState]
     [Authorize]
-    [Route("api/v{version:apiVersion}/[controller]")]
-
-    public class AuthenticationController : ControllerBase {
+    public class AuthenticationController : BaseController {
 
         private readonly IAuthService _authService;
 
@@ -78,6 +71,7 @@ namespace AMAK.API.Controllers.v1 {
 
         [HttpGet]
         [Route("Role/Seeds")]
+        [AllowAnonymous]
         public async Task<IActionResult> CreateSeeds() {
             return Ok(await _authService.CreateSeedRole());
         }
