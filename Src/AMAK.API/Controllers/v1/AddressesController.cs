@@ -2,11 +2,12 @@ using AMAK.Application.Common.Constants;
 using AMAK.Application.Common.Query;
 using AMAK.Application.Services.Address;
 using AMAK.Application.Services.Address.Dtos;
+using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AMAK.API.Controllers.v1 {
-  
+    [ApiVersion(1)]
     [Authorize]
     public class AddressesController : BaseController {
         private readonly IAddressService _addressService;

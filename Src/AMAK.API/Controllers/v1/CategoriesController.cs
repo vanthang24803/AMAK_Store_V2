@@ -1,10 +1,12 @@
 using AMAK.Application.Common.Constants;
 using AMAK.Application.Services.Category;
 using AMAK.Application.Services.Category.Dtos;
+using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AMAK.API.Controllers.v1 {
+    [ApiVersion(1)]
     [Authorize(Roles = $"{StaticRole.ADMIN}, {StaticRole.MANAGER}")]
     public class CategoriesController : BaseController {
         private readonly ICategoryService _categoryService;
@@ -14,12 +16,14 @@ namespace AMAK.API.Controllers.v1 {
         }
 
         [HttpGet]
+        [AllowAnonymous]
         public async Task<IActionResult> GetAll() {
             return Ok(await _categoryService.GetAllAsync());
         }
 
         [HttpGet]
         [Route("{id}")]
+        [AllowAnonymous]
         public async Task<IActionResult> GetDetail([FromRoute] Guid id) {
             return Ok(await _categoryService.GetAsync(id));
         }
