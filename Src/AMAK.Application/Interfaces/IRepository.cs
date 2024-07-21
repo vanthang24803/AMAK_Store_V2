@@ -6,7 +6,7 @@ namespace AMAK.Application.Interfaces {
         Task<TEntity?> GetById(Guid id);
         IQueryable<TEntity> GetAll();
         void Update(TEntity obj);
-        void Remove(Guid id);
+        void Remove(TEntity obj);
         Task<int> SaveChangesAsync();
 
     }

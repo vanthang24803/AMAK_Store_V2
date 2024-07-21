@@ -1,6 +1,6 @@
 namespace AMAK.Domain.Models {
     public class Product : BaseEntity<Guid> {
-        public required string Name { get; set; }
+        public string Name { get; set; } = null!;
 
         public string? Thumbnail { get; set; }
 

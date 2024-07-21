@@ -1,17 +1,11 @@
 using AMAK.Application.Services.Me;
 using AMAK.Application.Services.Me.Dtos;
-using AMAK.Application.Validations;
-using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AMAK.API.Controllers.v1 {
-    [ApiController]
-    [ApiVersion(1)]
-    [ValidateModelState]
     [Authorize]
-    [Route("api/v{version:apiVersion}/[controller]")]
-    public class MeController : ControllerBase {
+    public class MeController : BaseController {
 
         private readonly IMeService _meService;
 

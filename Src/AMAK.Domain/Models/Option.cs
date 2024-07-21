@@ -1,4 +1,3 @@
-
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace AMAK.Domain.Models {
@@ -11,7 +10,7 @@ namespace AMAK.Domain.Models {
 
         public double Price { get; set; }
 
-        public double IsActive { get; set; }
+        public bool IsActive { get; set; }
 
         public Guid ProductId { get; set; }
 
