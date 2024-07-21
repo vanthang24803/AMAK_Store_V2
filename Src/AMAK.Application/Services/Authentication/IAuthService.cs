@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using AMAK.Application.Common.Helpers;
 using AMAK.Application.Services.Authentication.Dtos;
+using AMAK.Application.Services.Me.Dtos;
 using Microsoft.AspNetCore.Identity;
 
 namespace AMAK.Application.Services.Authentication {
@@ -17,6 +18,9 @@ namespace AMAK.Application.Services.Authentication {
 
         Task<Response<string>> ResetPasswordAsync(string userId, string token, ResetPasswordRequest request);
         Task<Response<string>> ForgotPasswordAsync(ForgotPasswordRequest request);
+
+        Task<Response<ProfileResponse>> UpgradeToManager(UpgradeRole upgrade);
+        Task<Response<ProfileResponse>> UpgradeToAdmin(UpgradeRole upgrade);
 
         Task<string> CreateSeedRole();
         Task<List<IdentityRole>> GetRoles();
