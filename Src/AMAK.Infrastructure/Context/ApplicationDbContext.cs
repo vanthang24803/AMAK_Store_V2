@@ -123,14 +123,6 @@ namespace AMAK.Infrastructure.Context {
                         .WithMany(r => r.Photos)
                         .HasForeignKey(rp => rp.ReviewId);
 
-            // TODO: Seed Data  
-
-            modelBuilder.Entity<IdentityRole>().HasData(
-                new IdentityRole(StaticRole.ADMIN),
-                new IdentityRole(StaticRole.CUSTOMER),
-                new IdentityRole(StaticRole.MANAGER)
-            );
-
         }
     }
 }

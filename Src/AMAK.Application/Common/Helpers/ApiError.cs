@@ -6,7 +6,7 @@ namespace AMAK.Application.Common.Helpers {
         public int Status { get; set; }
 
         [JsonProperty("message")]
-        public string Message { get; set; } = string.Empty;
+        public string Message { get; set; } = null!;
 
         [JsonProperty("timestamp")]
         public DateTime Timestamp = DateTime.Now;
