@@ -1,3 +1,4 @@
+using AMAK.Application.Services.Address.Dtos;
 using AMAK.Application.Services.Authentication.Dtos;
 using AMAK.Application.Services.Me.Dtos;
 using AMAK.Domain.Models;
@@ -8,6 +9,7 @@ namespace AMAK.Application.Mapper {
         public DomainToViewModelMappingProfile() {
             CreateMap<ApplicationUser, RegisterResponse>();
             CreateMap<ApplicationUser, ProfileResponse>();
+            CreateMap<Address, AddressResponse>();
         }
     }
 }

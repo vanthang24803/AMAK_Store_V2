@@ -28,12 +28,8 @@ namespace AMAK.Infrastructure.Repository {
             _dbSet.Update(obj);
         }
 
-        public virtual void Remove(Guid id) {
-            var entity = _dbSet.Find(id);
-
-            if (entity != null) {
-                _dbSet.Remove(entity);
-            }
+        public virtual void Remove(TEntity entity) {
+            _dbSet.Remove(entity);
         }
 
         public bool IsExistById(Guid id) {

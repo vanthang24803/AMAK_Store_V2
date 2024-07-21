@@ -7,7 +7,7 @@ namespace AMAK.Domain.Models {
 
         public float Star { get; set; }
 
-        public IEnumerable<ReviewPhoto> Photos { get; set; } = [];
+        public ICollection<ReviewPhoto> Photos { get; set; } = [];
 
         public Guid ProductId { get; set; }
 
