@@ -21,6 +21,8 @@ namespace AMAK.API.Common.Extensions {
             // TODO:Repository
             services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 
+          
+
             // TODO: Service
             services.AddScoped<ICategoryService, CategoryService>();
             services.AddScoped<IMeService, MeService>();

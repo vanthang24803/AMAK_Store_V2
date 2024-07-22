@@ -1,6 +1,7 @@
 using AMAK.API.Configurations;
 using AMAK.API.Extensions;
 using AMAK.API.Common.Extensions;
+using AMAK.Application.Configs;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -37,6 +38,9 @@ builder.Services.AddAPIVersion();
 
 // TODO: Providers
 builder.Services.AddProviders(builder.Configuration);
+
+// TODO: CQRS
+builder.Services.AddCQRS();
 
 var app = builder.Build();
 
