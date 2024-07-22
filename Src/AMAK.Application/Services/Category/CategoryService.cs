@@ -49,7 +49,7 @@ namespace AMAK.Application.Services.Category {
                                 .GetAll()
                                 .Where(x => !x.IsDeleted)
                                 .OrderByDescending(x => x.CreateAt)
-                                .ToArrayAsync();
+                                .ToListAsync();
 
             return new Response<List<CategoryResponse>>(HttpStatusCode.OK, _mapper.Map<List<CategoryResponse>>(categories));
         }

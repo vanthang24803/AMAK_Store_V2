@@ -1,9 +1,12 @@
+using AMAK.Application.Common.Constants;
 using AMAK.Application.Services.Authentication;
 using AMAK.Application.Services.Authentication.Dtos;
+using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AMAK.API.Controllers.v1 {
+    [ApiVersion(1)]
     [Authorize]
     public class AuthenticationController : BaseController {
 
@@ -80,6 +83,20 @@ namespace AMAK.API.Controllers.v1 {
         [Route("Role")]
         public async Task<IActionResult> GetAll() {
             return Ok(await _authService.GetRoles());
+        }
+
+        [HttpPost]
+        [Route("Upgrade/Manager")]
+        [Authorize(Roles = $"{StaticRole.ADMIN}")]
+        public async Task<IActionResult> UpgradeManager([FromBody] UpgradeRole upgradeRole) {
+            return Ok(await _authService.UpgradeToManager(upgradeRole));
+        }
+
+        [HttpPost]
+        [Route("Upgrade/Admin")]
+        [Authorize(Roles = $"{StaticRole.ADMIN}")]
+        public async Task<IActionResult> UpgradeAdmin([FromBody] UpgradeRole upgradeRole) {
+            return Ok(await _authService.UpgradeToAdmin(upgradeRole));
         }
 
     }

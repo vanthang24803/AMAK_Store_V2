@@ -4,6 +4,8 @@ namespace AMAK.Domain.Models {
 
         public string? Thumbnail { get; set; }
 
+        public string? Brand { get; set;}
+
         public long Sold { get; set; }
 
         public string? Introduction { get; set; }

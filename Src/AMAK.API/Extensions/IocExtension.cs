@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Identity;
 using AMAK.Application.Services.Me;
 using AMAK.Application.Providers.Upload;
 using AMAK.Application.Services.Address;
+using AMAK.Application.Services.Product;
 
 namespace AMAK.API.Common.Extensions {
     public static class IocExtension {
@@ -19,6 +20,8 @@ namespace AMAK.API.Common.Extensions {
 
             // TODO:Repository
             services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+
+          
 
             // TODO: Service
             services.AddScoped<ICategoryService, CategoryService>();

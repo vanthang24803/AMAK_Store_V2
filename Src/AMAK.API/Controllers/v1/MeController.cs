@@ -1,9 +1,11 @@
 using AMAK.Application.Services.Me;
 using AMAK.Application.Services.Me.Dtos;
+using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AMAK.API.Controllers.v1 {
+    [ApiVersion(1)]
     [Authorize]
     public class MeController : BaseController {
 

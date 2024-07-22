@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System.Net;
 using System.Security.Claims;
+using AMAK.Application.Services.Me.Dtos;
 
 namespace AMAK.Application.Services.Authentication {
     public class AuthService : IAuthService {
@@ -212,6 +213,34 @@ namespace AMAK.Application.Services.Authentication {
 
 
             return new Response<string>(HttpStatusCode.OK, "Send mail reset password successfully!");
+        }
+
+        public async Task<Response<ProfileResponse>> UpgradeToManager(UpgradeRole upgrade) {
+            var existingUser = await _userManager.FindByEmailAsync(upgrade.Email) ?? throw new NotFoundException("Account not found!");
+
+            await _userManager.AddToRoleAsync(existingUser, StaticRole.MANAGER);
+
+            var roles = await _userManager.GetRolesAsync(existingUser);
+
+            var response = _mapper.Map<ProfileResponse>(existingUser);
+
+            response.Roles = roles;
+
+            return new Response<ProfileResponse>(HttpStatusCode.OK, response);
+        }
+
+        public async Task<Response<ProfileResponse>> UpgradeToAdmin(UpgradeRole upgrade) {
+            var existingUser = await _userManager.FindByEmailAsync(upgrade.Email) ?? throw new NotFoundException("Account not found!");
+
+            await _userManager.AddToRoleAsync(existingUser, StaticRole.ADMIN);
+
+            var roles = await _userManager.GetRolesAsync(existingUser);
+
+            var response = _mapper.Map<ProfileResponse>(existingUser);
+
+            response.Roles = roles;
+
+            return new Response<ProfileResponse>(HttpStatusCode.OK, response);
         }
     }
 }

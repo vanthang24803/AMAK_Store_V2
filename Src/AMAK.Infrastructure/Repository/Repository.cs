@@ -2,11 +2,13 @@ using AMAK.Application.Interfaces;
 using AMAK.Infrastructure.Context;
 using Microsoft.EntityFrameworkCore;
 
+
 namespace AMAK.Infrastructure.Repository {
     public class Repository<TEntity> : IRepository<TEntity>
-      where TEntity : class {
+        where TEntity : class {
         protected readonly ApplicationDbContext _db;
         protected readonly DbSet<TEntity> _dbSet;
+
         public Repository(ApplicationDbContext context) {
             _db = context;
             _dbSet = _db.Set<TEntity>();
@@ -32,16 +34,40 @@ namespace AMAK.Infrastructure.Repository {
             _dbSet.Remove(entity);
         }
 
+        public virtual void AddRange(IEnumerable<TEntity> objs) {
+            _dbSet.AddRange(objs);
+        }
+
+        public virtual void UpdateRange(IEnumerable<TEntity> objs) {
+            _dbSet.UpdateRange(objs);
+        }
+
+        public virtual void RemoveRange(IEnumerable<TEntity> objs) {
+            _dbSet.RemoveRange(objs);
+        }
+
         public bool IsExistById(Guid id) {
-            var entity = _dbSet.Find(id);
-            if (entity == null) {
-                return false;
-            }
-            return true;
+            return _dbSet.Find(id) != null;
         }
 
         public async Task<int> SaveChangesAsync() {
             return await _db.SaveChangesAsync();
+        }
+
+        public async Task BeginTransactionAsync() {
+            await _db.Database.BeginTransactionAsync();
+        }
+
+        public async Task CommitTransactionAsync() {
+            if (_db.Database.CurrentTransaction != null) {
+                await _db.Database.CurrentTransaction.CommitAsync();
+            }
+        }
+
+        public async Task RollbackTransactionAsync() {
+            if (_db.Database.CurrentTransaction != null) {
+                await _db.Database.CurrentTransaction.RollbackAsync();
+            }
         }
     }
 }
