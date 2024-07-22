@@ -24,6 +24,8 @@ namespace AMAK.Application.Services.Product.Queries.GetAll {
 
             var products = await _productRepository.GetAll()
                                 .Where(x => !x.IsDeleted)
+                                .Include(c => c.Categories)
+                                .Include(o => o.Options).Where(x => !x.IsDeleted)
                                 .Skip((request.Query.Page - 1) * request.Query.Limit)
                                 .Take(request.Query.Limit)
                                 .OrderByDescending(x => x.CreateAt)

@@ -7,6 +7,11 @@ namespace AMAK.Application.Services.Product.Common {
         [StringLength(128)]
         public string Name { get; set; } = null!;
 
+        [Required]
+        [StringLength(128)]
+
+        public string Brand { get; set; } = null!;
+
         public string? Introduction { get; set; }
         public string? Specifications { get; set; }
 
@@ -20,5 +25,5 @@ namespace AMAK.Application.Services.Product.Common {
         public Guid Id { get; set; }
     }
 
-   
+
 }

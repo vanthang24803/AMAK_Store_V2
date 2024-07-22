@@ -19,12 +19,15 @@ namespace AMAK.Application.Services.Product.Queries.GetDetail {
 
         public async Task<Response<ProductDetailResponse>> Handle(GetProductDetailQuery request, CancellationToken cancellationToken) {
             var existingProduct = await _productRepository.GetAll()
+                                                          .Where(x => !x.IsDeleted)
                                                           .Include(c => c.Categories)
                                                           .Include(o => o.Options)
                                                           .Include(pt => pt.Photos)
                                                           .Include(r => r.Reviews)
                                                           .FirstOrDefaultAsync(p => p.Id == request.Id, cancellationToken)
             ?? throw new NotFoundException("Product not found!");
+
+           
 
 
             return new Response<ProductDetailResponse>(HttpStatusCode.OK, _mapper.Map<ProductDetailResponse>(existingProduct));

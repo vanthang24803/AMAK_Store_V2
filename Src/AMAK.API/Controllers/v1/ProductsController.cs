@@ -1,6 +1,8 @@
 using AMAK.Application.Common.Constants;
 using AMAK.Application.Common.Query;
 using AMAK.Application.Services.Product.Commands.Create;
+using AMAK.Application.Services.Product.Commands.Delete;
+using AMAK.Application.Services.Product.Commands.Update;
 using AMAK.Application.Services.Product.Common;
 using AMAK.Application.Services.Product.Queries.GetAll;
 using AMAK.Application.Services.Product.Queries.GetDetail;
@@ -35,9 +37,21 @@ namespace AMAK.API.Controllers.v1 {
         }
 
         [HttpPost]
-        [AllowAnonymous]
-        public async Task<IActionResult> CreateProduct(CreateProductRequest request, IFormFile thumbnail) {
+        public async Task<IActionResult> Create([FromForm] CreateProductRequest request, IFormFile thumbnail) {
             return Ok(await _mediator.Send(new CreateProductCommand(request, thumbnail)));
+        }
+
+        [HttpPut]
+        [Route("{id}")]
+
+        public async Task<IActionResult> Update([FromRoute] Guid id, [FromForm] UpdateProductRequest request, IFormFile? file) {
+            return Ok(await _mediator.Send(new UpdateProductCommand(id, file, request)));
+        }
+
+        [HttpDelete]
+        [Route("{id}")]
+        public async Task<IActionResult> Delete(Guid id) {
+            return Ok(await _mediator.Send(new DeleteProductCommand(id)));
         }
 
     }

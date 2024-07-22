@@ -2,6 +2,7 @@ using AMAK.Application.Common.Exceptions;
 using AMAK.Application.Common.Helpers;
 using AMAK.Application.Interfaces;
 using AMAK.Application.Providers.Upload;
+using AMAK.Application.Services.Category.Dtos;
 using AMAK.Application.Services.Product.Common;
 using AutoMapper;
 using MediatR;
@@ -34,13 +35,22 @@ namespace AMAK.Application.Services.Product.Commands.Create {
 
         public async Task<Response<ProductResponse>> Handle(CreateProductCommand request, CancellationToken cancellationToken) {
 
-            var newProduct = _mapper.Map<Domain.Models.Product>(request.Product);
+            var newProduct = new Domain.Models.Product() {
+                Id = Guid.NewGuid(),
+                Name = request.Product.Name,
+                Brand = request.Product.Brand,
+                Introduction = request.Product.Introduction,
+                Specifications = request.Product.Specifications,
+            };
 
             var upload = await _uploadService.UploadPhotoAsync(request.File);
 
             if (upload.Error != null) {
                 throw new BadRequestException(message: upload.Error.Message);
             }
+
+            var categories = new List<Domain.Models.Category>();
+            var options = new List<Domain.Models.Option>();
 
             newProduct.Thumbnail = upload.SecureUrl.AbsoluteUri;
 
@@ -56,6 +66,7 @@ namespace AMAK.Application.Services.Product.Commands.Create {
                     CategoryId = existingCategory.Id
                 };
                 _productCategoryRepository.Add(productCategory);
+                categories.Add(existingCategory);
             }
 
             await _productCategoryRepository.SaveChangesAsync();
@@ -66,12 +77,13 @@ namespace AMAK.Application.Services.Product.Commands.Create {
                 newOption.ProductId = newProduct.Id;
 
                 _optionRepository.Add(newOption);
+                options.Add(newOption);
             }
 
             await _optionRepository.SaveChangesAsync();
 
 
-            return new Response<ProductResponse>(HttpStatusCode.OK, _mapper.Map<ProductResponse>(newProduct));
+            return new Response<ProductResponse>(HttpStatusCode.Created, _mapper.Map<ProductResponse>(newProduct));
         }
     }
 }
