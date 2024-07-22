@@ -1,6 +1,7 @@
 using AMAK.Application.Services.Category.Dtos;
+using AMAK.Application.Services.Options.Dtos;
 
-namespace AMAK.Application.Services.Product.Dtos {
+namespace AMAK.Application.Services.Product.Common {
     public class ProductDetailResponse {
         public Guid Id { get; set; }
         public string Name { get; set; } = null!;
@@ -9,7 +10,7 @@ namespace AMAK.Application.Services.Product.Dtos {
         public string? Specifications { get; set; }
 
         public List<CategoryResponse> Categories { get; set; } = [];
-        public List<Options> Options { get; set; } = [];
+        public List<OptionResponse> Options { get; set; } = [];
         public DateTime CreateAt { get; set; }
         public DateTime UpdateAt { get; set; }
     }

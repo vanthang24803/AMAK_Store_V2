@@ -27,7 +27,6 @@ namespace AMAK.API.Common.Extensions {
             services.AddScoped<ICategoryService, CategoryService>();
             services.AddScoped<IMeService, MeService>();
             services.AddScoped<IAddressService, AddressService>();
-            services.AddScoped<IProductService, ProductService>();
 
             services.AddSingleton<IUploadService, UploadService>();
             services.AddSingleton<IMailService, MailService>();

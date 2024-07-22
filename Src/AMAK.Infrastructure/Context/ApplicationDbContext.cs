@@ -104,25 +104,30 @@ namespace AMAK.Infrastructure.Context {
                         .HasOne(p => p.Product)
                         .WithMany(p => p.Photos)
                         .HasForeignKey(p => p.ProductId)
-                        .IsRequired();
+                        .IsRequired()
+                        .OnDelete(DeleteBehavior.Cascade);
+                        
 
             modelBuilder.Entity<Option>()
                         .HasOne(p => p.Product)
                         .WithMany(p => p.Options)
                         .HasForeignKey(p => p.ProductId)
-                        .IsRequired();
+                        .IsRequired()
+                        .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<Review>()
                         .HasOne(p => p.Product)
                         .WithMany(p => p.Reviews)
                         .HasForeignKey(p => p.ProductId)
-                        .IsRequired();
+                        .IsRequired()
+                        .OnDelete(DeleteBehavior.Cascade);
+                        
 
             modelBuilder.Entity<ReviewPhoto>()
                         .HasOne(rp => rp.Review)
                         .WithMany(r => r.Photos)
-                        .HasForeignKey(rp => rp.ReviewId);
-
+                        .HasForeignKey(rp => rp.ReviewId)
+                        .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

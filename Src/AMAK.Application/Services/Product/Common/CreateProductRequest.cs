@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
+using AMAK.Application.Services.Options.Dtos;
 
-namespace AMAK.Application.Services.Product.Dtos {
+namespace AMAK.Application.Services.Product.Common {
     public class CreateProductRequest {
         [Required]
         [StringLength(128)]
@@ -11,7 +12,7 @@ namespace AMAK.Application.Services.Product.Dtos {
 
         public List<Category> Categories { get; set; } = [];
 
-        public List<Options> Options { get; set; } = [];
+        public List<OptionRequest> Options { get; set; } = [];
     }
 
 
@@ -19,7 +20,5 @@ namespace AMAK.Application.Services.Product.Dtos {
         public Guid Id { get; set; }
     }
 
-    public class Options {
-        public Guid Id { get; set; }
-    }
+   
 }

@@ -3,7 +3,7 @@ using AMAK.Application.Services.Authentication.Dtos;
 using AMAK.Application.Services.Categories.Commands.Create;
 using AMAK.Application.Services.Category.Dtos;
 using AMAK.Application.Services.Me.Dtos;
-using AMAK.Application.Services.Product.Dtos;
+using AMAK.Application.Services.Product.Common;
 using AMAK.Domain.Models;
 using AutoMapper;
 
