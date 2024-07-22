@@ -4,7 +4,7 @@ using AMAK.Application.Services.Categories.Commands.Delete;
 using AMAK.Application.Services.Categories.Commands.Update;
 using AMAK.Application.Services.Categories.Queries.GetAll;
 using AMAK.Application.Services.Categories.Queries.GetById;
-using AMAK.Application.Services.Category.Dtos;
+using AMAK.Application.Services.Categories.Common;
 using Asp.Versioning;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;

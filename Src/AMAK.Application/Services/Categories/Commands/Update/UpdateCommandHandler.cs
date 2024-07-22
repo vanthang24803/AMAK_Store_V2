@@ -1,7 +1,7 @@
 using AMAK.Application.Common.Exceptions;
 using AMAK.Application.Common.Helpers;
 using AMAK.Application.Interfaces;
-using AMAK.Application.Services.Category.Dtos;
+using AMAK.Application.Services.Categories.Common;
 using AutoMapper;
 using MediatR;
 using System.Net;

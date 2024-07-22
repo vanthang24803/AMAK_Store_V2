@@ -1,4 +1,4 @@
-using AMAK.Application.Services.Category.Dtos;
+using AMAK.Application.Services.Categories.Common;
 using AMAK.Application.Services.Options.Dtos;
 
 namespace AMAK.Application.Services.Product.Common {
