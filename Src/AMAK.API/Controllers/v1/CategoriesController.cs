@@ -12,7 +12,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace AMAK.API.Controllers.v1 {
     [ApiVersion(1)]
-    [Authorize(Roles = $"{Role.ADMIN}, {Role.MANAGER}")]
+    [Authorize($"{Role.ADMIN}, {Role.MANAGER}")]
     public class CategoriesController : BaseController {
 
         private readonly IMediator _mediator;

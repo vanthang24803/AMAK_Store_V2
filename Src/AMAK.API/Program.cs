@@ -42,6 +42,9 @@ builder.Services.AddProviders(builder.Configuration);
 // TODO: CQRS
 builder.Services.AddCQRS();
 
+// TODO: Cors
+builder.Services.AddCorsConfig();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

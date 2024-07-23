@@ -2,6 +2,7 @@ using AMAK.Application.Common.Constants;
 using AMAK.Application.Common.Query;
 using AMAK.Application.Services.Product.Commands.Create;
 using AMAK.Application.Services.Product.Commands.Delete;
+using AMAK.Application.Services.Product.Commands.Export;
 using AMAK.Application.Services.Product.Commands.Update;
 using AMAK.Application.Services.Product.Common;
 using AMAK.Application.Services.Product.Queries.GetAll;
@@ -14,7 +15,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace AMAK.API.Controllers.v1 {
     [ApiVersion(1)]
-    [Authorize(Roles = $"{Role.ADMIN}, {Role.MANAGER}")]
+    [Authorize($"{Role.ADMIN}, {Role.MANAGER}")]
 
     public class ProductsController : BaseController {
         private readonly IMediator _mediator;
@@ -36,6 +37,17 @@ namespace AMAK.API.Controllers.v1 {
             return Ok(await _mediator.Send(new GetProductDetailQuery(id)));
         }
 
+        [HttpGet]
+        [Route("ExportExcel")]
+        public async Task<IActionResult> Export() {
+            var result = await _mediator.Send(new ExportProductCommand());
+
+            var now = DateTime.UtcNow.ToString("dd-MM-yyyy");
+
+            Response.Headers.Append("Content-Disposition", $"attachment; filename=Export-Data-{now}.xlsx");
+
+            return File(result, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        }
         [HttpPost]
         public async Task<IActionResult> Create([FromForm] CreateProductRequest request, IFormFile thumbnail) {
             return StatusCode(StatusCodes.Status201Created, await _mediator.Send(new CreateProductCommand(request, thumbnail)));
@@ -50,6 +62,7 @@ namespace AMAK.API.Controllers.v1 {
 
         [HttpDelete]
         [Route("{id}")]
+        [Authorize($"{Role.ADMIN}")]
         public async Task<IActionResult> Delete(Guid id) {
             return Ok(await _mediator.Send(new DeleteProductCommand(id)));
         }

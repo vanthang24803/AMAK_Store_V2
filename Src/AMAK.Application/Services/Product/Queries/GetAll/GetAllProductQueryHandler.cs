@@ -10,32 +10,81 @@ namespace AMAK.Application.Services.Product.Queries.GetAll {
 
         private readonly IRepository<Domain.Models.Product> _productRepository;
         private readonly IMapper _mapper;
+        private readonly Dictionary<string, (int, int?)> priceLevels;
+
 
         public GetAllProductQueryHandler(IRepository<Domain.Models.Product> productRepository, IMapper mapper) {
             _productRepository = productRepository;
             _mapper = mapper;
+
+            priceLevels = new Dictionary<string, (int, int?)>{
+                { "Max", (400000, null) },
+                { "Highest", (300000, 400000) },
+                { "High", (200000, 300000) },
+                { "Medium", (100000, 200000) },
+                { "Low", (0, 100000) }
+            };
         }
 
         public async Task<PaginationResponse<List<ProductResponse>>> Handle(GetAllProductQuery request, CancellationToken cancellationToken) {
-            var totalItemsCount = await _productRepository.GetAll()
-                                .CountAsync(x => !x.IsDeleted, cancellationToken);
+            var query = request.Query;
 
-            var totalPages = (int)Math.Ceiling(totalItemsCount / (double)request.Query.Limit);
+            var filteredProductsQuery = _productRepository.GetAll()
+                .Where(x => !x.IsDeleted)
+                .Include(c => c.Categories)
+                .Include(o => o.Options)
+                .Include(p => p.Photos)
+                .AsQueryable();
 
-            var products = await _productRepository.GetAll()
-                                .Where(x => !x.IsDeleted)
-                                .Include(c => c.Categories)
-                                .Include(o => o.Options).Where(x => !x.IsDeleted)
-                                .Include(p => p.Photos)
-                                .Skip((request.Query.Page - 1) * request.Query.Limit)
-                                .Take(request.Query.Limit)
-                                .OrderByDescending(x => x.CreateAt)
-                                .ToArrayAsync(cancellationToken);
+            // TODO: Search By Name
+            if (!string.IsNullOrWhiteSpace(query.Name)) {
+                filteredProductsQuery = filteredProductsQuery
+                        .Where(n => n.Name.ToLower().Contains(query.Name.ToLower()));
+            }
+
+            // TODO: Search By Category
+            if (!string.IsNullOrEmpty(query.Category)) {
+                filteredProductsQuery = filteredProductsQuery.Where(c => c.Categories.Any(cat => cat.Name == query.Category));
+            }
+
+            // TODO: SortBy
+            if (!string.IsNullOrEmpty(query.SortBy) && priceLevels.TryGetValue(query.SortBy, out (int, int?) value)) {
+                var (minPrice, maxPrice) = value;
+                if (maxPrice.HasValue) {
+                    filteredProductsQuery = filteredProductsQuery.Where(p => p.Options.Any(o => o.Price >= minPrice && o.Price <= maxPrice));
+                } else {
+                    filteredProductsQuery = filteredProductsQuery.Where(p => p.Options.Any(o => o.Price > minPrice));
+                }
+            }
+
+            //  TODO: OrderBy
+            if (!string.IsNullOrEmpty(query.OrderBy)) {
+                filteredProductsQuery = query.OrderBy switch {
+                    "Alphabet" => filteredProductsQuery.OrderBy(n => n.Name),
+                    "ReverseAlphabet" => filteredProductsQuery.OrderByDescending(n => n.Name),
+                    "HighToLow" => filteredProductsQuery.OrderByDescending(o => o.Options.Max(p => p.Price)),
+                    "LowToHigh" => filteredProductsQuery.OrderBy(o => o.Options.Min(p => p.Price)),
+                    "Oldest" => filteredProductsQuery.OrderBy(p => p.CreateAt),
+                    "Lasted" => filteredProductsQuery.OrderByDescending(p => p.CreateAt),
+                    _ => filteredProductsQuery.OrderByDescending(p => p.CreateAt),
+                };
+            }
+
+            // TODO: Pagination
+
+            var totalItemsCount = await filteredProductsQuery.CountAsync(cancellationToken);
+            var totalPages = (int)Math.Ceiling(totalItemsCount / (double)query.Limit);
+
+            var products = await filteredProductsQuery
+                .Skip((query.Page - 1) * query.Limit)
+                .Take(query.Limit)
+                .OrderByDescending(x => x.CreateAt)
+                .ToListAsync(cancellationToken);
 
             var result = new PaginationResponse<List<ProductResponse>> {
-                CurrentPage = request.Query.Page,
+                CurrentPage = query.Page,
                 TotalPage = totalPages,
-                Items = request.Query.Limit,
+                Items = query.Limit,
                 TotalItems = totalItemsCount,
                 Result = _mapper.Map<List<ProductResponse>>(products)
             };
