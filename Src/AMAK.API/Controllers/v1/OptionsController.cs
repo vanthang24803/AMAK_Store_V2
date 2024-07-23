@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace AMAK.API.Controllers.v1 {
     [ApiVersion(1)]
-    [Authorize(Roles = $"{Role.ADMIN}, {Role.MANAGER}")]
+    [Authorize($"{Role.ADMIN}, {Role.MANAGER}")]
     [Route("api/v{version:apiVersion}/Products")]
 
     public class OptionsController : BaseController {

@@ -15,7 +15,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace AMAK.API.Controllers.v1 {
     [ApiVersion(1)]
-    [Authorize(Roles = $"{Role.ADMIN}, {Role.MANAGER}")]
+    [Authorize($"{Role.ADMIN}, {Role.MANAGER}")]
 
     public class ProductsController : BaseController {
         private readonly IMediator _mediator;
@@ -39,7 +39,6 @@ namespace AMAK.API.Controllers.v1 {
 
         [HttpGet]
         [Route("ExportExcel")]
-        [AllowAnonymous]
         public async Task<IActionResult> Export() {
             var result = await _mediator.Send(new ExportProductCommand());
 
@@ -63,6 +62,7 @@ namespace AMAK.API.Controllers.v1 {
 
         [HttpDelete]
         [Route("{id}")]
+        [Authorize($"{Role.ADMIN}")]
         public async Task<IActionResult> Delete(Guid id) {
             return Ok(await _mediator.Send(new DeleteProductCommand(id)));
         }
