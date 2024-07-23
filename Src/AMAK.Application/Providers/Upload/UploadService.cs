@@ -39,13 +39,21 @@ namespace AMAK.Application.Providers.Upload {
             return uploadResult;
         }
 
+        public async Task<DeletionResult> DeletePhotoAsync(string publicId) {
+            var deleteParams = new DeletionParams(publicId);
+
+            var actions = await _cloudinary.DestroyAsync(deleteParams);
+
+            return actions;
+        }
+
 
         private static bool ValidationFile(IFormFile file) {
             if (file.Length <= 0) {
                 throw new BadRequestException("File is required!");
             }
 
-            List<string> validExtensions = [".png", ".jpg", ".webp" , ".svg"];
+            List<string> validExtensions = [".png", ".jpg", ".webp", ".svg"];
 
             string extension = Path.GetExtension(file.FileName);
 
@@ -61,5 +69,7 @@ namespace AMAK.Application.Providers.Upload {
 
             return true;
         }
+
+
     }
 }

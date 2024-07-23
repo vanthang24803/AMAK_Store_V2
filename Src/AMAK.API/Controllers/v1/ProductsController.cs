@@ -14,7 +14,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace AMAK.API.Controllers.v1 {
     [ApiVersion(1)]
-    [Authorize(Roles = $"{StaticRole.ADMIN}, {StaticRole.MANAGER}")]
+    [Authorize(Roles = $"{Role.ADMIN}, {Role.MANAGER}")]
 
     public class ProductsController : BaseController {
         private readonly IMediator _mediator;
@@ -38,7 +38,7 @@ namespace AMAK.API.Controllers.v1 {
 
         [HttpPost]
         public async Task<IActionResult> Create([FromForm] CreateProductRequest request, IFormFile thumbnail) {
-            return Ok(await _mediator.Send(new CreateProductCommand(request, thumbnail)));
+            return StatusCode(StatusCodes.Status201Created, await _mediator.Send(new CreateProductCommand(request, thumbnail)));
         }
 
         [HttpPut]

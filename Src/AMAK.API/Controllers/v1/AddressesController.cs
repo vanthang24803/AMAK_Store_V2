@@ -23,12 +23,12 @@ namespace AMAK.API.Controllers.v1 {
 
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] AddressRequest request) {
-            return Ok(await _addressService.CreateAddressAsync(User, request));
+            return StatusCode(StatusCodes.Status201Created, await _addressService.CreateAddressAsync(User, request));
         }
 
         [HttpGet]
         [Route("Account/{id}")]
-        [Authorize(Roles = $"{StaticRole.MANAGER}, {StaticRole.ADMIN}")]
+        [Authorize(Roles = $"{Role.MANAGER}, {Role.ADMIN}")]
         public async Task<IActionResult> GetAddresses([FromRoute] string id, [FromQuery] BaseQuery query) {
             return Ok(await _addressService.GetAddressesUserAsync(id, query));
         }

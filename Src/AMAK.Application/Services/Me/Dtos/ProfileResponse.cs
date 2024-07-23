@@ -1,4 +1,3 @@
-
 namespace AMAK.Application.Services.Me.Dtos {
     public class ProfileResponse {
         public string FirstName { get; set; } = null!;

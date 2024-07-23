@@ -53,11 +53,11 @@ namespace AMAK.Application.Services.Authentication {
                 throw new BadRequestException("Wrong Data!");
             }
 
-            if (!await _roleManager.RoleExistsAsync(StaticRole.CUSTOMER)) {
+            if (!await _roleManager.RoleExistsAsync(Role.CUSTOMER)) {
                 throw new BadRequestException("Customer Role Not found!");
             }
 
-            await _userManager.AddToRoleAsync(newUser, StaticRole.CUSTOMER);
+            await _userManager.AddToRoleAsync(newUser, Role.CUSTOMER);
 
             var token = await _userManager.GenerateEmailConfirmationTokenAsync(newUser);
 
@@ -104,9 +104,9 @@ namespace AMAK.Application.Services.Authentication {
 
             var token = _tokenService.GenerateToken(existingUser, userRoles);
 
-            await _userManager.RemoveAuthenticationTokenAsync(existingUser, ProviderStatic.Account, TokenStatic.RefreshToken);
+            await _userManager.RemoveAuthenticationTokenAsync(existingUser, Provider.Account, Token.RefreshToken);
 
-            await _userManager.SetAuthenticationTokenAsync(existingUser, ProviderStatic.Account, TokenStatic.RefreshToken, token.RefreshToken);
+            await _userManager.SetAuthenticationTokenAsync(existingUser, Provider.Account, Token.RefreshToken, token.RefreshToken);
 
             return new Response<TokenResponse>(HttpStatusCode.OK, token);
         }
@@ -121,7 +121,7 @@ namespace AMAK.Application.Services.Authentication {
 
             var existingRoles = await _userManager.GetRolesAsync(existingUser);
 
-            var existingToken = await _userManager.GetAuthenticationTokenAsync(existingUser, ProviderStatic.Account, TokenStatic.RefreshToken)
+            var existingToken = await _userManager.GetAuthenticationTokenAsync(existingUser, Provider.Account, Token.RefreshToken)
                 ?? throw new NotFoundException("Token not found!");
 
             if (!existingToken.Equals(request.Token)) {
@@ -141,11 +141,11 @@ namespace AMAK.Application.Services.Authentication {
                 };
             } else {
 
-                await _userManager.RemoveAuthenticationTokenAsync(existingUser, ProviderStatic.Account, TokenStatic.RefreshToken);
+                await _userManager.RemoveAuthenticationTokenAsync(existingUser, Provider.Account, Token.RefreshToken);
 
                 var newRefreshToken = _tokenService.GenerateRefreshToken(existingUser, existingRoles);
 
-                await _userManager.SetAuthenticationTokenAsync(existingUser, ProviderStatic.Account, TokenStatic.RefreshToken, newRefreshToken);
+                await _userManager.SetAuthenticationTokenAsync(existingUser, Provider.Account, Token.RefreshToken, newRefreshToken);
 
                 tokenResponse = new TokenResponse() {
                     AccessToken = accessToken,
@@ -162,7 +162,7 @@ namespace AMAK.Application.Services.Authentication {
             var existingUser = await _userManager.GetUserAsync(claims)
                 ?? throw new NotFoundException("Account not found!");
 
-            await _userManager.RemoveAuthenticationTokenAsync(existingUser, ProviderStatic.Account, TokenStatic.RefreshToken);
+            await _userManager.RemoveAuthenticationTokenAsync(existingUser, Provider.Account, Token.RefreshToken);
 
 
             return new Response<string>(HttpStatusCode.OK, "Logout successfully!");
@@ -174,16 +174,16 @@ namespace AMAK.Application.Services.Authentication {
         }
 
         public async Task<string> CreateSeedRole() {
-            bool isOwnerRoleExists = await _roleManager.RoleExistsAsync(StaticRole.MANAGER);
-            bool isAdminRoleExists = await _roleManager.RoleExistsAsync(StaticRole.ADMIN);
-            bool isUserRoleExists = await _roleManager.RoleExistsAsync(StaticRole.CUSTOMER);
+            bool isOwnerRoleExists = await _roleManager.RoleExistsAsync(Role.MANAGER);
+            bool isAdminRoleExists = await _roleManager.RoleExistsAsync(Role.ADMIN);
+            bool isUserRoleExists = await _roleManager.RoleExistsAsync(Role.CUSTOMER);
 
             if (isOwnerRoleExists && isAdminRoleExists && isUserRoleExists) throw new BadRequestException("Roles Seeding is Already Done");
 
 
-            await _roleManager.CreateAsync(new IdentityRole(StaticRole.CUSTOMER));
-            await _roleManager.CreateAsync(new IdentityRole(StaticRole.ADMIN));
-            await _roleManager.CreateAsync(new IdentityRole(StaticRole.MANAGER));
+            await _roleManager.CreateAsync(new IdentityRole(Role.CUSTOMER));
+            await _roleManager.CreateAsync(new IdentityRole(Role.ADMIN));
+            await _roleManager.CreateAsync(new IdentityRole(Role.MANAGER));
 
             return "OK";
         }
@@ -218,7 +218,7 @@ namespace AMAK.Application.Services.Authentication {
         public async Task<Response<ProfileResponse>> UpgradeToManager(UpgradeRole upgrade) {
             var existingUser = await _userManager.FindByEmailAsync(upgrade.Email) ?? throw new NotFoundException("Account not found!");
 
-            await _userManager.AddToRoleAsync(existingUser, StaticRole.MANAGER);
+            await _userManager.AddToRoleAsync(existingUser, Role.MANAGER);
 
             var roles = await _userManager.GetRolesAsync(existingUser);
 
@@ -232,7 +232,7 @@ namespace AMAK.Application.Services.Authentication {
         public async Task<Response<ProfileResponse>> UpgradeToAdmin(UpgradeRole upgrade) {
             var existingUser = await _userManager.FindByEmailAsync(upgrade.Email) ?? throw new NotFoundException("Account not found!");
 
-            await _userManager.AddToRoleAsync(existingUser, StaticRole.ADMIN);
+            await _userManager.AddToRoleAsync(existingUser, Role.ADMIN);
 
             var roles = await _userManager.GetRolesAsync(existingUser);
 

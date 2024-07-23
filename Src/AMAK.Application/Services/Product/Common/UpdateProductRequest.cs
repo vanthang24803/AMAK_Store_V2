@@ -1,5 +1,4 @@
 using System.ComponentModel.DataAnnotations;
-using AMAK.Application.Services.Options.Dtos;
 
 namespace AMAK.Application.Services.Product.Common {
     public class UpdateProductRequest {
