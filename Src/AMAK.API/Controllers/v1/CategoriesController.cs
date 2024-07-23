@@ -12,7 +12,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace AMAK.API.Controllers.v1 {
     [ApiVersion(1)]
-    [Authorize(Roles = $"{StaticRole.ADMIN}, {StaticRole.MANAGER}")]
+    [Authorize(Roles = $"{Role.ADMIN}, {Role.MANAGER}")]
     public class CategoriesController : BaseController {
 
         private readonly IMediator _mediator;
@@ -39,7 +39,7 @@ namespace AMAK.API.Controllers.v1 {
         [HttpPost]
         public async Task<IActionResult> Save([FromBody] CategoryRequest request) {
             var command = new CreateCategoryCommand(request);
-            return Ok(await _mediator.Send(command));
+            return StatusCode(StatusCodes.Status201Created, await _mediator.Send(command));
         }
 
         [HttpPut]

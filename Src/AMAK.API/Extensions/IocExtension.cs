@@ -9,6 +9,7 @@ using AMAK.Application.Services.Me;
 using AMAK.Application.Providers.Upload;
 using AMAK.Application.Services.Address;
 using AMAK.Application.Services.Options;
+using AMAK.Application.Services.Photo;
 
 namespace AMAK.API.Common.Extensions {
     public static class IocExtension {
@@ -24,6 +25,7 @@ namespace AMAK.API.Common.Extensions {
             services.AddScoped<IMeService, MeService>();
             services.AddScoped<IAddressService, AddressService>();
             services.AddScoped<IOptionsService, OptionService>();
+            services.AddScoped<IPhotoService, PhotoService>();
 
             services.AddSingleton<IUploadService, UploadService>();
             services.AddSingleton<IMailService, MailService>();

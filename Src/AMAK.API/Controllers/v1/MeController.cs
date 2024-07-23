@@ -32,7 +32,7 @@ namespace AMAK.API.Controllers.v1 {
         [Route("Avatar")]
 
         public async Task<IActionResult> UploadAvatar(IFormFile avatar) {
-            return Ok(await _meService.UploadAvatarAsync(HttpContext.User, avatar));
+            return StatusCode(StatusCodes.Status201Created, await _meService.UploadAvatarAsync(HttpContext.User, avatar));
         }
 
         [HttpPut]

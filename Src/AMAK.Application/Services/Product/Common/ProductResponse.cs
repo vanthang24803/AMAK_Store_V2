@@ -1,13 +1,14 @@
 using AMAK.Application.Services.Categories.Common;
 using AMAK.Application.Services.Options.Dtos;
+using AMAK.Application.Services.Photo.Dtos;
 
 namespace AMAK.Application.Services.Product.Common {
-    public class ProductResponse {
-        public Guid Id { get; set; }
-        public string Name { get; set; } = null!;
-        public string? Brand {get; set; }
-        public List<CategoryResponse> Categories { get; set; } = [];
-        public List<OptionResponse> Options { get; set; } = [];
-        public DateTime CreateAt { get; set; }
-    }
+    public record ProductResponse(
+        Guid Id,
+        string Name,
+        string? Brand,
+        List<CategoryResponse> Categories,
+        List<OptionResponse> Options,
+        List<PhotoResponse> Photos,
+        DateTime CreateAt);
 }

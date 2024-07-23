@@ -26,6 +26,7 @@ namespace AMAK.Application.Services.Options {
 
             var newOption = _mapper.Map<Domain.Models.Option>(request);
 
+            newOption.Id = Guid.NewGuid();
             newOption.ProductId = existingProduct.Id;
 
             _optionRepository.Add(newOption);

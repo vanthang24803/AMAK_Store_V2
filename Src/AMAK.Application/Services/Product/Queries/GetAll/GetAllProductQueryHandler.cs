@@ -26,6 +26,7 @@ namespace AMAK.Application.Services.Product.Queries.GetAll {
                                 .Where(x => !x.IsDeleted)
                                 .Include(c => c.Categories)
                                 .Include(o => o.Options).Where(x => !x.IsDeleted)
+                                .Include(p => p.Photos)
                                 .Skip((request.Query.Page - 1) * request.Query.Limit)
                                 .Take(request.Query.Limit)
                                 .OrderByDescending(x => x.CreateAt)

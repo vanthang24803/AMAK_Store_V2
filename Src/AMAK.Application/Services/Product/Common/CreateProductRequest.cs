@@ -25,5 +25,4 @@ namespace AMAK.Application.Services.Product.Common {
         public Guid Id { get; set; }
     }
 
-
 }

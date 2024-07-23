@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace AMAK.API.Controllers.v1 {
     [ApiVersion(1)]
-    [Authorize(Roles = $"{StaticRole.ADMIN}, {StaticRole.MANAGER}")]
+    [Authorize(Roles = $"{Role.ADMIN}, {Role.MANAGER}")]
     [Route("api/v{version:apiVersion}/Products")]
 
     public class OptionsController : BaseController {
@@ -27,7 +27,7 @@ namespace AMAK.API.Controllers.v1 {
         [HttpPost]
         [Route("{productId}/[controller]")]
         public async Task<IActionResult> Save([FromRoute] Guid productId, [FromBody] OptionRequest request) {
-            return Ok(await _optionsService.CreateAsync(productId, request));
+            return StatusCode(StatusCodes.Status201Created, await _optionsService.CreateAsync(productId, request));
         }
 
         [HttpGet]

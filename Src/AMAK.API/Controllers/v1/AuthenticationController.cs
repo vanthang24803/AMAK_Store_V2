@@ -87,14 +87,14 @@ namespace AMAK.API.Controllers.v1 {
 
         [HttpPost]
         [Route("Upgrade/Manager")]
-        [Authorize(Roles = $"{StaticRole.ADMIN}")]
+        [Authorize(Roles = $"{Role.ADMIN}")]
         public async Task<IActionResult> UpgradeManager([FromBody] UpgradeRole upgradeRole) {
             return Ok(await _authService.UpgradeToManager(upgradeRole));
         }
 
         [HttpPost]
         [Route("Upgrade/Admin")]
-        [Authorize(Roles = $"{StaticRole.ADMIN}")]
+        [Authorize(Roles = $"{Role.ADMIN}")]
         public async Task<IActionResult> UpgradeAdmin([FromBody] UpgradeRole upgradeRole) {
             return Ok(await _authService.UpgradeToAdmin(upgradeRole));
         }
