@@ -7,6 +7,8 @@ namespace AMAK.Application.Services.Product.Common {
         Guid Id,
         string Name,
         string? Brand,
+        string Thumbnail,
+        long Sold,
         List<CategoryResponse> Categories,
         List<OptionResponse> Options,
         List<PhotoResponse> Photos,

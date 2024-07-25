@@ -22,6 +22,8 @@ namespace AMAK.Application.Services.Authentication {
         Task<Response<ProfileResponse>> UpgradeToManager(UpgradeRole upgrade);
         Task<Response<ProfileResponse>> UpgradeToAdmin(UpgradeRole upgrade);
 
+        Task<Response<TokenResponse>> SignInWithGoogle(SocialLoginRequest request);
+
         Task<string> CreateSeedRole();
         Task<List<IdentityRole>> GetRoles();
     }

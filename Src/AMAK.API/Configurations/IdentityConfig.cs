@@ -9,6 +9,10 @@ namespace AMAK.API.Configurations {
                     .AddEntityFrameworkStores<ApplicationDbContext>()
                     .AddDefaultTokenProviders();
 
+            services.Configure<DataProtectionTokenProviderOptions>(options => {
+                options.TokenLifespan = TimeSpan.FromMinutes(10);
+            });
+
             return services;
         }
     }
