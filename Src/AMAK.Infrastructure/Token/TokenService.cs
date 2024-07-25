@@ -29,7 +29,7 @@ namespace AMAK.Infrastructure.Token {
         public string GenerateAccessToken(ApplicationUser user, IList<string> roles) {
             var payload = ClaimsPayload(user, roles);
 
-            return GenerateToken(payload, _authSecret, DateTime.Now.AddDays(1));
+            return GenerateToken(payload, _authSecret, DateTime.Now.AddMinutes(10));
         }
 
         public string GenerateRefreshToken(ApplicationUser user, IList<string> roles) {

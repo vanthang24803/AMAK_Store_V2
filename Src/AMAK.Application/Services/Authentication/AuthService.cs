@@ -11,6 +11,8 @@ using Microsoft.EntityFrameworkCore;
 using System.Net;
 using System.Security.Claims;
 using AMAK.Application.Services.Me.Dtos;
+using System.IdentityModel.Tokens.Jwt;
+using Newtonsoft.Json.Linq;
 
 namespace AMAK.Application.Services.Authentication {
     public class AuthService : IAuthService {
@@ -53,6 +55,7 @@ namespace AMAK.Application.Services.Authentication {
                 throw new BadRequestException("Wrong Data!");
             }
 
+
             if (!await _roleManager.RoleExistsAsync(Role.CUSTOMER)) {
                 throw new BadRequestException("Customer Role Not found!");
             }
@@ -91,7 +94,7 @@ namespace AMAK.Application.Services.Authentication {
             var existingUser = await _userManager.FindByEmailAsync(request.Email) ?? throw new NotFoundException("Account not found!");
 
             if (!existingUser.EmailConfirmed) {
-                throw new BadRequestException("Account not verify email!");
+                throw new ForbiddenException();
             }
 
             var isPasswordCorrect = await _userManager.CheckPasswordAsync(existingUser, request.Password);
@@ -163,8 +166,6 @@ namespace AMAK.Application.Services.Authentication {
                 ?? throw new NotFoundException("Account not found!");
 
             await _userManager.RemoveAuthenticationTokenAsync(existingUser, Provider.Account, Token.RefreshToken);
-
-
             return new Response<string>(HttpStatusCode.OK, "Logout successfully!");
         }
 
@@ -241,6 +242,86 @@ namespace AMAK.Application.Services.Authentication {
             response.Roles = roles;
 
             return new Response<ProfileResponse>(HttpStatusCode.OK, response);
+        }
+
+        public async Task<Response<TokenResponse>> SignInWithGoogle(SocialLoginRequest request) {
+
+            var decoded = DecodeJwtToken(request.Token);
+
+            if (!decoded.Provider.Equals(Provider.Google)) {
+                throw new BadRequestException("Provider not suitable!");
+            }
+
+            var existingAccount = await _userManager.FindByEmailAsync(decoded.Email);
+
+            if (existingAccount == null) {
+                var newAccount = new ApplicationUser() {
+                    Email = decoded.Email,
+                    Avatar = decoded.Avatar,
+                    FirstName = string.Empty,
+                    LastName = decoded.Name,
+                    UserName = decoded.Email,
+                    EmailConfirmed = true,
+                };
+
+                var createUserResult = await _userManager.CreateAsync(newAccount);
+
+                if (!createUserResult.Succeeded) {
+                    throw new BadRequestException("Wrong data!");
+                }
+
+                if (!await _roleManager.RoleExistsAsync(Role.CUSTOMER)) {
+                    throw new BadRequestException("Customer Role Not found!");
+                }
+
+                await _userManager.AddToRoleAsync(newAccount, Role.CUSTOMER);
+
+                var token = await GenerateAndSetTokensAsync(newAccount);
+
+                return new Response<TokenResponse>(HttpStatusCode.OK, token);
+            } else {
+
+                var token = await GenerateAndSetTokensAsync(existingAccount);
+
+                return new Response<TokenResponse>(HttpStatusCode.OK, token);
+            }
+        }
+
+        private async Task<TokenResponse> GenerateAndSetTokensAsync(ApplicationUser account) {
+            var roles = await _userManager.GetRolesAsync(account);
+
+            var token = _tokenService.GenerateToken(account, roles);
+
+            await _userManager.RemoveAuthenticationTokenAsync(account, Provider.Account, Token.RefreshToken);
+
+            await _userManager.SetAuthenticationTokenAsync(account, Provider.Account, Token.RefreshToken, token.RefreshToken);
+
+            return token;
+        }
+
+        private static SocialRequest DecodeJwtToken(string token) {
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var jwtToken = tokenHandler.ReadJwtToken(token);
+
+            var exp = jwtToken.Payload.Claims.First(x => x.Type == "exp").Value;
+
+            DateTimeOffset expTime = DateTimeOffset.FromUnixTimeSeconds(long.Parse(exp));
+
+            if (expTime < DateTime.UtcNow) {
+                throw new BadRequestException("Token is expires!");
+            }
+
+            var firebaseClaimValue = jwtToken.Payload.Claims.First(c => c.Type == "firebase").Value;
+
+            var firebase = JObject.Parse(firebaseClaimValue);
+            var provider = (firebase["sign_in_provider"]?.ToString()) ?? throw new BadRequestException("Provider is null");
+
+            return new SocialRequest(
+                jwtToken.Payload.Claims.First(c => c.Type == "email").Value,
+                jwtToken.Payload.Claims.First(c => c.Type == "name").Value,
+                jwtToken.Payload.Claims.First(c => c.Type == "picture").Value,
+                provider
+               );
         }
     }
 }

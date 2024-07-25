@@ -11,6 +11,9 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddSwaggerGen()
                 .AddEndpointsApiExplorer();
 
+// TODO: Cors
+builder.Services.AddCorsConfig();
+
 // TODO: Controller
 builder.Services.AddControllers();
 
@@ -42,8 +45,7 @@ builder.Services.AddProviders(builder.Configuration);
 // TODO: CQRS
 builder.Services.AddCQRS();
 
-// TODO: Cors
-builder.Services.AddCorsConfig();
+
 
 var app = builder.Build();
 
@@ -53,6 +55,7 @@ if (app.Environment.IsDevelopment()) {
     app.UseSwaggerUI();
 }
 
+app.UseCors("_myAllowSpecificOrigins");
 app.UseHttpsRedirection();
 app.AddMiddleware();
 app.UseAuthentication();

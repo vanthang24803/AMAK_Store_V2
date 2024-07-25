@@ -1,16 +1,19 @@
+using System.IdentityModel.Tokens.Jwt;
 using AMAK.Application.Common.Constants;
 using AMAK.Application.Services.Authentication;
 using AMAK.Application.Services.Authentication.Dtos;
 using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json.Linq;
 
 namespace AMAK.API.Controllers.v1 {
     [ApiVersion(1)]
     [Authorize]
     public class AuthenticationController : BaseController {
-
         private readonly IAuthService _authService;
+
+
 
         public AuthenticationController(IAuthService authService) {
             _authService = authService;
@@ -99,5 +102,12 @@ namespace AMAK.API.Controllers.v1 {
             return Ok(await _authService.UpgradeToAdmin(upgradeRole));
         }
 
+        [HttpPost]
+        [Route("Google")]
+        [AllowAnonymous]
+
+        public async Task<IActionResult> LoginWithGoogle([FromBody] SocialLoginRequest social) {
+            return Ok(await _authService.SignInWithGoogle(social));
+        }
     }
 }

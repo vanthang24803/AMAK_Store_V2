@@ -3,6 +3,7 @@ namespace AMAK.Application.Services.Options.Dtos {
         Guid Id,
         string Name,
         int Sale,
+        double Price,
         double Quantity,
         bool IsActive,
         DateTime CreateAt);
