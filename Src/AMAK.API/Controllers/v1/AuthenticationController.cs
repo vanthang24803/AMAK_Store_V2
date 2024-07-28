@@ -1,19 +1,15 @@
-using System.IdentityModel.Tokens.Jwt;
 using AMAK.Application.Common.Constants;
 using AMAK.Application.Services.Authentication;
 using AMAK.Application.Services.Authentication.Dtos;
 using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json.Linq;
 
 namespace AMAK.API.Controllers.v1 {
     [ApiVersion(1)]
     [Authorize]
     public class AuthenticationController : BaseController {
         private readonly IAuthService _authService;
-
-
 
         public AuthenticationController(IAuthService authService) {
             _authService = authService;
@@ -61,8 +57,8 @@ namespace AMAK.API.Controllers.v1 {
 
         [HttpPost]
         [Route("Logout")]
-        public async Task<IActionResult> Logout() {
-            return Ok(await _authService.LogoutAsync(HttpContext.User));
+        public async Task<IActionResult> Logout([FromBody] TokenRequest request) {
+            return Ok(await _authService.LogoutAsync(HttpContext.User, request));
         }
 
         [HttpGet]

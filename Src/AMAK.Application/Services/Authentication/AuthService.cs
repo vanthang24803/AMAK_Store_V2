@@ -11,8 +11,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Net;
 using System.Security.Claims;
 using AMAK.Application.Services.Me.Dtos;
-using System.IdentityModel.Tokens.Jwt;
-using Newtonsoft.Json.Linq;
+
 
 namespace AMAK.Application.Services.Authentication {
     public class AuthService : IAuthService {
@@ -84,7 +83,7 @@ namespace AMAK.Application.Services.Authentication {
                 throw new UnauthorizedException();
             }
 
-            var response = _tokenService.GenerateToken(existingUser, roles);
+            var response = _tokenService.GenerateToken(existingUser, roles, Provider.Account);
 
             return new Response<TokenResponse>(HttpStatusCode.OK, response);
         }
@@ -105,7 +104,7 @@ namespace AMAK.Application.Services.Authentication {
 
             var userRoles = await _userManager.GetRolesAsync(existingUser);
 
-            var token = _tokenService.GenerateToken(existingUser, userRoles);
+            var token = _tokenService.GenerateToken(existingUser, userRoles, Provider.Account);
 
             await _userManager.RemoveAuthenticationTokenAsync(existingUser, Provider.Account, Token.RefreshToken);
 
@@ -124,14 +123,16 @@ namespace AMAK.Application.Services.Authentication {
 
             var existingRoles = await _userManager.GetRolesAsync(existingUser);
 
-            var existingToken = await _userManager.GetAuthenticationTokenAsync(existingUser, Provider.Account, Token.RefreshToken)
+            var provider = decode["provider"].ToString()!;
+
+            var existingToken = await _userManager.GetAuthenticationTokenAsync(existingUser, provider, Token.RefreshToken)
                 ?? throw new NotFoundException("Token not found!");
 
             if (!existingToken.Equals(request.Token)) {
                 throw new BadRequestException("Token doesn't match!");
             }
 
-            var accessToken = _tokenService.GenerateAccessToken(existingUser, existingRoles);
+            var accessToken = _tokenService.GenerateAccessToken(existingUser, existingRoles, provider);
 
             var exp = DateTimeOffset.FromUnixTimeSeconds((long)decode.Expiration!).UtcDateTime;
 
@@ -144,11 +145,11 @@ namespace AMAK.Application.Services.Authentication {
                 };
             } else {
 
-                await _userManager.RemoveAuthenticationTokenAsync(existingUser, Provider.Account, Token.RefreshToken);
+                await _userManager.RemoveAuthenticationTokenAsync(existingUser, provider, Token.RefreshToken);
 
-                var newRefreshToken = _tokenService.GenerateRefreshToken(existingUser, existingRoles);
+                var newRefreshToken = _tokenService.GenerateRefreshToken(existingUser, existingRoles, provider);
 
-                await _userManager.SetAuthenticationTokenAsync(existingUser, Provider.Account, Token.RefreshToken, newRefreshToken);
+                await _userManager.SetAuthenticationTokenAsync(existingUser, provider, Token.RefreshToken, newRefreshToken);
 
                 tokenResponse = new TokenResponse() {
                     AccessToken = accessToken,
@@ -159,13 +160,20 @@ namespace AMAK.Application.Services.Authentication {
             return new Response<TokenResponse>(HttpStatusCode.OK, tokenResponse);
         }
 
+        public async Task<Response<string>> LogoutAsync(ClaimsPrincipal claims, TokenRequest request) {
 
-        public async Task<Response<string>> LogoutAsync(ClaimsPrincipal claims) {
+            var decode = _tokenService.DecodeAccessToken(request.Token);
+
+            var provider = decode["provider"].ToString()!;
 
             var existingUser = await _userManager.GetUserAsync(claims)
                 ?? throw new NotFoundException("Account not found!");
 
-            await _userManager.RemoveAuthenticationTokenAsync(existingUser, Provider.Account, Token.RefreshToken);
+            if (!existingUser.Id.Equals(decode.Sub)) {
+                throw new BadRequestException("Token is not valid!");
+            }
+
+            await _userManager.RemoveAuthenticationTokenAsync(existingUser, provider, Token.RefreshToken);
             return new Response<string>(HttpStatusCode.OK, "Logout successfully!");
         }
 
@@ -246,7 +254,7 @@ namespace AMAK.Application.Services.Authentication {
 
         public async Task<Response<TokenResponse>> SignInWithGoogle(SocialLoginRequest request) {
 
-            var decoded = DecodeJwtToken(request.Token);
+            var decoded = _tokenService.DecodeSocialToken(request.Token);
 
             if (!decoded.Provider.Equals(Provider.Google)) {
                 throw new BadRequestException("Provider not suitable!");
@@ -276,52 +284,28 @@ namespace AMAK.Application.Services.Authentication {
 
                 await _userManager.AddToRoleAsync(newAccount, Role.CUSTOMER);
 
-                var token = await GenerateAndSetTokensAsync(newAccount);
+                var token = await GenerateAndSetTokensAsync(newAccount, Provider.Google);
 
                 return new Response<TokenResponse>(HttpStatusCode.OK, token);
             } else {
 
-                var token = await GenerateAndSetTokensAsync(existingAccount);
+                var token = await GenerateAndSetTokensAsync(existingAccount, Provider.Google);
 
                 return new Response<TokenResponse>(HttpStatusCode.OK, token);
             }
         }
 
-        private async Task<TokenResponse> GenerateAndSetTokensAsync(ApplicationUser account) {
+        private async Task<TokenResponse> GenerateAndSetTokensAsync(ApplicationUser account, string provider) {
             var roles = await _userManager.GetRolesAsync(account);
 
-            var token = _tokenService.GenerateToken(account, roles);
+            var token = _tokenService.GenerateToken(account, roles, provider);
 
-            await _userManager.RemoveAuthenticationTokenAsync(account, Provider.Account, Token.RefreshToken);
+            await _userManager.RemoveAuthenticationTokenAsync(account, provider, Token.RefreshToken);
 
-            await _userManager.SetAuthenticationTokenAsync(account, Provider.Account, Token.RefreshToken, token.RefreshToken);
+            await _userManager.SetAuthenticationTokenAsync(account, provider, Token.RefreshToken, token.RefreshToken);
 
             return token;
         }
 
-        private static SocialRequest DecodeJwtToken(string token) {
-            var tokenHandler = new JwtSecurityTokenHandler();
-            var jwtToken = tokenHandler.ReadJwtToken(token);
-
-            var exp = jwtToken.Payload.Claims.First(x => x.Type == "exp").Value;
-
-            DateTimeOffset expTime = DateTimeOffset.FromUnixTimeSeconds(long.Parse(exp));
-
-            if (expTime < DateTime.UtcNow) {
-                throw new BadRequestException("Token is expires!");
-            }
-
-            var firebaseClaimValue = jwtToken.Payload.Claims.First(c => c.Type == "firebase").Value;
-
-            var firebase = JObject.Parse(firebaseClaimValue);
-            var provider = (firebase["sign_in_provider"]?.ToString()) ?? throw new BadRequestException("Provider is null");
-
-            return new SocialRequest(
-                jwtToken.Payload.Claims.First(c => c.Type == "email").Value,
-                jwtToken.Payload.Claims.First(c => c.Type == "name").Value,
-                jwtToken.Payload.Claims.First(c => c.Type == "picture").Value,
-                provider
-               );
-        }
     }
 }
