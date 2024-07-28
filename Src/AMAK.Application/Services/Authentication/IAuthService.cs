@@ -14,7 +14,7 @@ namespace AMAK.Application.Services.Authentication {
 
         Task<Response<TokenResponse>> VerifyAccountAsync(string userId, string token);
 
-        Task<Response<string>> LogoutAsync(ClaimsPrincipal claims);
+        Task<Response<string>> LogoutAsync(ClaimsPrincipal claims, TokenRequest token);
 
         Task<Response<string>> ResetPasswordAsync(string userId, string token, ResetPasswordRequest request);
         Task<Response<string>> ForgotPasswordAsync(ForgotPasswordRequest request);

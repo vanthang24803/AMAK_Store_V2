@@ -4,9 +4,11 @@ using AMAK.Domain.Models;
 
 namespace AMAK.Application.Interfaces {
     public interface ITokenService {
-        TokenResponse GenerateToken(ApplicationUser user, IList<string> roles);
+        TokenResponse GenerateToken(ApplicationUser user, IList<string> roles, string provider);
         JwtPayload DecodeRefreshToken(string token);
-        string GenerateAccessToken(ApplicationUser user, IList<string> roles);
-        string GenerateRefreshToken(ApplicationUser user, IList<string> roles);
+        JwtPayload DecodeAccessToken(string token);
+        SocialRequest DecodeSocialToken(string token);
+        string GenerateAccessToken(ApplicationUser user, IList<string> roles, string provider);
+        string GenerateRefreshToken(ApplicationUser user, IList<string> roles, string provider);
     }
 }

@@ -1,5 +1,6 @@
 using AMAK.Application.Services.Address.Dtos;
 using AMAK.Application.Services.Authentication.Dtos;
+using AMAK.Application.Services.Billboard.Dtos;
 using AMAK.Application.Services.Categories.Common;
 using AMAK.Application.Services.Me.Dtos;
 using AMAK.Application.Services.Options.Dtos;
@@ -19,6 +20,7 @@ namespace AMAK.Application.Mapper {
             CreateMap<Product, ProductDetailResponse>();
             CreateMap<Option, OptionResponse>();
             CreateMap<Photo, PhotoResponse>();
+            CreateMap<Billboard, BillboardResponse>();
         }
     }
 }

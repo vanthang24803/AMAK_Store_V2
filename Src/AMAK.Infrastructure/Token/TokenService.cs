@@ -7,6 +7,7 @@ using AMAK.Application.Services.Authentication.Dtos;
 using AMAK.Domain.Models;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
+using Newtonsoft.Json.Linq;
 
 namespace AMAK.Infrastructure.Token {
     public class TokenService : ITokenService {
@@ -26,22 +27,22 @@ namespace AMAK.Infrastructure.Token {
             ));
         }
 
-        public string GenerateAccessToken(ApplicationUser user, IList<string> roles) {
-            var payload = ClaimsPayload(user, roles);
+        public string GenerateAccessToken(ApplicationUser user, IList<string> roles, string provider) {
+            var payload = ClaimsPayload(user, roles, provider);
 
             return GenerateToken(payload, _authSecret, DateTime.Now.AddMinutes(10));
         }
 
-        public string GenerateRefreshToken(ApplicationUser user, IList<string> roles) {
-            var payload = ClaimsPayload(user, roles);
+        public string GenerateRefreshToken(ApplicationUser user, IList<string> roles, string provider) {
+            var payload = ClaimsPayload(user, roles, provider);
 
             return GenerateToken(payload, _refreshSecret, DateTime.Now.AddMonths(1));
 
         }
 
-        public TokenResponse GenerateToken(ApplicationUser user, IList<string> roles) {
-            var ac_token = this.GenerateAccessToken(user, roles);
-            var rf_token = this.GenerateRefreshToken(user, roles); ;
+        public TokenResponse GenerateToken(ApplicationUser user, IList<string> roles, string provider) {
+            var ac_token = this.GenerateAccessToken(user, roles, provider);
+            var rf_token = this.GenerateRefreshToken(user, roles, provider);
 
             return new TokenResponse() {
                 AccessToken = ac_token,
@@ -49,13 +50,14 @@ namespace AMAK.Infrastructure.Token {
             };
         }
 
-        private static List<Claim> ClaimsPayload(ApplicationUser user, IList<string> roles) {
+        private static List<Claim> ClaimsPayload(ApplicationUser user, IList<string> roles, string provider) {
 
             var claims = new List<Claim>() {
                 new(JwtRegisteredClaimNames.Sub, user.Id),
                 new(ClaimTypes.NameIdentifier, user.Id.ToString()),
                 new(JwtRegisteredClaimNames.Email, user.Email!),
                 new(JwtRegisteredClaimNames.Name, $"{user.FirstName} {user.LastName}"),
+                new("provider", provider)
             };
 
             foreach (var role in roles) {
@@ -81,6 +83,10 @@ namespace AMAK.Infrastructure.Token {
 
         public JwtPayload DecodeRefreshToken(string token) {
             return this.DecodeToken(token, _refreshSecret, false);
+        }
+
+        public JwtPayload DecodeAccessToken(string token) {
+            return this.DecodeToken(token, _authSecret);
         }
 
 
@@ -109,5 +115,32 @@ namespace AMAK.Infrastructure.Token {
                 throw new UnauthorizedException();
             }
         }
+
+        public SocialRequest DecodeSocialToken(string token) {
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var jwtToken = tokenHandler.ReadJwtToken(token);
+
+            var exp = jwtToken.Payload.Claims.First(x => x.Type == "exp").Value;
+
+            DateTimeOffset expTime = DateTimeOffset.FromUnixTimeSeconds(long.Parse(exp));
+
+            if (expTime < DateTime.UtcNow) {
+                throw new BadRequestException("Token is expires!");
+            }
+
+            var firebaseClaimValue = jwtToken.Payload.Claims.First(c => c.Type == "firebase").Value;
+
+            var firebase = JObject.Parse(firebaseClaimValue);
+            var provider = (firebase["sign_in_provider"]?.ToString()) ?? throw new BadRequestException("Provider is null");
+
+            return new SocialRequest(
+                jwtToken.Payload.Claims.First(c => c.Type == "email").Value,
+                jwtToken.Payload.Claims.First(c => c.Type == "name").Value,
+                jwtToken.Payload.Claims.First(c => c.Type == "picture").Value,
+                provider
+               );
+        }
+
+
     }
 }
