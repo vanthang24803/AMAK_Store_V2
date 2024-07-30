@@ -6,6 +6,7 @@ using AMAK.Application.Services.Me.Dtos;
 using AMAK.Application.Services.Options.Dtos;
 using AMAK.Application.Services.Photo.Dtos;
 using AMAK.Application.Services.Product.Common;
+using AMAK.Application.Services.Review.Dtos;
 using AMAK.Domain.Models;
 using AutoMapper;
 
@@ -16,11 +17,12 @@ namespace AMAK.Application.Mapper {
             CreateMap<ApplicationUser, ProfileResponse>();
             CreateMap<Address, AddressResponse>();
             CreateMap<Domain.Models.Category, CategoryResponse>();
-            CreateMap<Product, ProductResponse>();
-            CreateMap<Product, ProductDetailResponse>();
+            CreateMap<Domain.Models.Product, ProductResponse>();
+            CreateMap<Domain.Models.Product, ProductDetailResponse>();
             CreateMap<Option, OptionResponse>();
             CreateMap<Photo, PhotoResponse>();
             CreateMap<Billboard, BillboardResponse>();
+            CreateMap<Review, ReviewResponse>();
         }
     }
 }
