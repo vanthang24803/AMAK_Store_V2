@@ -1,3 +1,4 @@
+using AMAK.Application.Common.Exceptions;
 using AMAK.Application.Common.Helpers;
 using AMAK.Application.Interfaces;
 using AMAK.Application.Services.Product.Common;
@@ -78,7 +79,6 @@ namespace AMAK.Application.Services.Product.Queries.GetAll {
             var products = await filteredProductsQuery
                 .Skip((query.Page - 1) * query.Limit)
                 .Take(query.Limit)
-                .OrderByDescending(x => x.CreateAt)
                 .ToListAsync(cancellationToken);
 
             var result = new PaginationResponse<List<ProductResponse>> {

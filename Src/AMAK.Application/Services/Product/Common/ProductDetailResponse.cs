@@ -7,6 +7,8 @@ namespace AMAK.Application.Services.Product.Common {
     public record class ProductDetailResponse(
         Guid Id,
         string Name,
+        string Brand,
+        string Thumbnail,
         long Sold,
         string? Introduction,
         string? Specifications,
