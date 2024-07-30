@@ -1,4 +1,3 @@
-using AMAK.Application.Common.Exceptions;
 using AMAK.Application.Common.Helpers;
 using AMAK.Application.Interfaces;
 using AMAK.Application.Services.Product.Common;
@@ -55,6 +54,17 @@ namespace AMAK.Application.Services.Product.Queries.GetAll {
                     filteredProductsQuery = filteredProductsQuery.Where(p => p.Options.Any(o => o.Price >= minPrice && o.Price <= maxPrice));
                 } else {
                     filteredProductsQuery = filteredProductsQuery.Where(p => p.Options.Any(o => o.Price > minPrice));
+                }
+            }
+
+            // TODO: Action
+            if (!string.IsNullOrEmpty(query.Action)) {
+                if (query.Action == "Top-selling") {
+                    filteredProductsQuery = filteredProductsQuery.OrderByDescending(p => p.Sold);
+                }
+                if (query.Action == "OnSale") {
+                    filteredProductsQuery = filteredProductsQuery
+                        .Where(p => p.Options.Any(o => o.Sale > 10));
                 }
             }
 
