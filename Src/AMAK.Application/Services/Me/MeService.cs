@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Http;
 using AMAK.Application.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using AMAK.Application.Services.Address.Dtos;
+using AMAK.Domain.Enums;
 
 namespace AMAK.Application.Services.Me {
     public class MeService : IMeService {
@@ -18,14 +19,26 @@ namespace AMAK.Application.Services.Me {
         private readonly IMapper _mapper;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IUploadService _uploadService;
-
         private readonly IRepository<Domain.Models.Address> _addressRepository;
+        private readonly IRepository<Domain.Models.Order> _orderRepository;
+        private readonly Dictionary<(double, double?), string> rank;
 
-        public MeService(IMapper mapper, UserManager<ApplicationUser> userManager, IUploadService uploadService, IRepository<Domain.Models.Address> addressRepository) {
+
+        public MeService(IMapper mapper, UserManager<ApplicationUser> userManager, IUploadService uploadService, IRepository<Domain.Models.Address> addressRepository, IRepository<Domain.Models.Order> orderRepository) {
             _mapper = mapper;
             _userManager = userManager;
             _uploadService = uploadService;
             _addressRepository = addressRepository;
+            _orderRepository = orderRepository;
+
+            rank = new Dictionary<(double, double?), string>()
+            {
+                { (0 , 100000), "Bronze" },
+                { (100000, 500000),"Silver" },
+                { (500000 , 1500000),"Gold" },
+                { (1500000 , 3500000),"Platinum" },
+                { (3500000, null),"Diamond" }
+            };
         }
 
         public async Task<Response<ProfileResponse>> GetProfileAsync(ClaimsPrincipal claims) {
@@ -39,7 +52,23 @@ namespace AMAK.Application.Services.Me {
 
             var response = _mapper.Map<ProfileResponse>(existingUser);
 
+            var totalOrder = await _orderRepository.GetAll()
+                .Where(x => x.UserId == existingUser.Id && !x.IsDeleted)
+                .CountAsync();
+
+            var orderProcessing = await _orderRepository.GetAll()
+                .Where(x => x.UserId == existingUser.Id && !x.IsDeleted && !x.Status.Equals(EOrderStatus.SUCCESS))
+                .CountAsync();
+
+            var totalPrice = await _orderRepository.GetAll()
+                    .Where(x => x.UserId == existingUser.Id && !x.IsDeleted && x.Status.Equals(EOrderStatus.SUCCESS))
+                    .SumAsync(x => x.TotalPrice);
+
             response.Roles = roles;
+            response.TotalOrder = totalOrder;
+            response.ProcessOrder = orderProcessing;
+            response.TotalPrice = totalPrice;
+            response.Rank = GetRank(totalPrice);
             response.Addresses = _mapper.Map<List<AddressResponse>>(addresses);
 
             return new Response<ProfileResponse>(HttpStatusCode.OK, response);
@@ -106,6 +135,16 @@ namespace AMAK.Application.Services.Me {
             response.Roles = roles;
 
             return new Response<ProfileResponse>(HttpStatusCode.OK, response);
+        }
+
+        private string GetRank(double totalPrice) {
+            var rankThreshold = rank.Keys.LastOrDefault(k => k.Item1 <= totalPrice && (k.Item2 == null || k.Item2 >= totalPrice));
+
+            if (!rankThreshold.Equals(default((double, double?)))) {
+                return rank[rankThreshold];
+            } else {
+                return string.Empty;
+            }
         }
     }
 }
