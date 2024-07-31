@@ -8,6 +8,9 @@ using System.Net;
 using Microsoft.AspNetCore.Identity;
 using AMAK.Application.Providers.Upload;
 using Microsoft.AspNetCore.Http;
+using AMAK.Application.Interfaces;
+using Microsoft.EntityFrameworkCore;
+using AMAK.Application.Services.Address.Dtos;
 
 namespace AMAK.Application.Services.Me {
     public class MeService : IMeService {
@@ -16,10 +19,13 @@ namespace AMAK.Application.Services.Me {
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IUploadService _uploadService;
 
-        public MeService(IMapper mapper, UserManager<ApplicationUser> userManager, IUploadService uploadService) {
+        private readonly IRepository<Domain.Models.Address> _addressRepository;
+
+        public MeService(IMapper mapper, UserManager<ApplicationUser> userManager, IUploadService uploadService, IRepository<Domain.Models.Address> addressRepository) {
             _mapper = mapper;
             _userManager = userManager;
             _uploadService = uploadService;
+            _addressRepository = addressRepository;
         }
 
         public async Task<Response<ProfileResponse>> GetProfileAsync(ClaimsPrincipal claims) {
@@ -29,9 +35,12 @@ namespace AMAK.Application.Services.Me {
 
             var roles = await _userManager.GetRolesAsync(existingUser);
 
+            var addresses = await _addressRepository.GetAll().Where(x => x.UserId == existingUser.Id).ToListAsync();
+
             var response = _mapper.Map<ProfileResponse>(existingUser);
 
             response.Roles = roles;
+            response.Addresses = _mapper.Map<List<AddressResponse>>(addresses);
 
             return new Response<ProfileResponse>(HttpStatusCode.OK, response);
         }

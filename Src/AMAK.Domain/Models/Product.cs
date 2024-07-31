@@ -19,8 +19,5 @@ namespace AMAK.Domain.Models {
 
         public List<Category> Categories { get; } = [];
 
-        public List<Voucher> Vouchers { get; } = [];
-
-        public List<Order> Orders { get; } = [];
     }
 }

@@ -1,5 +1,3 @@
-using AMAK.Application.Common.Constants;
-
 namespace AMAK.Application.Common.Query {
     public class ProductQuery : BaseQuery {
         public string? Name { get; set; }

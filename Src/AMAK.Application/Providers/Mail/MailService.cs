@@ -1,4 +1,7 @@
+using System.Text;
 using AMAK.Application.Common.Exceptions;
+using AMAK.Application.Services.Order.Dtos;
+using AMAK.Domain.Models;
 using Microsoft.Extensions.Options;
 using MimeKit;
 
@@ -65,6 +68,56 @@ namespace AMAK.Application.Providers.Mail {
             await smtp.DisconnectAsync(true);
         }
 
+        public async Task SendOrderMail(string to, string subject, Order order, List<Domain.Models.OrderDetail> orderResponses) {
+            try {
+                MailRequest mailRequest = new() {
+                    ToEmail = to,
+                    Subject = subject,
+                    Message = OrderMail(order, orderResponses)
+                };
 
+                await SendMailAsync(mailRequest);
+
+            } catch (Exception ex) {
+                throw new BadRequestException(ex.Message);
+            }
+        }
+
+        private static string OrderMail(Order order, List<Domain.Models.OrderDetail> orderResponses) {
+            string htmlContent = "";
+
+            try {
+                string path = Path.Combine(Directory.GetCurrentDirectory(), "Templates", "Order.html");
+                htmlContent = File.ReadAllText(path);
+
+            } catch (Exception e) {
+                Console.WriteLine(e);
+            }
+
+
+            htmlContent = htmlContent.Replace("{ID}", order.Id.ToString());
+            htmlContent = htmlContent.Replace("{CUSTOMER}", order.Customer);
+            htmlContent = htmlContent.Replace("{ADDRESS}", order.Address);
+            htmlContent = htmlContent.Replace("{PHONE}", order.NumberPhone);
+            htmlContent = htmlContent.Replace("{QUANTITY}", order.Quantity.ToString());
+            htmlContent = htmlContent.Replace("{TOTAL_PRICE}", order.TotalPrice.ToString());
+            htmlContent = htmlContent.Replace("{PAYMENT}", order.Payment.ToString());
+            htmlContent = htmlContent.Replace("{STATUS}", order.Status.ToString());
+
+            StringBuilder detailsBuilder = new();
+            foreach (var detail in orderResponses) {
+                detailsBuilder.Append("<tr>")
+                    .Append("<td style=\"border: 1px solid #dddddd; text-align: left; padding: 8px;\">").Append(detail.ProductName).Append("</td>")
+                    .Append("<td style=\"border: 1px solid #dddddd; text-align: left; padding: 8px;\">").Append(detail.Price).Append(" VNĐ</td>")
+                    .Append("<td style=\"border: 1px solid #dddddd; text-align: left; padding: 8px;\">").Append(detail.OptionName).Append("</td>")
+                    .Append("<td style=\"border: 1px solid #dddddd; text-align: left; padding: 8px;\">").Append(detail.Quantity).Append("</td>")
+                    .Append("</tr>");
+            }
+
+            htmlContent = htmlContent.Replace("{DETAILS}", detailsBuilder.ToString());
+
+
+            return htmlContent;
+        }
     }
 }

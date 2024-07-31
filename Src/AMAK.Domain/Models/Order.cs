@@ -3,9 +3,11 @@ using AMAK.Domain.Enums;
 
 namespace AMAK.Domain.Models {
     public class Order : BaseEntity<Guid> {
-        public string? Email { get; set; }
-        public string? Customer { get; set; }
-        public string? Address { get; set; }
+        public string Email { get; set; } = null!;
+        public string Customer { get; set; } = null!;
+        public string Address { get; set; } = null!;
+
+        public string? NumberPhone { get; set; } 
 
         public EPayment Payment { get; set; }
 
@@ -22,6 +24,6 @@ namespace AMAK.Domain.Models {
         [ForeignKey(nameof(UserId))]
         public ApplicationUser? User { get; set; }
 
-        public List<Product> Products { get; } = [];
+        public List<Option> Options { get; } = [];
     }
 }
