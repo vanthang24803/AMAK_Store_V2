@@ -16,5 +16,6 @@ namespace AMAK.Domain.Models {
 
         [ForeignKey(nameof(ProductId))]
         public Product Product { get; set; } = null!;
+        public List<Order> Orders { get; } = [];
     }
 }

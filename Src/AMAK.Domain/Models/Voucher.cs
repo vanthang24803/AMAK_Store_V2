@@ -13,7 +13,5 @@ namespace AMAK.Domain.Models {
         public int Discount { get; set; }
 
         public DateTime ShelfLife { get; set; }
-
-        public List<Product> Products{ get; } = []; 
     }
 }

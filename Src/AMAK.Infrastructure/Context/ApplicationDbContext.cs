@@ -70,15 +70,11 @@ namespace AMAK.Infrastructure.Context {
                         .UsingEntity<ProductCategory>();
 
 
-            modelBuilder.Entity<Product>()
-                         .HasMany(e => e.Vouchers)
-                         .WithMany(e => e.Products)
-                         .UsingEntity<ProductVoucher>();
 
-            modelBuilder.Entity<Product>()
+            modelBuilder.Entity<Option>()
                         .HasMany(e => e.Orders)
-                        .WithMany(e => e.Products)
-                        .UsingEntity<ProductOrder>();
+                        .WithMany(e => e.Options)
+                        .UsingEntity<OrderDetail>();
 
             // TODO: One-to-Many 
             modelBuilder.Entity<Address>()
@@ -106,7 +102,7 @@ namespace AMAK.Infrastructure.Context {
                         .HasForeignKey(p => p.ProductId)
                         .IsRequired()
                         .OnDelete(DeleteBehavior.Cascade);
-                        
+
 
             modelBuilder.Entity<Option>()
                         .HasOne(p => p.Product)
@@ -121,7 +117,7 @@ namespace AMAK.Infrastructure.Context {
                         .HasForeignKey(p => p.ProductId)
                         .IsRequired()
                         .OnDelete(DeleteBehavior.Cascade);
-                        
+
 
             modelBuilder.Entity<ReviewPhoto>()
                         .HasOne(rp => rp.Review)
