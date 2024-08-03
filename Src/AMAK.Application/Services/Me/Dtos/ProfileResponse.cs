@@ -10,6 +10,10 @@ namespace AMAK.Application.Services.Me.Dtos {
         public string Avatar { get; set; } = null!;
         public IList<string> Roles { get; set; } = [];
         public List<AddressResponse> Addresses { get; set; } = [];
+        public double TotalPrice { get; set; }
+        public int TotalOrder { get; set; }
+        public int ProcessOrder { get; set; }
+        public string Rank { get; set; } = null!;
         public DateTime CreateAt { get; set; }
         public DateTime UpdateAt { get; set; }
     }
