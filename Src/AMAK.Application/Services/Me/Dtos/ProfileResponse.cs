@@ -8,6 +8,7 @@ namespace AMAK.Application.Services.Me.Dtos {
         public string LastName { get; set; } = null!;
         public string Email { get; set; } = null!;
         public string Avatar { get; set; } = null!;
+        public string? NumberPhone { get; set; }
         public IList<string> Roles { get; set; } = [];
         public List<AddressResponse> Addresses { get; set; } = [];
         public double TotalPrice { get; set; }

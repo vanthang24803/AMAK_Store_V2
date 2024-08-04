@@ -52,6 +52,8 @@ namespace AMAK.Application.Services.Me {
 
             var response = _mapper.Map<ProfileResponse>(existingUser);
 
+            response.NumberPhone = existingUser.PhoneNumber;
+
             var totalOrder = await _orderRepository.GetAll()
                 .Where(x => x.UserId == existingUser.Id && !x.IsDeleted)
                 .CountAsync();
@@ -102,6 +104,8 @@ namespace AMAK.Application.Services.Me {
             var roles = await _userManager.GetRolesAsync(existingUser);
 
             _mapper.Map(request, existingUser);
+
+            existingUser.PhoneNumber = request.NumberPhone;
 
             await _userManager.UpdateAsync(existingUser);
 

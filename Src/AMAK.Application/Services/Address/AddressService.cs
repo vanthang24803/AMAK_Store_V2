@@ -42,7 +42,7 @@ namespace AMAK.Application.Services.Address {
 
             await _addressRepository.SaveChangesAsync();
 
-            return new Response<AddressResponse>(HttpStatusCode.OK, _mapper.Map<AddressResponse>(newAddress));
+            return new Response<AddressResponse>(HttpStatusCode.Created, _mapper.Map<AddressResponse>(newAddress));
         }
 
         public async Task<Response<AddressResponse>> GetAddressDetailAsync(Guid id) {
