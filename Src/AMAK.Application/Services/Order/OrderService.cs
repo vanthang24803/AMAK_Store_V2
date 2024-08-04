@@ -49,7 +49,7 @@ namespace AMAK.Application.Services.Order {
                 Quantity = request.Quantity,
                 Shipping = true,
                 NumberPhone = request.NumberPhone,
-                Status = Domain.Enums.EOrderStatus.PENDING,
+                Status = EOrderStatus.PENDING,
                 TotalPrice = request.TotalPrice,
                 UserId = existingAccount.Id,
             };
@@ -113,19 +113,36 @@ namespace AMAK.Application.Services.Order {
             return new Response<string>(HttpStatusCode.Created, "Product created Successfully!");
         }
 
-        public async Task<PaginationResponse<List<OrderResponse>>> GetByUser(ClaimsPrincipal user, BaseQuery query) {
+        public async Task<PaginationResponse<List<OrderResponse>>> GetByUser(ClaimsPrincipal user, OrderQuery query) {
             var existingAccount = await _userManager.GetUserAsync(user) ?? throw new UnauthorizedException();
 
-            var totalOrders = await _orderRepository.GetAll()
-                    .CountAsync(x => x.UserId == existingAccount.Id && !x.IsDeleted);
+            var orderQuery = _orderRepository
+                    .GetAll()
+                    .Where(x => !x.IsDeleted && x.UserId == existingAccount.Id)
+                    .AsQueryable();
 
-            var orders = await _orderRepository.GetAll()
-                .Where(x => x.UserId == existingAccount.Id && !x.IsDeleted)
-                .OrderByDescending(x => x.CreateAt)
-                .Skip((query.Page - 1) * query.Limit)
-                .ToListAsync();
+            if (!string.IsNullOrEmpty(query.OrderBy)) {
+                orderQuery = query.OrderBy switch {
+                    "All" => orderQuery,
+                    "Pending" => orderQuery.Where(x => x.Status == EOrderStatus.PENDING),
+                    "Create" => orderQuery.Where(x => x.Status == EOrderStatus.CREATE),
+                    "Shipping" => orderQuery.Where(x => x.Status == EOrderStatus.SHIPPING),
+                    "Success" => orderQuery.Where(x => x.Status == EOrderStatus.SUCCESS),
+                    "Cancel" => orderQuery.Where(x => x.Status == EOrderStatus.CANCEL),
+                    "Return" => orderQuery.Where(x => x.Status == EOrderStatus.RETURN),
+                    _ => orderQuery
+                };
+            }
+
+            var totalOrders = await orderQuery.CountAsync();
 
             var totalPages = (int)Math.Ceiling(totalOrders / (double)query.Limit);
+
+            var orders = await orderQuery
+                .Skip((query.Page - 1) * query.Limit)
+                .Take(query.Limit)
+                .ToListAsync();
+
 
             var response = new List<OrderResponse>();
 

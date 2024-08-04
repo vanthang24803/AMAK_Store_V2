@@ -23,7 +23,7 @@ namespace AMAK.API.Controllers.v1 {
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetByUser([FromQuery] BaseQuery query) {
+        public async Task<IActionResult> GetByUser([FromQuery] OrderQuery query) {
             return Ok(await _orderService.GetByUser(User, query));
         }
 
