@@ -7,6 +7,7 @@ namespace AMAK.Application.Services.Order.Dtos {
         public string Customer { get; set; } = null!;
         public string Email { get; set; } = null!;
         public string Address { get; set; } = null!;
+        public bool IsReviewed { get; set; }
         public string NumberPhone { get; set; } = null!;
         [JsonConverter(typeof(JsonStringEnumConverter))]
         public EPayment Payment { get; set; }

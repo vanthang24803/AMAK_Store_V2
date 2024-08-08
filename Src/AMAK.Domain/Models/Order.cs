@@ -7,7 +7,7 @@ namespace AMAK.Domain.Models {
         public string Customer { get; set; } = null!;
         public string Address { get; set; } = null!;
 
-        public string? NumberPhone { get; set; } 
+        public string? NumberPhone { get; set; }
 
         public EPayment Payment { get; set; }
 
@@ -18,6 +18,8 @@ namespace AMAK.Domain.Models {
         public int Quantity { get; set; }
 
         public double TotalPrice { get; set; }
+
+        public bool IsReviewed { get; set; } = false;
 
         public string? UserId { get; set; }
 

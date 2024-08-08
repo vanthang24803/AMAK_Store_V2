@@ -1,7 +1,5 @@
-using AMAK.Application.Common.Constants;
 using AMAK.Domain.Enums;
 using AMAK.Domain.Models;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
@@ -20,7 +18,7 @@ namespace AMAK.Infrastructure.Context {
 
         public DbSet<Photo> Photos { get; set; }
 
-        public DbSet<AMAK.Domain.Models.Option> Options { get; set; }
+        public DbSet<Option> Options { get; set; }
 
         public DbSet<Order> Orders { get; set; }
 
@@ -29,6 +27,10 @@ namespace AMAK.Infrastructure.Context {
         public DbSet<ReviewPhoto> ReviewPhotos { get; set; }
 
         public DbSet<Voucher> Vouchers { get; set; }
+
+        public DbSet<Notification> Notifications { get; set; }
+
+        public DbSet<MessageUser> MessageUsers { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder) {
 
@@ -53,6 +55,10 @@ namespace AMAK.Infrastructure.Context {
                 e.Property(x => x.Name).HasMaxLength(256);
             });
 
+            modelBuilder.Entity<Notification>(e => {
+                e.Property(x => x.Title).HasMaxLength(256);
+            });
+
             modelBuilder.Entity<Order>(e => {
                 e.ToTable("Orders");
                 e.Property(x => x.Email).HasMaxLength(128);
@@ -69,7 +75,22 @@ namespace AMAK.Infrastructure.Context {
                         .WithMany(e => e.Products)
                         .UsingEntity<ProductCategory>();
 
-
+            modelBuilder.Entity<Notification>()
+                        .HasMany(e => e.Users)
+                        .WithMany(e => e.Notifications)
+                        .UsingEntity<MessageUser>(
+                            j => j
+                                .HasOne<ApplicationUser>()
+                                .WithMany()
+                                .HasForeignKey(mu => mu.UserId), 
+                            j => j
+                                .HasOne<Notification>()
+                                .WithMany()
+                                .HasForeignKey(mu => mu.NonfictionId),
+                            j => {
+                                j.HasKey(mu => new { mu.UserId, mu.NonfictionId });
+                            }
+                        );
 
             modelBuilder.Entity<Option>()
                         .HasMany(e => e.Orders)

@@ -11,6 +11,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using AMAK.Application.Common.Query;
 using AMAK.Domain.Enums;
+using AMAK.Application.Services.Notification;
+using AMAK.Application.Services.Notification.Dtos;
 
 namespace AMAK.Application.Services.Order {
     public class OrderService : IOrderService {
@@ -27,7 +29,9 @@ namespace AMAK.Application.Services.Order {
 
         private readonly IRepository<Domain.Models.Product> _productRepository;
 
-        public OrderService(IMailService mailService, UserManager<ApplicationUser> userManager, IRepository<Domain.Models.Order> orderRepository, IRepository<Voucher> voucherRepository, IRepository<Option> optionRepository, IRepository<Domain.Models.OrderDetail> orderDetailRepository, IRepository<Domain.Models.Product> productRepository) {
+        private readonly INotificationService _notificationService;
+
+        public OrderService(IMailService mailService, UserManager<ApplicationUser> userManager, IRepository<Domain.Models.Order> orderRepository, IRepository<Voucher> voucherRepository, IRepository<Option> optionRepository, IRepository<Domain.Models.OrderDetail> orderDetailRepository, IRepository<Domain.Models.Product> productRepository, INotificationService notificationService) {
             _mailService = mailService;
             _userManager = userManager;
             _orderRepository = orderRepository;
@@ -35,6 +39,7 @@ namespace AMAK.Application.Services.Order {
             _optionRepository = optionRepository;
             _orderDetailRepository = orderDetailRepository;
             _productRepository = productRepository;
+            _notificationService = notificationService;
         }
 
         public async Task<Response<string>> CreateAsync(ClaimsPrincipal user, CreateOrderRequest request) {
@@ -108,6 +113,15 @@ namespace AMAK.Application.Services.Order {
                 await _voucherRepository.SaveChangesAsync();
             }
 
+            var confirmNotification = new CreateNotificationForAccountRequest() {
+                Title = "Thông báo đơn hàng",
+                Content = $"<p>Đơn hàng <b style=\"color: #16a34a;\">{newOrder.Id}</b> đã được đặt thành công!</p>",
+                IsGlobal = false,
+                UserId = existingAccount.Id
+            };
+
+            await _notificationService.CreateNotification(confirmNotification);
+
             await _mailService.SendOrderMail(request.Email, "Xác nhận đơn hàng", newOrder, orderDetails);
 
             return new Response<string>(HttpStatusCode.Created, "Product created Successfully!");
@@ -119,6 +133,7 @@ namespace AMAK.Application.Services.Order {
             var orderQuery = _orderRepository
                     .GetAll()
                     .Where(x => !x.IsDeleted && x.UserId == existingAccount.Id)
+                    .OrderByDescending(x => x.CreateAt)
                     .AsQueryable();
 
             if (!string.IsNullOrEmpty(query.OrderBy)) {
