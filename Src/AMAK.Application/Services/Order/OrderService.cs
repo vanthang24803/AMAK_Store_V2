@@ -11,6 +11,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using AMAK.Application.Common.Query;
 using AMAK.Domain.Enums;
+using AMAK.Application.Services.Notification;
+using AMAK.Application.Services.Notification.Dtos;
 
 namespace AMAK.Application.Services.Order {
     public class OrderService : IOrderService {
@@ -27,7 +29,9 @@ namespace AMAK.Application.Services.Order {
 
         private readonly IRepository<Domain.Models.Product> _productRepository;
 
-        public OrderService(IMailService mailService, UserManager<ApplicationUser> userManager, IRepository<Domain.Models.Order> orderRepository, IRepository<Voucher> voucherRepository, IRepository<Option> optionRepository, IRepository<Domain.Models.OrderDetail> orderDetailRepository, IRepository<Domain.Models.Product> productRepository) {
+        private readonly INotificationService _notificationService;
+
+        public OrderService(IMailService mailService, UserManager<ApplicationUser> userManager, IRepository<Domain.Models.Order> orderRepository, IRepository<Voucher> voucherRepository, IRepository<Option> optionRepository, IRepository<Domain.Models.OrderDetail> orderDetailRepository, IRepository<Domain.Models.Product> productRepository, INotificationService notificationService) {
             _mailService = mailService;
             _userManager = userManager;
             _orderRepository = orderRepository;
@@ -35,6 +39,7 @@ namespace AMAK.Application.Services.Order {
             _optionRepository = optionRepository;
             _orderDetailRepository = orderDetailRepository;
             _productRepository = productRepository;
+            _notificationService = notificationService;
         }
 
         public async Task<Response<string>> CreateAsync(ClaimsPrincipal user, CreateOrderRequest request) {
@@ -49,7 +54,7 @@ namespace AMAK.Application.Services.Order {
                 Quantity = request.Quantity,
                 Shipping = true,
                 NumberPhone = request.NumberPhone,
-                Status = Domain.Enums.EOrderStatus.PENDING,
+                Status = EOrderStatus.PENDING,
                 TotalPrice = request.TotalPrice,
                 UserId = existingAccount.Id,
             };
@@ -108,24 +113,51 @@ namespace AMAK.Application.Services.Order {
                 await _voucherRepository.SaveChangesAsync();
             }
 
+            var confirmNotification = new CreateNotificationForAccountRequest() {
+                Content = $"<p>Đơn hàng <b style=\"color: #16a34a;\">{newOrder.Id}</b> đã được đặt thành công!</p>",
+                Url = $"/orders/{newOrder.Id}",
+                IsGlobal = false,
+                UserId = existingAccount.Id
+            };
+
+            await _notificationService.CreateNotification(confirmNotification);
+
             await _mailService.SendOrderMail(request.Email, "Xác nhận đơn hàng", newOrder, orderDetails);
 
             return new Response<string>(HttpStatusCode.Created, "Product created Successfully!");
         }
 
-        public async Task<PaginationResponse<List<OrderResponse>>> GetByUser(ClaimsPrincipal user, BaseQuery query) {
+        public async Task<PaginationResponse<List<OrderResponse>>> GetByUser(ClaimsPrincipal user, OrderQuery query) {
             var existingAccount = await _userManager.GetUserAsync(user) ?? throw new UnauthorizedException();
 
-            var totalOrders = await _orderRepository.GetAll()
-                    .CountAsync(x => x.UserId == existingAccount.Id && !x.IsDeleted);
+            var orderQuery = _orderRepository
+                    .GetAll()
+                    .Where(x => !x.IsDeleted && x.UserId == existingAccount.Id)
+                    .OrderByDescending(x => x.CreateAt)
+                    .AsQueryable();
 
-            var orders = await _orderRepository.GetAll()
-                .Where(x => x.UserId == existingAccount.Id && !x.IsDeleted)
-                .OrderByDescending(x => x.CreateAt)
-                .Skip((query.Page - 1) * query.Limit)
-                .ToListAsync();
+            if (!string.IsNullOrEmpty(query.OrderBy)) {
+                orderQuery = query.OrderBy switch {
+                    "All" => orderQuery,
+                    "Pending" => orderQuery.Where(x => x.Status == EOrderStatus.PENDING),
+                    "Create" => orderQuery.Where(x => x.Status == EOrderStatus.CREATE),
+                    "Shipping" => orderQuery.Where(x => x.Status == EOrderStatus.SHIPPING),
+                    "Success" => orderQuery.Where(x => x.Status == EOrderStatus.SUCCESS),
+                    "Cancel" => orderQuery.Where(x => x.Status == EOrderStatus.CANCEL),
+                    "Return" => orderQuery.Where(x => x.Status == EOrderStatus.RETURN),
+                    _ => orderQuery
+                };
+            }
+
+            var totalOrders = await orderQuery.CountAsync();
 
             var totalPages = (int)Math.Ceiling(totalOrders / (double)query.Limit);
+
+            var orders = await orderQuery
+                .Skip((query.Page - 1) * query.Limit)
+                .Take(query.Limit)
+                .ToListAsync();
+
 
             var response = new List<OrderResponse>();
 

@@ -3,6 +3,7 @@ using System;
 using AMAK.Infrastructure.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace AMAK.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240808033317_Create_Notfication_Table")]
+    partial class Create_Notfication_Table
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -216,24 +219,21 @@ namespace AMAK.Infrastructure.Migrations
 
             modelBuilder.Entity("AMAK.Domain.Models.MessageUser", b =>
                 {
-                    b.Property<string>("UserId")
+                    b.Property<Guid>("NotificationsId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("UsersId")
                         .HasColumnType("text");
 
                     b.Property<Guid>("NonfictionId")
                         .HasColumnType("uuid");
 
-                    b.Property<bool>("IsOpened")
-                        .HasColumnType("boolean");
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
 
-                    b.Property<bool>("IsSeen")
-                        .HasColumnType("boolean");
+                    b.HasKey("NotificationsId", "UsersId");
 
-                    b.Property<DateTime?>("SeenAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.HasKey("UserId", "NonfictionId");
-
-                    b.HasIndex("NonfictionId");
+                    b.HasIndex("UsersId");
 
                     b.ToTable("MessageUsers");
                 });
@@ -257,15 +257,21 @@ namespace AMAK.Infrastructure.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
 
-                    b.Property<bool>("IsGlobal")
+                    b.Property<bool>("IsOpened")
                         .HasColumnType("boolean");
+
+                    b.Property<bool>("IsSent")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTime?>("SentAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.Property<DateTime>("UpdateAt")
                         .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("Url")
-                        .IsRequired()
-                        .HasColumnType("text");
 
                     b.HasKey("Id");
 
@@ -793,13 +799,13 @@ namespace AMAK.Infrastructure.Migrations
                 {
                     b.HasOne("AMAK.Domain.Models.Notification", null)
                         .WithMany()
-                        .HasForeignKey("NonfictionId")
+                        .HasForeignKey("NotificationsId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("AMAK.Domain.Models.ApplicationUser", null)
                         .WithMany()
-                        .HasForeignKey("UserId")
+                        .HasForeignKey("UsersId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
