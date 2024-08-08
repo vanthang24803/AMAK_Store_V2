@@ -114,8 +114,8 @@ namespace AMAK.Application.Services.Order {
             }
 
             var confirmNotification = new CreateNotificationForAccountRequest() {
-                Title = "Thông báo đơn hàng",
                 Content = $"<p>Đơn hàng <b style=\"color: #16a34a;\">{newOrder.Id}</b> đã được đặt thành công!</p>",
+                Url = $"/orders/{newOrder.Id}",
                 IsGlobal = false,
                 UserId = existingAccount.Id
             };

@@ -28,7 +28,7 @@ namespace AMAK.Application.Services.Notification {
                 Id = Guid.NewGuid(),
                 IsGlobal = true,
                 Content = request.Content,
-                Title = request.Title,
+                Url = request.Url
             };
 
             _notificationRepository.Add(newNotification);
@@ -59,7 +59,7 @@ namespace AMAK.Application.Services.Notification {
                 Id = Guid.NewGuid(),
                 IsGlobal = false,
                 Content = request.Content,
-                Title = request.Title,
+                Url = request.Url,
             };
 
             _notificationRepository.Add(newNotification);
@@ -79,7 +79,7 @@ namespace AMAK.Application.Services.Notification {
 
             var response = new NotificationResponse() {
                 Id = Guid.NewGuid(),
-                Title = newNotification.Title,
+                Url = newNotification.Url,
                 Content = newNotification.Content,
                 IsOpened = newMessageUser.IsOpened,
                 IsSeen = newMessageUser.IsSeen,
@@ -124,7 +124,7 @@ namespace AMAK.Application.Services.Notification {
                 var item = new NotificationResponse() {
                     Id = notification.Id,
                     Content = notification.Content,
-                    Title = notification.Title,
+                    Url = notification.Url!,
                     CreateAt = notification.CreateAt,
                     IsOpened = message.IsOpened,
                     IsSeen = message.IsSeen,
@@ -167,11 +167,29 @@ namespace AMAK.Application.Services.Notification {
             foreach (var message in messageUsers) {
                 message.IsSeen = true;
                 message.IsOpened = true;
+                message.SeenAt = DateTime.UtcNow;
             }
 
             await _messageUserRepository.SaveChangesAsync();
 
             return new Response<string>(HttpStatusCode.OK, "Seen All Successfully!");
+        }
+
+        public async Task<Response<string>> SendOneNotification(ClaimsPrincipal user, Guid id) {
+            var existingAccount = await _userManager.GetUserAsync(user)
+            ?? throw new NotFoundException("Account not found!");
+
+            var messageUsers = await _messageUserRepository.GetAll().FirstOrDefaultAsync(
+                x => x.UserId == existingAccount.Id && x.NonfictionId == id
+            ) ?? throw new NotFoundException("Notification not found!");
+
+            messageUsers.SeenAt = DateTime.UtcNow;
+            messageUsers.IsOpened = true;
+            messageUsers.IsSeen = true;
+
+            await _messageUserRepository.SaveChangesAsync();
+            return new Response<string>(HttpStatusCode.OK, "Seen One Successfully!");
+
         }
     }
 }

@@ -55,10 +55,6 @@ namespace AMAK.Infrastructure.Context {
                 e.Property(x => x.Name).HasMaxLength(256);
             });
 
-            modelBuilder.Entity<Notification>(e => {
-                e.Property(x => x.Title).HasMaxLength(256);
-            });
-
             modelBuilder.Entity<Order>(e => {
                 e.ToTable("Orders");
                 e.Property(x => x.Email).HasMaxLength(128);

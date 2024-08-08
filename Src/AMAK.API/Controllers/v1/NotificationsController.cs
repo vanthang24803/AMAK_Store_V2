@@ -41,5 +41,13 @@ namespace AMAK.API.Controllers.v1 {
         public async Task<IActionResult> SeenAllNotification() {
             return Ok(await _notificationService.SeenAllNotification(User));
         }
+
+
+        [HttpPost]
+        [Route("Seen/{id:guid}")]
+
+        public async Task<IActionResult> SeenOneNotification(Guid id) {
+            return Ok(await _notificationService.SendOneNotification(User, id));
+        }
     }
 }
