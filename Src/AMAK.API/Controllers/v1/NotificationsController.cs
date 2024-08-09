@@ -1,3 +1,4 @@
+using AMAK.Application.Common.Constants;
 using AMAK.Application.Services.Notification;
 using AMAK.Application.Services.Notification.Dtos;
 using Asp.Versioning;
@@ -17,7 +18,8 @@ namespace AMAK.API.Controllers.v1 {
 
         [HttpPost]
         [Route("Global")]
-        [AllowAnonymous]
+        [Authorize(Roles = $"{Role.ADMIN}, {Role.MANAGER}")]
+
         public async Task<IActionResult> CreateGlobal([FromBody] CreateGlobalNotificationRequest request) {
             return StatusCode(StatusCodes.Status201Created, await _notificationService.CreateGlobalNotification(request));
         }
