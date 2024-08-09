@@ -12,7 +12,6 @@ using AMAK.Application.Services.Options;
 using AMAK.Application.Services.Photo;
 using AMAK.Application.Services.Billboard;
 using AMAK.Application.Services.Review;
-using AMAK.Application.Services.Order;
 using AMAK.Application.Services.Notification;
 
 namespace AMAK.API.Common.Extensions {
@@ -32,7 +31,6 @@ namespace AMAK.API.Common.Extensions {
             services.AddScoped<IPhotoService, PhotoService>();
             services.AddScoped<IBillboardService, BillboardService>();
             services.AddScoped<IReviewService, ReviewService>();
-            services.AddScoped<IOrderService, OrderService>();
             services.AddScoped<INotificationService, NotificationService>();
 
             services.AddSingleton<IUploadService, UploadService>();

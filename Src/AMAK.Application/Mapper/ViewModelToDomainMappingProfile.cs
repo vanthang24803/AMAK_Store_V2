@@ -1,6 +1,5 @@
 using AMAK.Application.Services.Address.Dtos;
 using AMAK.Application.Services.Authentication.Dtos;
-using AMAK.Application.Services.Categories.Commands.Create;
 using AMAK.Application.Services.Categories.Common;
 using AMAK.Application.Services.Me.Dtos;
 using AMAK.Application.Services.Options.Dtos;
@@ -25,6 +24,10 @@ namespace AMAK.Application.Mapper {
 
             CreateMap<UpdateProductRequest, Product>()
                 .ForMember(dest => dest.UpdateAt, opt => opt.MapFrom(src => DateTime.UtcNow));
+
+            CreateMap<UpdateOrderByAccountRequest, Order>()
+                .ForMember(dest => dest.UpdateAt, opt => opt.MapFrom(src => DateTime.UtcNow));
+
 
             CreateMap<OptionRequest, Option>().ForMember(dest => dest.UpdateAt, opt => opt.MapFrom(src => DateTime.UtcNow));
             CreateMap<OptionProductUpdate, Option>().ForMember(dest => dest.UpdateAt, opt => opt.MapFrom(src => DateTime.UtcNow));

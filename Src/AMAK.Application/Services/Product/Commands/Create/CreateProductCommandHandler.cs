@@ -2,7 +2,6 @@ using AMAK.Application.Common.Exceptions;
 using AMAK.Application.Common.Helpers;
 using AMAK.Application.Interfaces;
 using AMAK.Application.Providers.Upload;
-using AMAK.Application.Services.Categories.Common;
 using AMAK.Application.Services.Product.Common;
 using AutoMapper;
 using MediatR;
