@@ -10,7 +10,6 @@ namespace AMAK.Application.Providers.Momo {
         private static readonly HttpClient _httpClient = new();
         private readonly MomoSettings _momoSettings;
 
-
         public MomoService(IOptions<MomoSettings> options) {
             _momoSettings = options.Value;
         }
@@ -26,6 +25,7 @@ namespace AMAK.Application.Providers.Momo {
                 orderId = dataRequest.Id.ToString(),
                 requestId = Guid.NewGuid().ToString(),
                 extraData = "",
+                orderExpireTime = 5,
                 partnerName = "MoMo Payment",
                 storeId = "AMAK Store",
                 requestType = "captureWallet",

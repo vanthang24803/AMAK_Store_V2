@@ -5,6 +5,7 @@ namespace AMAK.Application.Providers.Momo {
         public string redirectUrl { get; set; } = null!;
         public string ipnUrl { get; set; } = null!;
         public long amount { get; set; }
+        public int orderExpireTime { get; set; }
         public string orderId { get; set; } = null!;
         public string requestId { get; set; } = null!;
         public string extraData { get; set; } = null!;
