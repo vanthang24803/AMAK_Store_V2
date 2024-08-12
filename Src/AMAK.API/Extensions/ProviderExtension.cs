@@ -1,5 +1,5 @@
-
 using AMAK.Application.Providers.Mail;
+using AMAK.Application.Providers.Momo;
 using AMAK.Application.Providers.Upload;
 
 namespace AMAK.API.Extensions {
@@ -11,6 +11,9 @@ namespace AMAK.API.Extensions {
 
             // TODO: Mail Settings
             services.Configure<CloudinarySettings>(configuration.GetSection("CloudinarySetting"));
+
+            // TODO: Mono Settings
+            services.Configure<MomoSettings>(configuration.GetSection("Momo"));
 
             return services;
         }

@@ -8,8 +8,8 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 // TODO: Swagger
-builder.Services.AddSwaggerGen()
-                .AddEndpointsApiExplorer();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerConfig();
 
 // TODO: Cors
 builder.Services.AddCorsConfig();

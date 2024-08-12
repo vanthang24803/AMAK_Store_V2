@@ -81,6 +81,7 @@ namespace AMAK.Application.Services.Order.Queries.GetByUser {
                     Customer = order.Customer,
                     Email = order.Email,
                     Status = order.Status,
+                    Address = order.Address,
                     NumberPhone = order.NumberPhone!,
                     Payment = order.Payment,
                     Quantity = order.Quantity,
