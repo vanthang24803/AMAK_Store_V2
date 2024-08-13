@@ -45,6 +45,8 @@ builder.Services.AddProviders(builder.Configuration);
 // TODO: CQRS
 builder.Services.AddCQRS();
 
+// TODO: Redis
+builder.Services.AddRedisConfig(builder.Configuration);
 
 
 var app = builder.Build();
