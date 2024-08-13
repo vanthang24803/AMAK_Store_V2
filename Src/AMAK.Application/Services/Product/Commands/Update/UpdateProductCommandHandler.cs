@@ -1,40 +1,49 @@
 using AMAK.Application.Common.Exceptions;
 using AMAK.Application.Common.Helpers;
 using AMAK.Application.Interfaces;
+using AMAK.Application.Providers.Cache;
+using AMAK.Application.Providers.Mail;
 using AMAK.Application.Providers.Upload;
 using AMAK.Application.Services.Product.Common;
 using AMAK.Domain.Models;
 using AutoMapper;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
-using MimeKit.Cryptography;
 
 namespace AMAK.Application.Services.Product.Commands.Update {
 
     public class UpdateProductCommandHandler : IRequestHandler<UpdateProductCommand, Response<ProductResponse>> {
         private readonly IRepository<Domain.Models.Product> _productRepository;
-        private readonly IRepository<Domain.Models.Option> _optionRepository;
+        private readonly IRepository<Option> _optionRepository;
         private readonly IRepository<Domain.Models.Category> _categoryRepository;
-        public readonly IRepository<Domain.Models.ProductCategory> _productCategoryRepository;
+        public readonly IRepository<ProductCategory> _productCategoryRepository;
+        private readonly IMailService _mailService;
         private readonly IUploadService _uploadService;
+        private readonly ICacheService _cacheService;
         private readonly IMapper _mapper;
 
 
         public UpdateProductCommandHandler(
            IRepository<Domain.Models.Product> productRepository,
-           IRepository<Domain.Models.Option> optionRepository,
+           IRepository<Option> optionRepository,
            IRepository<Domain.Models.Category> categoryRepository,
            IUploadService uploadService,
            IMapper mapper,
-           IRepository<Domain.Models.ProductCategory> productCategoryRepository) {
+           IRepository<ProductCategory> productCategoryRepository,
+           ICacheService cacheService,
+           IMailService mailService) {
             _productRepository = productRepository;
             _optionRepository = optionRepository;
             _categoryRepository = categoryRepository;
             _uploadService = uploadService;
             _mapper = mapper;
             _productCategoryRepository = productCategoryRepository;
+            _cacheService = cacheService;
+            _mailService = mailService;
         }
         public async Task<Response<ProductResponse>> Handle(UpdateProductCommand request, CancellationToken cancellationToken) {
+
+            var cacheKey = $"GetDetailProduct_{request.Id}";
 
             await _productRepository.BeginTransactionAsync();
 
@@ -88,6 +97,8 @@ namespace AMAK.Application.Services.Product.Commands.Update {
 
                 _productRepository.Update(existingProduct);
                 await _productRepository.SaveChangesAsync();
+
+                await _cacheService.RemoveData(cacheKey);
 
                 return new Response<ProductResponse>(System.Net.HttpStatusCode.OK, _mapper.Map<ProductResponse>(existingProduct));
 

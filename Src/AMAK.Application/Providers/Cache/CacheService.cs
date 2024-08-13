@@ -18,7 +18,7 @@ namespace AMAK.Application.Providers.Cache {
             return JsonConvert.DeserializeObject<T>(cachedData);
         }
 
-        public async Task<object> RemoveData(string key) {
+        public async Task<bool> RemoveData(string key) {
             await _distributedCache.RemoveAsync(key);
             return true;
         }

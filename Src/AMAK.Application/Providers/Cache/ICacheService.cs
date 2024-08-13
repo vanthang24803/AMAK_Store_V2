@@ -4,6 +4,6 @@ namespace AMAK.Application.Providers.Cache {
 
         Task<object> SetData<T>(string key, T value, DateTimeOffset time);
 
-        Task<object> RemoveData(string key);
+        Task<bool> RemoveData(string key);
     }
 }

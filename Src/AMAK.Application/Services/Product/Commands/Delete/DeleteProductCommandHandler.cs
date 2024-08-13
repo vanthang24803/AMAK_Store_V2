@@ -2,6 +2,7 @@
 using AMAK.Application.Common.Exceptions;
 using AMAK.Application.Common.Helpers;
 using AMAK.Application.Interfaces;
+using AMAK.Application.Providers.Cache;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using System.Net;
@@ -11,11 +12,16 @@ namespace AMAK.Application.Services.Product.Commands.Delete {
 
         private readonly IRepository<Domain.Models.Product> _productRepository;
 
-        public DeleteProductCommandHandler(IRepository<Domain.Models.Product> productRepository) {
+        private readonly ICacheService _cacheService;
+
+        public DeleteProductCommandHandler(IRepository<Domain.Models.Product> productRepository, ICacheService cacheService) {
             _productRepository = productRepository;
+            _cacheService = cacheService;
         }
 
         public async Task<Response<string>> Handle(DeleteProductCommand request, CancellationToken cancellationToken) {
+            var cacheKey = $"GetDetailProduct_{request.Id}";
+
             var existingProduct = await _productRepository.GetAll()
                                                             .Include(x => x.Options)
                                                           .Where(x => x.Id == request.Id)
@@ -38,6 +44,8 @@ namespace AMAK.Application.Services.Product.Commands.Delete {
 
                 await _productRepository.SaveChangesAsync();
             }
+
+            await _cacheService.RemoveData(cacheKey);
 
             return new Response<string>(HttpStatusCode.OK, "Product deleted successfully!");
         }
