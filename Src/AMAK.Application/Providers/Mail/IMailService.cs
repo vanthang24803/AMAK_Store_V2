@@ -1,4 +1,3 @@
-using AMAK.Application.Services.Order.Dtos;
 using AMAK.Domain.Models;
 
 namespace AMAK.Application.Providers.Mail {
@@ -6,7 +5,7 @@ namespace AMAK.Application.Providers.Mail {
         void SendEmailConfirmationAccount(string email, string userId, string token);
         void SendMailResetPassword(string email, string userId, string token);
 
-        Task SendOrderMail(string to, string subject, Order order, List<Domain.Models.OrderDetail> orderResponses);
+        Task SendOrderMail(string to, string subject, Order order, List<OrderDetail> orderResponses);
         Task SendMailAsync(MailRequest mailRequest);
     }
 }
