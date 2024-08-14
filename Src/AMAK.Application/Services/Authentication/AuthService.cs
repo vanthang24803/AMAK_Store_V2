@@ -191,6 +191,7 @@ namespace AMAK.Application.Services.Authentication {
 
             await _userManager.RemoveAuthenticationTokenAsync(existingUser, provider, Token.RefreshToken);
             await _cacheService.RemoveData($"Login_${existingUser.Id}");
+            await _cacheService.RemoveData($"Google_${existingUser.Id}");
             return new Response<string>(HttpStatusCode.OK, "Logout successfully!");
         }
 
