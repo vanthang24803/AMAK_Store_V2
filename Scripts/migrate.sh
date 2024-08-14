@@ -3,3 +3,5 @@
 cd ../Src/AMAK.Infrastructure 
 
 dotnet ef --startup-project ../AMAK.API  database update
+
+echo "Migrate successfully! ✔️✔️✔️✔️✔️"
