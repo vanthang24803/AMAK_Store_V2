@@ -8,6 +8,7 @@ services:
   api:
     depends_on:
       - db
+      - redis
     ports:
       - "8080:8080"
     build:
@@ -36,6 +37,8 @@ services:
       - "6379:6379"
     volumes:
       - redis-data:/data
+    networks:
+      - dev
 
 volumes:
   postgres_data:
