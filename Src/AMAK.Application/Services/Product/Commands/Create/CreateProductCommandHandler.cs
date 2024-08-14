@@ -1,6 +1,7 @@
 using AMAK.Application.Common.Exceptions;
 using AMAK.Application.Common.Helpers;
 using AMAK.Application.Interfaces;
+using AMAK.Application.Providers.Cache;
 using AMAK.Application.Providers.Upload;
 using AMAK.Application.Services.Product.Common;
 using AutoMapper;
@@ -15,6 +16,8 @@ namespace AMAK.Application.Services.Product.Commands.Create {
         private readonly IRepository<Domain.Models.Category> _categoryRepository;
         public readonly IRepository<Domain.Models.ProductCategory> _productCategoryRepository;
         private readonly IUploadService _uploadService;
+
+        private readonly ICacheService _cacheService;
         private readonly IMapper _mapper;
 
         public CreateProductCommandHandler(
@@ -23,13 +26,15 @@ namespace AMAK.Application.Services.Product.Commands.Create {
             IRepository<Domain.Models.Category> categoryRepository,
             IUploadService uploadService,
             IMapper mapper,
-            IRepository<Domain.Models.ProductCategory> productCategoryRepository) {
+            IRepository<Domain.Models.ProductCategory> productCategoryRepository,
+            ICacheService cacheService) {
             _productRepository = productRepository;
             _optionRepository = optionRepository;
             _categoryRepository = categoryRepository;
             _uploadService = uploadService;
             _mapper = mapper;
             _productCategoryRepository = productCategoryRepository;
+            _cacheService = cacheService;
         }
 
         public async Task<Response<ProductResponse>> Handle(CreateProductCommand request, CancellationToken cancellationToken) {

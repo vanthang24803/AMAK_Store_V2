@@ -11,6 +11,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Net;
 using System.Security.Claims;
 using AMAK.Application.Services.Me.Dtos;
+using AMAK.Application.Providers.Cache;
 
 
 namespace AMAK.Application.Services.Authentication {
@@ -24,13 +25,16 @@ namespace AMAK.Application.Services.Authentication {
 
         private readonly ITokenService _tokenService;
 
+        private readonly ICacheService _cacheService;
+
         private readonly IMapper _mapper;
 
-        public AuthService(UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager, IMailService mailService, IMapper mapper, ITokenService tokenService) {
+        public AuthService(UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager, IMailService mailService, IMapper mapper, ITokenService tokenService, ICacheService cacheService) {
             _userManager = userManager;
             _roleManager = roleManager;
             _mailService = mailService;
             _tokenService = tokenService;
+            _cacheService = cacheService;
             _mapper = mapper;
         }
 
@@ -92,6 +96,13 @@ namespace AMAK.Application.Services.Authentication {
         public async Task<Response<TokenResponse>> LoginAsync(LoginRequest request) {
             var existingUser = await _userManager.FindByEmailAsync(request.Email) ?? throw new NotFoundException("Account not found!");
 
+            var cacheKey = $"Login_${existingUser.Id}";
+
+            var cachedData = await _cacheService.GetData<Response<TokenResponse>>(cacheKey);
+            if (cachedData != null) {
+                return cachedData;
+            }
+
             if (!existingUser.EmailConfirmed) {
                 throw new ForbiddenException();
             }
@@ -110,7 +121,12 @@ namespace AMAK.Application.Services.Authentication {
 
             await _userManager.SetAuthenticationTokenAsync(existingUser, Provider.Account, Token.RefreshToken, token.RefreshToken);
 
-            return new Response<TokenResponse>(HttpStatusCode.OK, token);
+
+            var result = new Response<TokenResponse>(HttpStatusCode.OK, token);
+
+            await _cacheService.SetData(cacheKey, result, DateTimeOffset.UtcNow.AddMinutes(8));
+
+            return result;
         }
 
 
@@ -174,6 +190,8 @@ namespace AMAK.Application.Services.Authentication {
             }
 
             await _userManager.RemoveAuthenticationTokenAsync(existingUser, provider, Token.RefreshToken);
+            await _cacheService.RemoveData($"Login_${existingUser.Id}");
+            await _cacheService.RemoveData($"Google_${existingUser.Id}");
             return new Response<string>(HttpStatusCode.OK, "Logout successfully!");
         }
 
@@ -253,17 +271,19 @@ namespace AMAK.Application.Services.Authentication {
         }
 
         public async Task<Response<TokenResponse>> SignInWithGoogle(SocialLoginRequest request) {
-
             var decoded = _tokenService.DecodeSocialToken(request.Token);
-
             if (!decoded.Provider.Equals(Provider.Google)) {
                 throw new BadRequestException("Provider not suitable!");
             }
 
-            var existingAccount = await _userManager.FindByEmailAsync(decoded.Email);
+            var account = await _userManager.FindByEmailAsync(decoded.Email);
 
-            if (existingAccount == null) {
-                var newAccount = new ApplicationUser() {
+            if (account == null) {
+                if (!await _roleManager.RoleExistsAsync(Role.CUSTOMER)) {
+                    throw new InvalidOperationException("Customer Role Not found!");
+                }
+
+                account = new ApplicationUser {
                     Email = decoded.Email,
                     Avatar = decoded.Avatar,
                     FirstName = string.Empty,
@@ -272,27 +292,29 @@ namespace AMAK.Application.Services.Authentication {
                     EmailConfirmed = true,
                 };
 
-                var createUserResult = await _userManager.CreateAsync(newAccount);
-
+                var createUserResult = await _userManager.CreateAsync(account);
                 if (!createUserResult.Succeeded) {
-                    throw new BadRequestException("Wrong data!");
+                    var errors = string.Join(", ", createUserResult.Errors.Select(e => e.Description));
+                    throw new BadRequestException($"Unable to create account: {errors}");
                 }
 
-                if (!await _roleManager.RoleExistsAsync(Role.CUSTOMER)) {
-                    throw new BadRequestException("Customer Role Not found!");
-                }
-
-                await _userManager.AddToRoleAsync(newAccount, Role.CUSTOMER);
-
-                var token = await GenerateAndSetTokensAsync(newAccount, Provider.Google);
-
-                return new Response<TokenResponse>(HttpStatusCode.OK, token);
-            } else {
-
-                var token = await GenerateAndSetTokensAsync(existingAccount, Provider.Google);
-
-                return new Response<TokenResponse>(HttpStatusCode.OK, token);
+                await _userManager.AddToRoleAsync(account, Role.CUSTOMER);
             }
+
+            return await GetOrSetCacheForAccount(account);
+        }
+
+        private async Task<Response<TokenResponse>> GetOrSetCacheForAccount(ApplicationUser account) {
+            var cacheKey = $"Google_${account.Id}";
+            var cachedData = await _cacheService.GetData<Response<TokenResponse>>(cacheKey);
+            if (cachedData != null) {
+                return cachedData;
+            }
+
+            var token = await GenerateAndSetTokensAsync(account, Provider.Google);
+            var result = new Response<TokenResponse>(HttpStatusCode.OK, token);
+            await _cacheService.SetData(cacheKey, result, DateTimeOffset.UtcNow.AddMinutes(8));
+            return result;
         }
 
         private async Task<TokenResponse> GenerateAndSetTokensAsync(ApplicationUser account, string provider) {

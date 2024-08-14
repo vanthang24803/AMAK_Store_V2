@@ -1,5 +1,6 @@
 using AMAK.Application.Common.Helpers;
 using AMAK.Application.Interfaces;
+using AMAK.Application.Providers.Cache;
 using AMAK.Application.Services.Product.Common;
 using AutoMapper;
 using MediatR;
@@ -12,10 +13,14 @@ namespace AMAK.Application.Services.Product.Queries.GetAll {
         private readonly IMapper _mapper;
         private readonly Dictionary<string, (int, int?)> priceLevels;
 
+        private readonly ICacheService _cacheService;
 
-        public GetAllProductQueryHandler(IRepository<Domain.Models.Product> productRepository, IMapper mapper) {
+
+        public GetAllProductQueryHandler(IRepository<Domain.Models.Product> productRepository, IMapper mapper, ICacheService cacheService) {
             _productRepository = productRepository;
+            _cacheService = cacheService;
             _mapper = mapper;
+
 
             priceLevels = new Dictionary<string, (int, int?)>{
                 { "Max", (400000, null) },
@@ -28,6 +33,13 @@ namespace AMAK.Application.Services.Product.Queries.GetAll {
 
         public async Task<PaginationResponse<List<ProductResponse>>> Handle(GetAllProductQuery request, CancellationToken cancellationToken) {
             var query = request.Query;
+
+            var cacheKey = $"GetAllProducts_{query.Name}_{query.Category}_{query.SortBy}_{query.Action}_{query.OrderBy}_{query.Page}_{query.Limit}";
+
+            var cachedData = await _cacheService.GetData<PaginationResponse<List<ProductResponse>>>(cacheKey);
+            if (cachedData != null) {
+                return cachedData;
+            }
 
             var filteredProductsQuery = _productRepository.GetAll()
                 .Where(x => !x.IsDeleted)
@@ -98,6 +110,8 @@ namespace AMAK.Application.Services.Product.Queries.GetAll {
                 TotalItems = totalItemsCount,
                 Result = _mapper.Map<List<ProductResponse>>(products)
             };
+
+            await _cacheService.SetData(cacheKey, result, DateTimeOffset.UtcNow.AddMinutes(5));
 
             return result;
         }
