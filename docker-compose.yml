@@ -1,45 +1,18 @@
 version: "3.8"
 
-networks:
-  dev:
-    driver: bridge
-
 services:
-  api:
-    depends_on:
-      - db
-      - redis
-    ports:
-      - "8080:8080"
-    build:
-      context: .
-      dockerfile: Dockerfile
-    networks:
-      - dev
-
   db:
     image: postgres:16
-    container_name: postgres_container
+    container_name: pg_container
     restart: always
     environment:
-      POSTGRES_DB: ${POSTGRES_DB}
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: Amak
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: anhthang123
     ports:
-      - "5433:5432"
+      - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    networks:
-      - dev
-  redis:
-    image: "redis:alpine"
-    ports:
-      - "6379:6379"
-    volumes:
-      - redis-data:/data
-    networks:
-      - dev
 
 volumes:
   postgres_data:
-  redis-data:
