@@ -7,7 +7,7 @@ namespace AMAK.Application.Services.Review.Dtos {
         [MaxLength(256)]
         public string Content { get; set; } = null!;
 
-        public Guid ProductId { get; set; } 
+        public Guid OrderId { get; set; } 
     }
 
 

@@ -9,100 +9,223 @@ using System.Net;
 using Microsoft.AspNetCore.Http;
 using AMAK.Application.Providers.Upload;
 using Microsoft.EntityFrameworkCore;
+using AMAK.Application.Common.Query;
+using AMAK.Application.Services.Photo.Dtos;
+using AutoMapper;
+using AMAK.Application.Providers.Cache;
 
 namespace AMAK.Application.Services.Review {
     public class ReviewService : IReviewService {
-
         private readonly IRepository<Domain.Models.Review> _reviewRepository;
-
         private readonly IRepository<Domain.Models.Product> _productRepository;
-
+        private readonly IRepository<Domain.Models.Order> _orderRepository;
+        private readonly IRepository<OrderDetail> _orderDetailRepository;
         private readonly UserManager<ApplicationUser> _userManager;
-
-        private readonly IRepository<Domain.Models.ReviewPhoto> _reviewPhotoRepository;
-
+        private readonly IRepository<ReviewPhoto> _reviewPhotoRepository;
         private readonly IUploadService _uploadService;
+        private readonly ICacheService _cacheService;
+        private readonly IMapper _mapper;
 
-
-        public ReviewService(IRepository<Domain.Models.Review> reviewRepository, IRepository<Domain.Models.Product> productRepository, UserManager<ApplicationUser> userManager, IRepository<ReviewPhoto> reviewPhotoRepository, IUploadService uploadService) {
+        public ReviewService(
+            IRepository<Domain.Models.Review> reviewRepository,
+            IRepository<Domain.Models.Product> productRepository,
+            UserManager<ApplicationUser> userManager,
+            IRepository<ReviewPhoto> reviewPhotoRepository,
+            IUploadService uploadService,
+            IRepository<Domain.Models.Order> orderRepository,
+            IRepository<OrderDetail> orderDetailRepository,
+            IMapper mapper,
+            ICacheService cacheService
+        ) {
             _reviewRepository = reviewRepository;
             _productRepository = productRepository;
             _userManager = userManager;
             _reviewPhotoRepository = reviewPhotoRepository;
             _uploadService = uploadService;
+            _orderRepository = orderRepository;
+            _orderDetailRepository = orderDetailRepository;
+            _mapper = mapper;
+            _cacheService = cacheService;
         }
 
         public async Task<Response<string>> CreateAsync(ClaimsPrincipal claims, CreateReviewRequest request, List<IFormFile> files) {
-            var existingAccount = await _userManager.GetUserAsync(claims)
-             ?? throw new NotFoundException("Account not found!");
+            var existingAccount = await _userManager.GetUserAsync(claims) ?? throw new NotFoundException("Account not found!");
 
+            var existingOrder = await _orderRepository.GetAll()
+                .FirstOrDefaultAsync(x => x.Id == request.OrderId && !x.IsDeleted && !x.IsReviewed && x.UserId == existingAccount.Id)
+                ?? throw new NotFoundException("Order not found!");
 
-            var existingProduct = await _productRepository.GetById(request.ProductId) ?? throw new NotFoundException("Product not found!");
+            var listProductIds = await _orderDetailRepository.GetAll()
+                .Where(x => x.OrderId == existingOrder.Id)
+                .Select(x => x.ProductId)
+                .ToListAsync();
 
-            var newReview = new Domain.Models.Review() {
-                Id = Guid.NewGuid(),
-                Star = request.Star,
-                Content = request.Content,
-                ProductId = existingProduct.Id,
-                UserId = existingAccount.Id
-            };
+            var existingProducts = await _productRepository.GetAll()
+                .Where(p => listProductIds.Contains(p.Id))
+                .ToDictionaryAsync(p => p.Id);
 
-            _reviewRepository.Add(newReview);
+            var reviews = new List<Domain.Models.Review>();
+            var reviewPhotos = new List<ReviewPhoto>();
 
+            await _reviewRepository.BeginTransactionAsync();
 
-            await _reviewRepository.SaveChangesAsync();
+            try {
+                foreach (var productId in listProductIds) {
+                    if (!existingProducts.TryGetValue(productId, out var existingProduct)) {
+                        throw new NotFoundException("Product not found!");
+                    }
 
+                    var newReview = new Domain.Models.Review {
+                        Id = Guid.NewGuid(),
+                        Star = request.Star,
+                        Content = request.Content,
+                        ProductId = existingProduct.Id,
+                        UserId = existingAccount.Id
+                    };
 
-            foreach (var file in files) {
-                var upload = await _uploadService.UploadPhotoAsync(file);
+                    reviews.Add(newReview);
 
-                if (upload.Error != null) {
-                    throw new BadRequestException(message: upload.Error.Message);
+                    foreach (var file in files) {
+                        var upload = await _uploadService.UploadPhotoAsync(file);
+                        if (upload.Error != null) {
+                            throw new BadRequestException(upload.Error.Message);
+                        }
+
+                        var newPhoto = new ReviewPhoto {
+                            Id = Guid.NewGuid(),
+                            Url = upload.SecureUrl.AbsoluteUri,
+                            PublicId = upload.PublicId,
+                            ReviewId = newReview.Id
+                        };
+
+                        reviewPhotos.Add(newPhoto);
+                    }
                 }
 
-                var newPhoto = new Domain.Models.ReviewPhoto() {
-                    Id = Guid.NewGuid(),
-                    Url = upload.SecureUrl.AbsoluteUri,
-                    PublicId = upload.PublicId,
-                    ReviewId = newReview.Id
-                };
+                _reviewRepository.AddRange(reviews);
+                _reviewPhotoRepository.AddRange(reviewPhotos);
+                await _reviewRepository.SaveChangesAsync();
+                await _reviewPhotoRepository.SaveChangesAsync();
 
-                _reviewPhotoRepository.Add(newPhoto);
+                existingOrder.IsReviewed = true;
+                await _orderRepository.SaveChangesAsync();
+
+                await _reviewRepository.CommitTransactionAsync();
+            } catch (Exception ex) {
+                await _reviewRepository.RollbackTransactionAsync();
+                throw new BadRequestException("Failed to create review: " + ex.Message);
             }
-
-            await _reviewPhotoRepository.SaveChangesAsync();
-
 
             return new Response<string>(HttpStatusCode.Created, "Review created!");
         }
 
-        public async Task<List<Domain.Models.Review>> GetAllAsync(Guid productId) {
-                 var reviews = await _reviewRepository.GetAll().Where(p => p.ProductId == productId).ToListAsync();
+        public async Task<PaginationResponse<List<ReviewResponse>>> GetAllAsync(Guid productId, BaseQuery query) {
+            var cacheKey = $"Review_Product_{productId}_{query.Limit}_{query.Page}";
 
-            return reviews;
+            var cachedData = await _cacheService.GetData<PaginationResponse<List<ReviewResponse>>>(cacheKey);
+            if (cachedData != null) return cachedData;
+
+            var existingProduct = await _productRepository.GetById(productId) ?? throw new NotFoundException("Product not found!");
+
+            var allReviews = await _reviewRepository.GetAll()
+                .Include(x => x.Photos)
+                .Include(x => x.User)
+                .Where(x => !x.IsDeleted && x.ProductId == existingProduct.Id)
+                .ToListAsync();
+
+            var result = Paginate(allReviews, query);
+            await _cacheService.SetData(cacheKey, result, DateTimeOffset.UtcNow.AddMinutes(5));
+
+            return result;
         }
 
-        public Task<Response<Domain.Models.Review>> GetAsync(ClaimsPrincipal claims, Guid productId, Guid id) {
-            throw new NotImplementedException();
+        public async Task<PaginationResponse<List<ReviewResponse>>> GetAsync(ClaimsPrincipal claims, BaseQuery query) {
+            var existingAccount = await _userManager.GetUserAsync(claims) ?? throw new NotFoundException("Account not found!");
+
+            var cacheKey = $"Review_Account_{existingAccount.Id}_{query.Limit}_{query.Page}";
+
+            var cachedData = await _cacheService.GetData<PaginationResponse<List<ReviewResponse>>>(cacheKey);
+            if (cachedData != null) return cachedData;
+
+            var allReviews = await _reviewRepository.GetAll()
+                .Include(x => x.Photos)
+                .Include(x => x.User)
+                .Where(x => !x.IsDeleted && x.UserId == existingAccount.Id)
+                .ToListAsync();
+
+            var result = Paginate(allReviews, query);
+            await _cacheService.SetData(cacheKey, result, DateTimeOffset.UtcNow.AddMinutes(5));
+
+            return result;
         }
 
+        public async Task<Response<ReviewResponse>> GetOneAsync(Guid id) {
+            var cacheKey = $"Review_Id_{id}";
 
-        // public async Task<PaginationResponse<ReviewResponse>> GetAllAsync(ClaimsPrincipal claims, Guid productId) {
-        //     var reviews = await _reviewRepository.GetAll().Where(p => p.ProductId == productId).ToListAsync();
+            var cachedData = await _cacheService.GetData<Response<ReviewResponse>>(cacheKey);
 
-        //     throw new NotImplementedException();
-        // }
+            var existingReview = await _reviewRepository.GetAll()
+                                                        .Include(x => x.Photos)
+                                                        .Include(x => x.User)
+                                                        .FirstOrDefaultAsync(x => !x.IsDeleted && x.Id == id) ?? throw new NotFoundException("Review not found!");
 
-        // public async Task<Response<ReviewResponse>> GetAsync(ClaimsPrincipal claims, Guid productId, Guid id) {
-        //     var existingReview = await _reviewRepository.GetAll().Include(p => p.Photos).FirstOrDefaultAsync(
-        //          p => p.ProductId == productId && p.Id == id
-        //     ) ?? throw new NotFoundException("Review not found!");
+            var result = new ReviewResponse {
+                Id = existingReview.Id,
+                Star = existingReview.Star,
+                Content = existingReview.Content,
+                User = _mapper.Map<ProfileReviewResponse>(existingReview.User),
+                Photos = existingReview.Photos.Select(photo => new PhotoResponse(
+                    photo.Id,
+                    photo.Url,
+                    photo.CreateAt
+                )).ToList()
+            };
 
-        //     return new Response<ReviewResponse>(HttpStatusCode.OK, _mapper.Map<ReviewResponse>(existingReview));
-        // }
+            await _cacheService.SetData(cacheKey, result, DateTimeOffset.UtcNow.AddMinutes(5));
 
+            return new Response<ReviewResponse>(HttpStatusCode.OK, result);
+        }
 
+        public async Task<Response<string>> RemoveAsync(Guid id) {
+            var existingReview = await _reviewRepository.GetById(id) ?? throw new NotFoundException("Review not found!");
 
+            existingReview.IsDeleted = true;
 
+            await _reviewPhotoRepository.SaveChangesAsync();
+
+            await _cacheService.RemoveData($"Review_Id_{existingReview.Id}");
+
+            return new Response<string>(HttpStatusCode.OK, "Review hidden successfully!");
+        }
+
+        private PaginationResponse<List<ReviewResponse>> Paginate(List<Domain.Models.Review> allReviews, BaseQuery query) {
+            var totalItems = allReviews.Count;
+            var totalPage = (int)Math.Ceiling(totalItems / (double)query.Limit);
+            var skip = (query.Page - 1) * query.Limit;
+
+            var paginatedReviews = allReviews
+                .Skip(skip)
+                .Take(query.Limit)
+                .Select(review => new ReviewResponse {
+                    Id = review.Id,
+                    Star = review.Star,
+                    Content = review.Content,
+                    User = _mapper.Map<ProfileReviewResponse>(review.User),
+                    Photos = review.Photos.Select(photo => new PhotoResponse(
+                        photo.Id,
+                        photo.Url,
+                        photo.CreateAt
+                    )).ToList()
+                })
+                .ToList();
+
+            return new PaginationResponse<List<ReviewResponse>> {
+                CurrentPage = query.Page,
+                TotalPage = totalPage,
+                Items = paginatedReviews.Count,
+                TotalItems = totalItems,
+                Result = paginatedReviews
+            };
+        }
     }
 }

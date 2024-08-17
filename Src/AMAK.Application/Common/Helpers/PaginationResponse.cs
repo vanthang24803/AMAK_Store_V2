@@ -1,20 +1,26 @@
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace AMAK.Application.Common.Helpers {
     public class PaginationResponse<T> where T : class {
-        [JsonProperty("currentPage")]
+        [JsonPropertyName("code")]
+        public int Code { get; set; } = 200;
+
+        [JsonPropertyName("status")]
+        public string Status { get; set; } = "success";
+
+        [JsonPropertyName("result")]
+        public required T Result { get; set; }
+
+        [JsonPropertyName("_currentPage")]
         public int CurrentPage { get; set; }
 
-        [JsonProperty("totalPage")]
+        [JsonPropertyName("_totalPage")]
         public int TotalPage { get; set; }
 
-        [JsonProperty("items")]
+        [JsonPropertyName("_limit")]
         public int Items { get; set; }
 
-        [JsonProperty("total_items")]
+        [JsonPropertyName("_totalItems")]
         public int TotalItems { get; set; }
-
-        [JsonProperty("result")]
-        public required T Result { get; set; }
     }
 }
