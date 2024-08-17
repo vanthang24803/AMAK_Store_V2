@@ -58,6 +58,14 @@ namespace AMAK.Application.Services.Analytics {
 
         public async Task<Response<StatisticalResponse>> GetStatisticalAsync(AnalyticQuery query) {
 
+            var cacheKey = $"Statistical_{query.StartAt}_{query.EndAt}_{query.Status}__{query.Page}_{query.Limit}";
+
+            var cachedData = await _cacheService.GetData<Response<StatisticalResponse>>(cacheKey);
+            if (cachedData != null) {
+                return cachedData;
+            }
+
+
             EOrderStatus? filterStatus = null;
             if (!string.IsNullOrWhiteSpace(query.Status) && status.TryGetValue(query.Status, out EOrderStatus value)) {
                 filterStatus = value;
@@ -136,7 +144,12 @@ namespace AMAK.Application.Services.Analytics {
                 Orders = orderResponseList
             };
 
-            return new Response<StatisticalResponse>(HttpStatusCode.OK, response);
+
+            var result = new Response<StatisticalResponse>(HttpStatusCode.OK, response);
+
+            await _cacheService.SetData(cacheKey, result, DateTimeOffset.UtcNow.AddMinutes(5));
+
+            return result;
         }
     }
 }

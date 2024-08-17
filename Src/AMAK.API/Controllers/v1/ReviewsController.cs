@@ -1,4 +1,6 @@
 
+using AMAK.Application.Common.Constants;
+using AMAK.Application.Common.Query;
 using AMAK.Application.Services.Review;
 using AMAK.Application.Services.Review.Dtos;
 using Asp.Versioning;
@@ -16,24 +18,38 @@ namespace AMAK.API.Controllers.v1 {
             _reviewService = reviewService;
         }
 
-        // [HttpGet]
-        // [Route("Products/{productId:guid}/[controller]")]
+        [HttpGet]
 
-        // public Task<IActionResult> GetAll(Guid productId) {
+        public async Task<IActionResult> GetByUser([FromQuery] ReviewQuery query) {
+            return Ok(await _reviewService.GetAsync(User, query));
+        }
 
-        // }
+        [HttpGet]
+        [Route("{id:guid}")]
+        [AllowAnonymous]
+
+        public async Task<IActionResult> GetOne([FromRoute] Guid id) {
+            return Ok(await _reviewService.GetOneAsync(id));
+        }
+
+        [HttpDelete]
+        [Route("{id:guid}")]
+        [Authorize(Roles = $"{Role.ADMIN}, {Role.MANAGER}")]
+
+        public async Task<IActionResult> Remove([FromRoute] Guid id) {
+            return Ok(await _reviewService.RemoveAsync(id));
+        }
 
         [HttpPost]
-
         public async Task<IActionResult> Save([FromForm] CreateReviewRequest request, List<IFormFile> photos) {
             return StatusCode(StatusCodes.Status201Created, await _reviewService.CreateAsync(User, request, photos));
         }
 
         [HttpGet]
         [AllowAnonymous]
-        [Route("Products/{productId:guid}/[controller]")]
-        public async Task<IActionResult> Get([FromRoute] Guid productId) {
-            return Ok(await _reviewService.GetAllAsync(productId));
+        [Route("Product/{productId:guid}")]
+        public async Task<IActionResult> Get([FromRoute] Guid productId, [FromQuery] ReviewQuery query) {
+            return Ok(await _reviewService.GetAllAsync(productId, query));
         }
     }
 }

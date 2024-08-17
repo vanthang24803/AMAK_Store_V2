@@ -25,7 +25,6 @@ namespace AMAK.API.Controllers.v1 {
 
         [HttpGet]
         [Route("Statistical")]
-        [AllowAnonymous]
         public async Task<IActionResult> ExportStatistical([FromQuery] AnalyticQuery query) {
             return Ok(await _analyticService.GetStatisticalAsync(query));
         }
