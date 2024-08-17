@@ -15,6 +15,7 @@ using AMAK.Application.Services.Review;
 using AMAK.Application.Services.Notification;
 using AMAK.Application.Providers.Momo;
 using AMAK.Application.Providers.Cache;
+using AMAK.Application.Services.Analytics;
 
 namespace AMAK.API.Common.Extensions {
     public static class IocExtension {
@@ -34,6 +35,7 @@ namespace AMAK.API.Common.Extensions {
             services.AddScoped<IBillboardService, BillboardService>();
             services.AddScoped<IReviewService, ReviewService>();
             services.AddScoped<INotificationService, NotificationService>();
+            services.AddScoped<IAnalyticService, AnalyticService>();
 
             services.AddScoped<IMomoService, MomoService>();
             services.AddSingleton<IUploadService, UploadService>();

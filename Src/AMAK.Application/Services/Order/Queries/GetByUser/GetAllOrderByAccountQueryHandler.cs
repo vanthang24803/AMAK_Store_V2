@@ -56,7 +56,7 @@ namespace AMAK.Application.Services.Order.Queries.GetByUser {
             var orders = await orderQuery
                 .Skip((query.Page - 1) * query.Limit)
                 .Take(query.Limit)
-                .ToListAsync();
+                .ToListAsync(cancellationToken: cancellationToken);
 
 
             var response = new List<OrderResponse>();
@@ -74,7 +74,7 @@ namespace AMAK.Application.Services.Order.Queries.GetByUser {
                             Sale = x.Sale,
                             Thumbnail = x.Thumbnail
                         })
-                        .ToListAsync();
+                        .ToListAsync(cancellationToken: cancellationToken);
 
                 var orderResponse = new OrderResponse() {
                     Id = order.Id,
