@@ -20,7 +20,7 @@ namespace AMAK.API.Controllers.v1 {
 
         [HttpGet]
 
-        public async Task<IActionResult> GetByUser([FromQuery] BaseQuery query) {
+        public async Task<IActionResult> GetByUser([FromQuery] ReviewQuery query) {
             return Ok(await _reviewService.GetAsync(User, query));
         }
 
@@ -47,8 +47,8 @@ namespace AMAK.API.Controllers.v1 {
 
         [HttpGet]
         [AllowAnonymous]
-        [Route("Products/{productId:guid}")]
-        public async Task<IActionResult> Get([FromRoute] Guid productId, [FromQuery] BaseQuery query) {
+        [Route("Product/{productId:guid}")]
+        public async Task<IActionResult> Get([FromRoute] Guid productId, [FromQuery] ReviewQuery query) {
             return Ok(await _reviewService.GetAllAsync(productId, query));
         }
     }

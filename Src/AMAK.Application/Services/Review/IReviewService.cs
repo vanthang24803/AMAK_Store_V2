@@ -6,9 +6,9 @@ using Microsoft.AspNetCore.Http;
 
 namespace AMAK.Application.Services.Review {
     public interface IReviewService {
-        Task<PaginationResponse<List<ReviewResponse>>> GetAllAsync(Guid productId, BaseQuery query);
+        Task<ListReviewResponse<List<ReviewResponse>>> GetAllAsync(Guid productId, ReviewQuery query);
 
-        Task<PaginationResponse<List<ReviewResponse>>> GetAsync(ClaimsPrincipal claims, BaseQuery query);
+        Task<ListReviewResponse<List<ReviewResponse>>> GetAsync(ClaimsPrincipal claims, ReviewQuery query);
 
         Task<Response<ReviewResponse>> GetOneAsync(Guid id);
 

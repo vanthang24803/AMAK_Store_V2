@@ -6,7 +6,8 @@ namespace AMAK.Application.Services.Review.Dtos {
         public string? Content { get; set; }
         public float Star { get; set; }
         public List<PhotoResponse> Photos { get; set; } = null!;
-        public ProfileReviewResponse User { get; set; } = null!;
+        public ProfileReviewResponse Author { get; set; } = null!;
+        public DateTime CreateAt { get; set; }
     };
 
     public class ProfileReviewResponse {

@@ -119,10 +119,10 @@ namespace AMAK.Application.Services.Review {
             return new Response<string>(HttpStatusCode.Created, "Review created!");
         }
 
-        public async Task<PaginationResponse<List<ReviewResponse>>> GetAllAsync(Guid productId, BaseQuery query) {
-            var cacheKey = $"Review_Product_{productId}_{query.Limit}_{query.Page}";
+        public async Task<ListReviewResponse<List<ReviewResponse>>> GetAllAsync(Guid productId, ReviewQuery query) {
+            var cacheKey = $"Review_Product_{productId}_{query.Limit}_{query.Page}_{query.Status}_{query.Star}";
 
-            var cachedData = await _cacheService.GetData<PaginationResponse<List<ReviewResponse>>>(cacheKey);
+            var cachedData = await _cacheService.GetData<ListReviewResponse<List<ReviewResponse>>>(cacheKey);
             if (cachedData != null) return cachedData;
 
             var existingProduct = await _productRepository.GetById(productId) ?? throw new NotFoundException("Product not found!");
@@ -139,12 +139,12 @@ namespace AMAK.Application.Services.Review {
             return result;
         }
 
-        public async Task<PaginationResponse<List<ReviewResponse>>> GetAsync(ClaimsPrincipal claims, BaseQuery query) {
+        public async Task<ListReviewResponse<List<ReviewResponse>>> GetAsync(ClaimsPrincipal claims, ReviewQuery query) {
             var existingAccount = await _userManager.GetUserAsync(claims) ?? throw new NotFoundException("Account not found!");
 
-            var cacheKey = $"Review_Account_{existingAccount.Id}_{query.Limit}_{query.Page}";
+            var cacheKey = $"Review_Account_{existingAccount.Id}_{query.Limit}_{query.Page}_{query.Status}_{query.Star}";
 
-            var cachedData = await _cacheService.GetData<PaginationResponse<List<ReviewResponse>>>(cacheKey);
+            var cachedData = await _cacheService.GetData<ListReviewResponse<List<ReviewResponse>>>(cacheKey);
             if (cachedData != null) return cachedData;
 
             var allReviews = await _reviewRepository.GetAll()
@@ -173,12 +173,13 @@ namespace AMAK.Application.Services.Review {
                 Id = existingReview.Id,
                 Star = existingReview.Star,
                 Content = existingReview.Content,
-                User = _mapper.Map<ProfileReviewResponse>(existingReview.User),
+                Author = _mapper.Map<ProfileReviewResponse>(existingReview.User),
                 Photos = existingReview.Photos.Select(photo => new PhotoResponse(
                     photo.Id,
                     photo.Url,
                     photo.CreateAt
-                )).ToList()
+                )).ToList(),
+                CreateAt = existingReview.CreateAt,
             };
 
             await _cacheService.SetData(cacheKey, result, DateTimeOffset.UtcNow.AddMinutes(5));
@@ -198,7 +199,23 @@ namespace AMAK.Application.Services.Review {
             return new Response<string>(HttpStatusCode.OK, "Review hidden successfully!");
         }
 
-        private PaginationResponse<List<ReviewResponse>> Paginate(List<Domain.Models.Review> allReviews, BaseQuery query) {
+        private ListReviewResponse<List<ReviewResponse>> Paginate(List<Domain.Models.Review> allReviews, ReviewQuery query) {
+
+            if (!string.IsNullOrEmpty(query.Status)) {
+                if (query.Status == "Lasted") {
+
+                    allReviews = [.. allReviews.OrderByDescending(r => r.CreateAt)];
+                }
+
+                if (query.Status == "Image") {
+                    allReviews = allReviews.Where(n => n.Photos.Count != 0).ToList();
+                }
+            }
+
+            if (!string.IsNullOrEmpty(query.Star) && int.TryParse(query.Star, out int starValue)) {
+                allReviews = allReviews.Where(n => n.Star == starValue).ToList();
+            }
+
             var totalItems = allReviews.Count;
             var totalPage = (int)Math.Ceiling(totalItems / (double)query.Limit);
             var skip = (query.Page - 1) * query.Limit;
@@ -210,16 +227,25 @@ namespace AMAK.Application.Services.Review {
                     Id = review.Id,
                     Star = review.Star,
                     Content = review.Content,
-                    User = _mapper.Map<ProfileReviewResponse>(review.User),
+                    Author = _mapper.Map<ProfileReviewResponse>(review.User),
                     Photos = review.Photos.Select(photo => new PhotoResponse(
                         photo.Id,
                         photo.Url,
                         photo.CreateAt
-                    )).ToList()
+                    )).ToList(),
+                    CreateAt = review.CreateAt
                 })
                 .ToList();
 
-            return new PaginationResponse<List<ReviewResponse>> {
+            float averageStar = 0;
+
+            if (allReviews.Count > 0) {
+                averageStar = allReviews.Average(r => r.Star);
+            }
+
+
+            return new ListReviewResponse<List<ReviewResponse>> {
+                AverageStar = averageStar,
                 CurrentPage = query.Page,
                 TotalPage = totalPage,
                 Items = paginatedReviews.Count,
