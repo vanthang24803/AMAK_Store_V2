@@ -28,10 +28,10 @@ namespace AMAK.Application.Mapper {
             CreateMap<UpdateOrderByAccountRequest, Order>()
                 .ForMember(dest => dest.UpdateAt, opt => opt.MapFrom(src => DateTime.UtcNow));
 
+            CreateMap<OptionRequest, Option>()
+                .ForMember(dest => dest.UpdateAt, opt => opt.MapFrom(src => DateTime.UtcNow));
 
-            CreateMap<OptionRequest, Option>().ForMember(dest => dest.UpdateAt, opt => opt.MapFrom(src => DateTime.UtcNow));
-            CreateMap<OptionProductUpdate, Option>().ForMember(dest => dest.UpdateAt, opt => opt.MapFrom(src => DateTime.UtcNow));
-
+            CreateMap<OptionProductUpdateRequest, Option>().ForMember(dest => dest.UpdateAt, opt => opt.MapFrom(src => DateTime.UtcNow));
         }
     }
 }
