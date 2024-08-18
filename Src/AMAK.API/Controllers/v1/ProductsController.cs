@@ -1,8 +1,10 @@
 using AMAK.Application.Common.Constants;
 using AMAK.Application.Common.Query;
+using AMAK.Application.Services.Product.Commands.Categories;
 using AMAK.Application.Services.Product.Commands.Create;
 using AMAK.Application.Services.Product.Commands.Delete;
 using AMAK.Application.Services.Product.Commands.Export;
+using AMAK.Application.Services.Product.Commands.Option;
 using AMAK.Application.Services.Product.Commands.Update;
 using AMAK.Application.Services.Product.Common;
 using AMAK.Application.Services.Product.Queries.GetAll;
@@ -54,10 +56,22 @@ namespace AMAK.API.Controllers.v1 {
         }
 
         [HttpPut]
-        [Route("{id}")]
+        [Route("{id:guid}")]
 
         public async Task<IActionResult> Update([FromRoute] Guid id, [FromForm] UpdateProductRequest request, IFormFile? file) {
             return Ok(await _mediator.Send(new UpdateProductCommand(id, file, request)));
+        }
+
+        [HttpPut]
+        [Route("{id:guid}/Categories")]
+        public async Task<IActionResult> UpdateCategories([FromRoute] Guid id, [FromBody] UpdateProductCategoryRequest request) {
+            return Ok(await _mediator.Send(new UpdateProductCategoryCommand(id, request)));
+        }
+
+        [HttpPut]
+        [Route("{id:guid}/Options")]
+        public async Task<IActionResult> UpdateOptions([FromRoute] Guid id, [FromBody] OptionsProductRequest request) {
+            return Ok(await _mediator.Send(new UpdateProductOptionCommand(id, request)));
         }
 
         [HttpDelete]

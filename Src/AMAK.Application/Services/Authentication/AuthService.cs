@@ -50,6 +50,7 @@ namespace AMAK.Application.Services.Authentication {
 
             newUser.UserName = request.Email;
             newUser.SecurityStamp = Guid.NewGuid().ToString();
+            newUser.Avatar = $"https://avatar.iran.liara.run/username?username={newUser.LastName}+{newUser.FirstName}&length=1";
 
 
             var createUserResult = await _userManager.CreateAsync(newUser, request.Password);
