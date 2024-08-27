@@ -24,6 +24,9 @@ namespace AMAK.Application.Services.Authentication {
 
         Task<Response<TokenResponse>> SignInWithGoogle(SocialLoginRequest request);
 
+        Task<Response<AdminResponse>> CreateBotChatApp(CreateBotRequest request);
+
+        Task<Response<List<AdminResponse>>> GetAllAdminMemberAsync();
         Task<string> CreateSeedRole();
         Task<List<IdentityRole>> GetRoles();
     }

@@ -83,6 +83,23 @@ namespace AMAK.API.Controllers.v1 {
             return Ok(await _authService.GetRoles());
         }
 
+        [HttpGet]
+        [AllowAnonymous]
+        [Route("Admins")]
+
+        public async Task<IActionResult> GetAllAdminAsnyc() {
+            return Ok(await _authService.GetAllAdminMemberAsync());
+        }
+
+        [HttpPost]
+        [Route("Bot")]
+        [Authorize(Roles = $"{Role.ADMIN}")]
+        [AllowAnonymous]
+
+        public async Task<IActionResult> CreateBotAsync([FromBody] CreateBotRequest request) {
+            return StatusCode(StatusCodes.Status201Created, await _authService.CreateBotChatApp(request));
+        }
+
         [HttpPost]
         [Route("Upgrade/Manager")]
         [Authorize(Roles = $"{Role.ADMIN}")]

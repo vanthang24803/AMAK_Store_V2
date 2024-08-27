@@ -330,5 +330,50 @@ namespace AMAK.Application.Services.Authentication {
             return token;
         }
 
+        public async Task<Response<List<AdminResponse>>> GetAllAdminMemberAsync() {
+            var adminUsers = await _userManager.GetUsersInRoleAsync(Role.ADMIN);
+
+            var managerUsers = await _userManager.GetUsersInRoleAsync(Role.MANAGER);
+
+            var combinedUsers = managerUsers.Concat(adminUsers).Distinct().ToList();
+
+            var response = combinedUsers.Select(admin => new AdminResponse {
+                Id = admin.Id,
+                Name = $"{admin.FirstName} {admin.LastName}",
+                Avatar = admin.Avatar!,
+            }).ToList();
+
+            return new Response<List<AdminResponse>>(HttpStatusCode.OK, response);
+        }
+
+        public async Task<Response<AdminResponse>> CreateBotChatApp(CreateBotRequest request) {
+            var newBot = new ApplicationUser {
+                FirstName = request.Name,
+                LastName = "",
+                Avatar = "https://www.shutterstock.com/image-vector/chat-bot-logo-design-concept-600nw-1938811039.jpg",
+                SecurityStamp = Guid.NewGuid().ToString(),
+                Email =  $"{request.Name.Replace(" ", "").ToLower()}@amak.com",
+                UserName = request.Name
+            };
+
+            var createBotResult = await _userManager.CreateAsync(newBot);
+
+
+            if (!createBotResult.Succeeded) {
+                throw new BadRequestException("Wrong Data!");
+            }
+
+            if (!await _roleManager.RoleExistsAsync(Role.MANAGER)) {
+                throw new BadRequestException("Customer Role Not found!");
+            }
+
+            await _userManager.AddToRoleAsync(newBot, Role.MANAGER);
+
+            return new Response<AdminResponse>(HttpStatusCode.Created, new AdminResponse() {
+                Id = newBot.Id,
+                Name = request.Name,
+                Avatar = newBot.Avatar
+            });
+        }
     }
 }
