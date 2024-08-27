@@ -41,7 +41,7 @@ namespace AMAK.API.Controllers.v1 {
 
         [HttpGet]
         [Route("ExportExcel")]
-        public async Task<IActionResult> Export() {
+        public async Task<IActionResult> ExportExcel() {
             var result = await _mediator.Send(new ExportProductCommand());
 
             var now = DateTime.UtcNow.ToString("dd-MM-yyyy");
@@ -49,6 +49,20 @@ namespace AMAK.API.Controllers.v1 {
             Response.Headers.Append("Content-Disposition", $"attachment; filename=Export-Data-{now}.xlsx");
 
             return File(result, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        }
+
+
+        [HttpGet]
+        [Route("ExportCSV")]
+        [AllowAnonymous]
+        public async Task<IActionResult> ExportCSV() {
+            var result = await _mediator.Send(new ExportCSVProductCommand());
+
+            var now = DateTime.UtcNow.ToString("dd-MM-yyyy");
+            var fileName = $"Products_{now}.csv";
+
+            return File(result, "text/csv", fileName);
+
         }
         [HttpPost]
         public async Task<IActionResult> Create([FromForm] CreateProductRequest request, IFormFile thumbnail) {
