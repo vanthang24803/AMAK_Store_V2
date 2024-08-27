@@ -8,9 +8,11 @@ namespace AMAK.Application.Common.Helpers {
         [JsonProperty("status")]
         public string Status { get; private set; }
 
+        [JsonProperty("timestamp")]
+        public DateTime Timestamp { get; set; } = DateTime.Now;
+
         [JsonProperty("result")]
         public T Result { get; set; }
-
 
         public Response(HttpStatusCode code, T result) {
             Code = code;
