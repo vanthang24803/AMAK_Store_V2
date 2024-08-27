@@ -4,7 +4,7 @@ using ClosedXML.Excel;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
-namespace AMAK.Application.Services.Product.Commands.Export {
+namespace AMAK.Application.Services.Product.Queries.Export {
     public class ExportProductCommandHandler : IRequestHandler<ExportProductCommand, byte[]> {
 
         private readonly IRepository<Domain.Models.Product> _productRepository;

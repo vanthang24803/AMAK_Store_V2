@@ -3,7 +3,7 @@ using MediatR;
 using Microsoft.EntityFrameworkCore;
 using System.Text;
 
-namespace AMAK.Application.Services.Product.Commands.Export {
+namespace AMAK.Application.Services.Product.Queries.Export {
     public class ExportCSVProductCommandHandler : IRequestHandler<ExportCSVProductCommand, byte[]> {
 
         private readonly IRepository<Domain.Models.Product> _productRepository;

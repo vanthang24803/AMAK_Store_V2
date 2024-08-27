@@ -3,7 +3,7 @@ using AMAK.Application.Common.Query;
 using AMAK.Application.Services.Product.Commands.Categories;
 using AMAK.Application.Services.Product.Commands.Create;
 using AMAK.Application.Services.Product.Commands.Delete;
-using AMAK.Application.Services.Product.Commands.Export;
+using AMAK.Application.Services.Product.Queries.Export;
 using AMAK.Application.Services.Product.Commands.Option;
 using AMAK.Application.Services.Product.Commands.Update;
 using AMAK.Application.Services.Product.Common;
@@ -13,6 +13,7 @@ using Asp.Versioning;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using AMAK.Application.Services.Product.Commands.Import;
 
 
 namespace AMAK.API.Controllers.v1 {
@@ -39,8 +40,17 @@ namespace AMAK.API.Controllers.v1 {
             return Ok(await _mediator.Send(new GetProductDetailQuery(id)));
         }
 
+        [HttpPost]
+        [Route("ImportExcel")]
+        [AllowAnonymous]
+
+        public async Task<IActionResult> ImportExcel(IFormFile file) {
+            return StatusCode(StatusCodes.Status201Created, await _mediator.Send(new ImportExcelToProductCommand(file)));
+        }
+
         [HttpGet]
         [Route("ExportExcel")]
+        [AllowAnonymous]
         public async Task<IActionResult> ExportExcel() {
             var result = await _mediator.Send(new ExportProductCommand());
 
