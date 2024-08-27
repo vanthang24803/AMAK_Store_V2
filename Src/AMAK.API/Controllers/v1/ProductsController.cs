@@ -3,7 +3,7 @@ using AMAK.Application.Common.Query;
 using AMAK.Application.Services.Product.Commands.Categories;
 using AMAK.Application.Services.Product.Commands.Create;
 using AMAK.Application.Services.Product.Commands.Delete;
-using AMAK.Application.Services.Product.Commands.Export;
+using AMAK.Application.Services.Product.Queries.Export;
 using AMAK.Application.Services.Product.Commands.Option;
 using AMAK.Application.Services.Product.Commands.Update;
 using AMAK.Application.Services.Product.Common;
@@ -13,6 +13,7 @@ using Asp.Versioning;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using AMAK.Application.Services.Product.Commands.Import;
 
 
 namespace AMAK.API.Controllers.v1 {
@@ -39,9 +40,18 @@ namespace AMAK.API.Controllers.v1 {
             return Ok(await _mediator.Send(new GetProductDetailQuery(id)));
         }
 
+        [HttpPost]
+        [Route("ImportExcel")]
+        [AllowAnonymous]
+
+        public async Task<IActionResult> ImportExcel(IFormFile file) {
+            return StatusCode(StatusCodes.Status201Created, await _mediator.Send(new ImportExcelToProductCommand(file)));
+        }
+
         [HttpGet]
         [Route("ExportExcel")]
-        public async Task<IActionResult> Export() {
+        [AllowAnonymous]
+        public async Task<IActionResult> ExportExcel() {
             var result = await _mediator.Send(new ExportProductCommand());
 
             var now = DateTime.UtcNow.ToString("dd-MM-yyyy");
@@ -49,6 +59,20 @@ namespace AMAK.API.Controllers.v1 {
             Response.Headers.Append("Content-Disposition", $"attachment; filename=Export-Data-{now}.xlsx");
 
             return File(result, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        }
+
+
+        [HttpGet]
+        [Route("ExportCSV")]
+        [AllowAnonymous]
+        public async Task<IActionResult> ExportCSV() {
+            var result = await _mediator.Send(new ExportCSVProductCommand());
+
+            var now = DateTime.UtcNow.ToString("dd-MM-yyyy");
+            var fileName = $"Products_{now}.csv";
+
+            return File(result, "text/csv", fileName);
+
         }
         [HttpPost]
         public async Task<IActionResult> Create([FromForm] CreateProductRequest request, IFormFile thumbnail) {

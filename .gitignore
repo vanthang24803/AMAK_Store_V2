@@ -487,3 +487,4 @@ docker-compse-production.yml
 *.swp
 .vscode
 *.txt
+data
