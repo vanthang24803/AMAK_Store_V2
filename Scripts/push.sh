@@ -17,4 +17,7 @@ git push
 echo "Pushing Gitlab ${COMMIT_NAME} 🦊🦊🦊🦊🦊"
 git push gitlab
 
+echo "Pushing Azure ${COMMIT_NAME} 🐸🐸🐸🐸🐸🐸"
+git push azure
+
 echo "Commited ${COMMIT_NAME} successfully! ✔️✔️✔️✔️✔️"
