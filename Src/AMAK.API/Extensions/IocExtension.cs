@@ -16,6 +16,7 @@ using AMAK.Application.Services.Notification;
 using AMAK.Application.Providers.Momo;
 using AMAK.Application.Providers.Cache;
 using AMAK.Application.Services.Analytics;
+using AMAK.Application.Providers.ElasticSearch;
 
 namespace AMAK.API.Common.Extensions {
     public static class IocExtension {
@@ -26,6 +27,8 @@ namespace AMAK.API.Common.Extensions {
 
             // TODO:Repository
             services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+            services.AddScoped(typeof(IElasticSearchService<>), typeof(ElasticSearchService<>));
+
 
             // TODO: Service
             services.AddScoped<IMeService, MeService>();
@@ -36,8 +39,8 @@ namespace AMAK.API.Common.Extensions {
             services.AddScoped<IReviewService, ReviewService>();
             services.AddScoped<INotificationService, NotificationService>();
             services.AddScoped<IAnalyticService, AnalyticService>();
-
             services.AddScoped<IMomoService, MomoService>();
+
             services.AddSingleton<IUploadService, UploadService>();
             services.AddSingleton<IMailService, MailService>();
             services.AddSingleton<ITokenService, TokenService>();

@@ -48,6 +48,9 @@ builder.Services.AddCQRS();
 // TODO: Redis
 builder.Services.AddRedisConfig(builder.Configuration);
 
+// TODO: Elastic Search
+builder.Services.AddElasticSearch(builder.Configuration);
+
 
 var app = builder.Build();
 
