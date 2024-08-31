@@ -1,3 +1,4 @@
+using AMAK.Application.Common.Constants;
 using AMAK.Application.Common.Helpers;
 using AMAK.Application.Common.Query;
 using AMAK.Application.Interfaces;
@@ -5,6 +6,8 @@ using AMAK.Application.Providers.Cache;
 using AMAK.Application.Services.Analytics.Dtos;
 using AMAK.Application.Services.Order.Dtos;
 using AMAK.Domain.Enums;
+using AMAK.Domain.Models;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System.Globalization;
 using System.Net;
@@ -16,11 +19,17 @@ namespace AMAK.Application.Services.Analytics {
 
         private readonly IRepository<Domain.Models.OrderDetail> _orderDetailRepository;
 
+        private readonly UserManager<ApplicationUser> _userManager;
+
+        private readonly IRepository<Domain.Models.Category> _categoryRepository;
+
+        private readonly IRepository<Domain.Models.Product> _productRepository;
+
         private readonly ICacheService _cacheService;
 
         private readonly Dictionary<string, EOrderStatus> status;
 
-        public AnalyticService(IRepository<Domain.Models.Order> orderRepository, IRepository<Domain.Models.OrderDetail> orderDetailRepository, ICacheService cacheService) {
+        public AnalyticService(IRepository<Domain.Models.Order> orderRepository, IRepository<Domain.Models.OrderDetail> orderDetailRepository, ICacheService cacheService, UserManager<ApplicationUser> userManager, IRepository<Category> categoryRepository, IRepository<Domain.Models.Product> productRepository) {
             _cacheService = cacheService;
             _orderRepository = orderRepository;
             _orderDetailRepository = orderDetailRepository;
@@ -33,6 +42,9 @@ namespace AMAK.Application.Services.Analytics {
                 {"Cancel" , EOrderStatus.CANCEL},
                 {"Return" , EOrderStatus.RETURN}
             };
+            _userManager = userManager;
+            _categoryRepository = categoryRepository;
+            _productRepository = productRepository;
         }
 
         public async Task<Response<Dictionary<string, double>>> GetBarChartAsync() {
@@ -54,6 +66,28 @@ namespace AMAK.Application.Services.Analytics {
             }
 
             return new Response<Dictionary<string, double>>(HttpStatusCode.OK, monthlyRevenue);
+        }
+
+        public async Task<Response<AnalyticCountResponse>> GetCountResponseAsync() {
+
+            var customers = await _userManager.GetUsersInRoleAsync(Role.CUSTOMER);
+
+            var orders = await _orderRepository.GetAll().Where(x => x.Status != EOrderStatus.SUCCESS).CountAsync();
+
+            var productArchive = await _productRepository.GetAll().Where(x => x.IsDeleted).CountAsync();
+            var productActive = await _productRepository.GetAll().Where(x => !x.IsDeleted).CountAsync();
+
+            var categories = await _categoryRepository.GetAll().CountAsync();
+
+            var response = new AnalyticCountResponse {
+                Archive = productArchive,
+                Active = productActive,
+                Categories = categories,
+                Orders = orders,
+                Customers = customers.Count
+            };
+
+            return new Response<AnalyticCountResponse>(HttpStatusCode.OK, response);
         }
 
         public async Task<Response<StatisticalResponse>> GetStatisticalAsync(AnalyticQuery query) {

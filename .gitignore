@@ -478,8 +478,6 @@ $RECYCLE.BIN/
 *.msm
 *.msp
 
-docker-compose.yml
-docker-compse-production.yml
 # Windows shortcuts
 *.lnk
 
@@ -488,3 +486,6 @@ docker-compse-production.yml
 .vscode
 *.txt
 data
+
+appsettings.Development.json
+appsettings.Production.json

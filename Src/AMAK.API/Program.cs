@@ -51,15 +51,10 @@ builder.Services.AddRedisConfig(builder.Configuration);
 // TODO: Elastic Search
 builder.Services.AddElasticSearch(builder.Configuration);
 
-
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment()) {
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
-
+app.UseSwagger();
+app.UseSwaggerUI();
 app.UseCors("_myAllowSpecificOrigins");
 app.UseHttpsRedirection();
 app.AddMiddleware();
