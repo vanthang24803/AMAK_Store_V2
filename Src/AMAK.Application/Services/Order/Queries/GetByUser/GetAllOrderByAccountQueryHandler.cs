@@ -32,7 +32,7 @@ namespace AMAK.Application.Services.Order.Queries.GetByUser {
                     .GetAll()
                     .Where(x => !x.IsDeleted && x.UserId == existingAccount.Id)
                     .OrderByDescending(x => x.CreateAt)
-                    .AsQueryable();
+                    .AsSplitQuery();
 
             var query = request.Query;
 
@@ -54,6 +54,7 @@ namespace AMAK.Application.Services.Order.Queries.GetByUser {
             var totalPages = (int)Math.Ceiling(totalOrders / (double)query.Limit);
 
             var orders = await orderQuery
+                .OrderBy(p => p.Id)
                 .Skip((query.Page - 1) * query.Limit)
                 .Take(query.Limit)
                 .ToListAsync(cancellationToken: cancellationToken);

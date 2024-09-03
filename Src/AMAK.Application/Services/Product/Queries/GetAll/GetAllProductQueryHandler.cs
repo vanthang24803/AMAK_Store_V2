@@ -12,9 +12,7 @@ namespace AMAK.Application.Services.Product.Queries.GetAll {
         private readonly IRepository<Domain.Models.Product> _productRepository;
         private readonly IMapper _mapper;
         private readonly Dictionary<string, (int, int?)> priceLevels;
-
         private readonly ICacheService _cacheService;
-
 
         public GetAllProductQueryHandler(IRepository<Domain.Models.Product> productRepository, IMapper mapper, ICacheService cacheService) {
             _productRepository = productRepository;
@@ -46,7 +44,7 @@ namespace AMAK.Application.Services.Product.Queries.GetAll {
                 .Include(c => c.Categories)
                 .Include(o => o.Options)
                 .Include(p => p.Photos)
-                .AsQueryable();
+                .AsSplitQuery();
 
             // TODO: Search By Name
             if (!string.IsNullOrWhiteSpace(query.Name)) {
@@ -99,6 +97,7 @@ namespace AMAK.Application.Services.Product.Queries.GetAll {
             var totalPages = (int)Math.Ceiling(totalItemsCount / (double)query.Limit);
 
             var products = await filteredProductsQuery
+                .OrderBy(p => p.Id)
                 .Skip((query.Page - 1) * query.Limit)
                 .Take(query.Limit)
                 .ToListAsync(cancellationToken);

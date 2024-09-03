@@ -105,7 +105,7 @@ namespace AMAK.Application.Services.Analytics {
                 filterStatus = value;
             }
 
-            var orderQuery = _orderRepository.GetAll().AsQueryable();
+            var orderQuery = _orderRepository.GetAll().AsSplitQuery();
 
             if (filterStatus.HasValue) {
                 orderQuery = orderQuery.Where(o => o.Status == filterStatus.Value);
