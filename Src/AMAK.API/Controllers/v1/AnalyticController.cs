@@ -29,5 +29,14 @@ namespace AMAK.API.Controllers.v1 {
             return Ok(await _analyticService.GetStatisticalAsync(query));
         }
 
+
+        [HttpGet]
+        [Route("Count")]
+        [AllowAnonymous]
+
+        public async Task<IActionResult> GetCountResponse() {
+            return Ok(await _analyticService.GetCountResponseAsync());
+        }
+
     }
 }

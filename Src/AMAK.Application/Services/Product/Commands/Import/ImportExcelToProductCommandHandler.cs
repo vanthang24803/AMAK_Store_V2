@@ -1,28 +1,29 @@
-using AMAK.Application.Common.Exceptions;
-using AMAK.Application.Common.Helpers;
-using AMAK.Application.Interfaces;
-using ClosedXML.Excel;
-using DocumentFormat.OpenXml.Spreadsheet;
 using MediatR;
+using ClosedXML.Excel;
 using Microsoft.AspNetCore.Http;
+using AMAK.Application.Interfaces;
+using AMAK.Application.Common.Helpers;
+using AMAK.Application.Common.Exceptions;
+using AMAK.Application.Providers.ElasticSearch;
+using Microsoft.Extensions.Logging;
 
 namespace AMAK.Application.Services.Product.Commands.Import {
     public class ImportExcelToProductCommandHandler : IRequestHandler<ImportExcelToProductCommand, Response<string>> {
 
         private readonly IRepository<Domain.Models.Product> _productRepository;
-
         private readonly IRepository<Domain.Models.ProductCategory> _productCategoryRepository;
-
         private readonly IRepository<Domain.Models.Option> _optionRepository;
-
         private readonly IRepository<Domain.Models.Photo> _photoRepository;
+        private readonly IElasticSearchService<Domain.Models.Product> _productSearchService;
+        private readonly ILogger<ImportExcelToProductCommandHandler> _logger;
 
-
-        public ImportExcelToProductCommandHandler(IRepository<Domain.Models.Product> productRepository, IRepository<Domain.Models.ProductCategory> productCategoryRepository, IRepository<Domain.Models.Option> optionRepository, IRepository<Domain.Models.Photo> photoRepository) {
+        public ImportExcelToProductCommandHandler(IRepository<Domain.Models.Product> productRepository, IRepository<Domain.Models.ProductCategory> productCategoryRepository, IRepository<Domain.Models.Option> optionRepository, IRepository<Domain.Models.Photo> photoRepository, IElasticSearchService<Domain.Models.Product> productSearchService, ILogger<ImportExcelToProductCommandHandler> logger) {
             _productRepository = productRepository;
             _productCategoryRepository = productCategoryRepository;
             _optionRepository = optionRepository;
             _photoRepository = photoRepository;
+            _productSearchService = productSearchService;
+            _logger = logger;
         }
 
 
@@ -56,7 +57,7 @@ namespace AMAK.Application.Services.Product.Commands.Import {
                 _productRepository.AddRange(products);
 
                 await _photoRepository.SaveChangesAsync();
-
+                await _productSearchService.Index(products);
 
                 var productCategories = categoriesSheet.RowsUsed().Skip(1).Select(row => new Domain.Models.ProductCategory {
                     ProductId = Guid.Parse(row.Cell(1).GetValue<string>()),
@@ -66,7 +67,6 @@ namespace AMAK.Application.Services.Product.Commands.Import {
                 _productCategoryRepository.AddRange(productCategories);
 
                 await _productCategoryRepository.SaveChangesAsync();
-
 
                 var options = optionsSheet.RowsUsed().Skip(1).Select(row => new Domain.Models.Option {
                     Id = Guid.NewGuid(),
@@ -95,9 +95,12 @@ namespace AMAK.Application.Services.Product.Commands.Import {
 
                 await _productRepository.CommitTransactionAsync();
 
-            } catch (Exception) {
+                _logger.LogInformation("Import Data successfully! at {DateTimeUTC}", DateTime.UtcNow);
+
+            } catch (Exception e) {
+                _logger.LogError(e, "Failed to import data from Excel at {DateTimeUTC}", DateTime.UtcNow);
                 await _productRepository.RollbackTransactionAsync();
-                throw new BadRequestException("Query wrong!");
+                throw new BadRequestException(e.Message);
             }
 
         }

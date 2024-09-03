@@ -7,5 +7,7 @@ namespace AMAK.Application.Services.Analytics {
         Task<Response<Dictionary<string, double>>> GetBarChartAsync();
 
         Task<Response<StatisticalResponse>> GetStatisticalAsync(AnalyticQuery query);
+
+        Task<Response<AnalyticCountResponse>> GetCountResponseAsync();
     }
 }
