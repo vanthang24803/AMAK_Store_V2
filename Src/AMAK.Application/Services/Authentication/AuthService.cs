@@ -333,7 +333,7 @@ namespace AMAK.Application.Services.Authentication {
         public async Task<Response<List<AdminResponse>>> GetAllAdminMemberAsync() {
             var adminUsers = await _userManager.GetUsersInRoleAsync(Role.ADMIN);
 
-            var managerUsers = await _userManager.GetUsersInRoleAsync(Role.MANAGER);
+            var managerUsers = await _userManager.GetUsersInRoleAsync(Role.CUSTOMER);
 
             var combinedUsers = managerUsers.Concat(adminUsers).Distinct().ToList();
 

@@ -32,6 +32,8 @@ namespace AMAK.Infrastructure.Context {
 
         public DbSet<MessageUser> MessageUsers { get; set; }
 
+        public DbSet<Domain.Models.Chat> Chats { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder) {
 
             base.OnModelCreating(modelBuilder);
@@ -78,7 +80,7 @@ namespace AMAK.Infrastructure.Context {
                             j => j
                                 .HasOne<ApplicationUser>()
                                 .WithMany()
-                                .HasForeignKey(mu => mu.UserId), 
+                                .HasForeignKey(mu => mu.UserId),
                             j => j
                                 .HasOne<Notification>()
                                 .WithMany()
