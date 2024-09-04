@@ -14,7 +14,7 @@ namespace AMAK.API.Extensions {
             services.AddEnvConfig();
 
             // TODO: Cors
-            services.AddCorsConfig();
+            services.AddCorsConfig(builder.Configuration);
 
             // TODO: Controller
             services.AddControllers();
