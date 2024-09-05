@@ -26,6 +26,7 @@ namespace AMAK.API.Controllers.v1 {
 
         [HttpPost]
         [Route("{productId}/[controller]")]
+        [Authorize]
         public async Task<IActionResult> Save([FromRoute] Guid productId, [FromBody] OptionRequest request) {
             return StatusCode(StatusCodes.Status201Created, await _optionsService.CreateAsync(productId, request));
         }
