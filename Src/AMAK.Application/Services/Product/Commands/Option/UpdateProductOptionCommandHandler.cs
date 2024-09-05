@@ -7,13 +7,13 @@ using MediatR;
 using Microsoft.EntityFrameworkCore;
 
 namespace AMAK.Application.Services.Product.Commands.Option {
-    public class OptionProductUpdateRequestHandler : IRequestHandler<UpdateProductOptionCommand, Response<string>> {
+    public class UpdateProductOptionCommandHandler : IRequestHandler<UpdateProductOptionCommand, Response<string>> {
         private readonly IRepository<Domain.Models.Product> _productRepository;
         private readonly IRepository<Domain.Models.Option> _optionRepository;
         private readonly ICacheService _cacheService;
         private readonly IMapper _mapper;
 
-        public OptionProductUpdateRequestHandler(IMapper mapper, ICacheService cacheService, IRepository<Domain.Models.Option> optionRepository, IRepository<Domain.Models.Product> productRepository) {
+        public UpdateProductOptionCommandHandler(IMapper mapper, ICacheService cacheService, IRepository<Domain.Models.Option> optionRepository, IRepository<Domain.Models.Product> productRepository) {
             _mapper = mapper;
             _cacheService = cacheService;
             _optionRepository = optionRepository;

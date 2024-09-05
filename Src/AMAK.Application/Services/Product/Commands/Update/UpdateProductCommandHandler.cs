@@ -2,7 +2,6 @@ using AMAK.Application.Common.Exceptions;
 using AMAK.Application.Common.Helpers;
 using AMAK.Application.Interfaces;
 using AMAK.Application.Providers.Cache;
-using AMAK.Application.Providers.Mail;
 using AMAK.Application.Providers.Upload;
 using AMAK.Application.Services.Product.Common;
 using AMAK.Domain.Models;

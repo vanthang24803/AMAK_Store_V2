@@ -17,7 +17,6 @@ namespace AMAK.Application.Services.Product.Commands.Create {
         public readonly IRepository<Domain.Models.ProductCategory> _productCategoryRepository;
         private readonly IUploadService _uploadService;
 
-        private readonly ICacheService _cacheService;
         private readonly IMapper _mapper;
 
         public CreateProductCommandHandler(
@@ -26,15 +25,14 @@ namespace AMAK.Application.Services.Product.Commands.Create {
             IRepository<Domain.Models.Category> categoryRepository,
             IUploadService uploadService,
             IMapper mapper,
-            IRepository<Domain.Models.ProductCategory> productCategoryRepository,
-            ICacheService cacheService) {
+            IRepository<Domain.Models.ProductCategory> productCategoryRepository
+           ) {
             _productRepository = productRepository;
             _optionRepository = optionRepository;
             _categoryRepository = categoryRepository;
             _uploadService = uploadService;
             _mapper = mapper;
             _productCategoryRepository = productCategoryRepository;
-            _cacheService = cacheService;
         }
 
         public async Task<Response<ProductResponse>> Handle(CreateProductCommand request, CancellationToken cancellationToken) {

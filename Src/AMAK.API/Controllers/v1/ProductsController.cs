@@ -33,7 +33,7 @@ namespace AMAK.API.Controllers.v1 {
         }
 
         [HttpGet]
-        [Route("{id}")]
+        [Route("{id:guid}")]
         [AllowAnonymous]
 
         public async Task<IActionResult> Get([FromRoute] Guid id) {
@@ -69,11 +69,28 @@ namespace AMAK.API.Controllers.v1 {
             var result = await _mediator.Send(new ExportCSVProductCommand());
 
             var now = DateTime.UtcNow.ToString("dd-MM-yyyy");
-            var fileName = $"Products_{now}.csv";
+            var fileName = $"Export-Data-{now}.csv";
 
-            return File(result, "text/csv", fileName);
+            Response.Headers.Append("Content-Disposition", $"attachment; filename={fileName}");
 
+            return File(result, "text/csv");
         }
+
+
+        [HttpGet]
+        [Route("ExportJson")]
+        [AllowAnonymous]
+        public async Task<IActionResult> ExportJson() {
+            var result = await _mediator.Send(new ExportJsonProductQuery());
+
+            var now = DateTime.UtcNow.ToString("dd-MM-yyyy");
+            var fileName = $"Export-Data-{now}.json";
+
+            Response.Headers.Append("Content-Disposition", $"attachment; filename={fileName}");
+
+            return File(result, "application/json", fileName);
+        }
+
         [HttpPost]
         public async Task<IActionResult> Create([FromForm] CreateProductRequest request, IFormFile thumbnail) {
             return StatusCode(StatusCodes.Status201Created, await _mediator.Send(new CreateProductCommand(request, thumbnail)));

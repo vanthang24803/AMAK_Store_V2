@@ -4,6 +4,10 @@ COMMIT_NAME="$1"
 
 echo "Push commit ${COMMIT_NAME} 🙀🙀🙀🙀🙀"
 
+sh build.sh
+
+sh test.sh
+
 cd ../
 
 echo "Add commit ${COMMIT_NAME} 💀💀💀💀💀"
