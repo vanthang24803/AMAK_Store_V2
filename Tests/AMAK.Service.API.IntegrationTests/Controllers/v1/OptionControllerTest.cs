@@ -56,11 +56,12 @@ namespace AMAK.Service.API.IntegrationTests.Controllers.v1 {
 
             Assert.Equal((int)HttpStatusCode.OK, okResult.StatusCode);
             var actualResponse = Assert.IsType<Response<List<OptionResponse>>>(okResult.Value);
+            Assert.Equal(expectedResponse, actualResponse);
+            Assert.Equal((int)expectedResponse.Code, okResult.StatusCode!.Value);
         }
 
         [Fact]
         public async Task Get_Detail_Option_Return_200() {
-
             _mockOptionsService
                 .Setup(service => service.GetAsync(_productId, _optionId))
                 .ReturnsAsync(_response);
@@ -70,21 +71,34 @@ namespace AMAK.Service.API.IntegrationTests.Controllers.v1 {
             var okResult = Assert.IsType<OkObjectResult>(result);
             Assert.Equal((int)HttpStatusCode.OK, okResult.StatusCode);
             var actualResponse = Assert.IsType<Response<OptionResponse>>(okResult.Value);
-
+            Assert.Equal(_response, actualResponse);
+            Assert.Equal((int)_response.Code, okResult.StatusCode!.Value);
         }
 
 
         [Fact]
         public async Task Post_Create_Option_Return_201() {
+            var expectedResponse = new Response<OptionResponse>(HttpStatusCode.Created, new OptionResponse(
+                _optionId,
+                "Thường",
+                10,
+                10000,
+                1000,
+                true,
+                DateTime.UtcNow
+            ));
+
             _mockOptionsService
                .Setup(service => service.CreateAsync(_productId, _request))
-               .ReturnsAsync(_response);
+               .ReturnsAsync(expectedResponse);
 
             var result = await _controller.Save(_productId, _request);
 
             var okResult = Assert.IsType<ObjectResult>(result);
             Assert.Equal((int)HttpStatusCode.Created, okResult.StatusCode);
             var actualResponse = Assert.IsType<Response<OptionResponse>>(okResult.Value);
+            Assert.Equal(expectedResponse, actualResponse);
+            Assert.Equal((int)expectedResponse.Code, okResult.StatusCode!.Value);
         }
 
         [Fact]
@@ -98,6 +112,8 @@ namespace AMAK.Service.API.IntegrationTests.Controllers.v1 {
             var okResult = Assert.IsType<OkObjectResult>(result);
             Assert.Equal((int)HttpStatusCode.OK, okResult.StatusCode);
             var actualResponse = Assert.IsType<Response<OptionResponse>>(okResult.Value);
+            Assert.Equal(_response, actualResponse);
+            Assert.Equal((int)_response.Code, okResult.StatusCode!.Value);
         }
 
         [Fact]
@@ -114,6 +130,8 @@ namespace AMAK.Service.API.IntegrationTests.Controllers.v1 {
             var okResult = Assert.IsType<OkObjectResult>(result);
             Assert.Equal((int)HttpStatusCode.OK, okResult.StatusCode);
             var actualResponse = Assert.IsType<Response<string>>(okResult.Value);
+            Assert.Equal(expectedResponse, actualResponse);
+            Assert.Equal((int)expectedResponse.Code, okResult.StatusCode!.Value);
         }
     }
 }

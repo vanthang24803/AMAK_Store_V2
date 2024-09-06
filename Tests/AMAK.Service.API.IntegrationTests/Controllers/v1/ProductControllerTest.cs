@@ -20,9 +20,9 @@ using Moq;
 namespace AMAK.Service.API.IntegrationTests.Controllers.v1 {
 
     public class ProductControllerTest {
+        private readonly Guid productId;
         private readonly Mock<IMediator> _mediatorMock;
         private readonly ProductsController _controller;
-        private readonly Guid productId;
         private readonly ProductResponse productResponse;
         private readonly Mock<IFormFile> fileMock;
         public ProductControllerTest() {
