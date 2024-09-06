@@ -88,7 +88,9 @@ namespace AMAK.Application.Services.Order.Queries.GetByUser {
                     Payment = order.Payment,
                     Quantity = order.Quantity,
                     TotalPrice = order.TotalPrice,
-                    OrderDetails = details
+                    OrderDetails = details,
+                    CreateAt = order.CreateAt,
+                    UpdateAt = order.UpdateAt
                 };
 
                 response.Add(orderResponse);

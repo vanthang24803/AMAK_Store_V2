@@ -128,9 +128,9 @@ namespace AMAK.Application.Services.Order.Commands.Create {
                 await _mailService.SendOrderMail(data.Email, "Xác nhận đơn hàng", newOrder, orderDetails);
 
                 await _orderRepository.CommitTransactionAsync();
-            } catch (Exception) {
+            } catch (Exception e) {
                 await _orderRepository.RollbackTransactionAsync();
-                throw new BadRequestException("Query wrong!");
+                throw new BadRequestException(e.Message);
             }
 
             return new Response<string>(HttpStatusCode.Created, "Product created Successfully!");
