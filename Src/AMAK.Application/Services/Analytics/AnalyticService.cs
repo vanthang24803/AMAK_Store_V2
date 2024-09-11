@@ -25,6 +25,8 @@ namespace AMAK.Application.Services.Analytics {
 
         private readonly IRepository<Domain.Models.Product> _productRepository;
 
+        private readonly IRepository<Domain.Models.Option> _optionRepository;
+
         private readonly ICacheService _cacheService;
 
         private readonly Dictionary<string, EOrderStatus> status;
@@ -32,7 +34,7 @@ namespace AMAK.Application.Services.Analytics {
         private readonly Dictionary<(double, double?), string> rank;
 
 
-        public AnalyticService(IRepository<Domain.Models.Order> orderRepository, IRepository<Domain.Models.OrderDetail> orderDetailRepository, ICacheService cacheService, UserManager<ApplicationUser> userManager, IRepository<Category> categoryRepository, IRepository<Domain.Models.Product> productRepository) {
+        public AnalyticService(IRepository<Domain.Models.Order> orderRepository, IRepository<Domain.Models.OrderDetail> orderDetailRepository, ICacheService cacheService, UserManager<ApplicationUser> userManager, IRepository<Category> categoryRepository, IRepository<Domain.Models.Product> productRepository, IRepository<Option> optionRepository) {
             _cacheService = cacheService;
             _orderRepository = orderRepository;
             _orderDetailRepository = orderDetailRepository;
@@ -56,9 +58,10 @@ namespace AMAK.Application.Services.Analytics {
             _userManager = userManager;
             _categoryRepository = categoryRepository;
             _productRepository = productRepository;
+            _optionRepository = optionRepository;
         }
 
-       
+
 
         public async Task<Response<BarChartResponse>> GetBarChartAsync() {
             var cacheKey = $"Analytics_BarChart";
@@ -131,8 +134,97 @@ namespace AMAK.Application.Services.Analytics {
 
             var result = new Response<BarChartResponse>(HttpStatusCode.OK, newBarChart);
 
-             await _cacheService.SetData(cacheKey, result, DateTimeOffset.UtcNow.AddMinutes(10));
-             return result;
+            await _cacheService.SetData(cacheKey, result, DateTimeOffset.UtcNow.AddMinutes(10));
+            return result;
+        }
+
+        public async Task<Response<AreaChartResponse>> GetAreaChartAsync() {
+            var cacheKey = $"Analytics_AreaChart";
+
+            var cachedData = await _cacheService.GetData<Response<AreaChartResponse>>(cacheKey);
+
+            if (cachedData != null) {
+                return cachedData;
+            }
+
+            DateTime today = DateTime.UtcNow;
+            DateTime startOfLast30Days = today.AddDays(-30).Date;
+            DateTime startOfLast7Days = today.AddDays(-7).Date;
+
+            List<DateTime> daysInMonth = Enumerable.Range(0, (today - startOfLast30Days).Days + 1)
+                .Select(offset => startOfLast30Days.AddDays(offset))
+                .ToList();
+
+            List<DateTime> daysInWeek = Enumerable.Range(0, (today - startOfLast7Days).Days + 1)
+                .Select(offset => startOfLast7Days.AddDays(offset))
+                .ToList();
+
+            List<DateTime> daysInDay = [today.Date];
+
+            var dayEntries = new List<DataEntry>();
+            var weekEntries = new List<DataEntry>();
+            var monthEntries = new List<DataEntry>();
+
+            foreach (var date in daysInDay) {
+                var inputDay = await _optionRepository.GetAll()
+                    .Where(o => o.UpdateAt.Date == date)
+                    .SumAsync(x => x.Quantity);
+
+                var outputDay = await _orderRepository.GetAll()
+                    .Include(o => o.Options)
+                    .Where(o => o.CreateAt.Date == date)
+                    .SumAsync(option => option.Quantity);
+
+                dayEntries.Add(new DataEntry {
+                    Date = date.ToString("yyyy-MM-dd"),
+                    Input = inputDay,
+                    Output = outputDay
+                });
+            }
+
+            foreach (var date in daysInWeek) {
+                var inputWeek = await _optionRepository.GetAll()
+                    .Where(o => o.UpdateAt.Date == date)
+                    .SumAsync(x => x.Quantity);
+
+                var outputWeek = await _orderRepository.GetAll()
+                    .Include(o => o.Options)
+                    .Where(o => o.CreateAt.Date == date)
+                    .SumAsync(option => option.Quantity);
+
+                weekEntries.Add(new DataEntry {
+                    Date = date.ToString("yyyy-MM-dd"),
+                    Input = inputWeek,
+                    Output = outputWeek
+                });
+            }
+
+            foreach (var date in daysInMonth) {
+                var inputMonth = await _optionRepository.GetAll()
+                    .Where(o => o.UpdateAt.Date == date)
+                    .SumAsync(x => x.Quantity);
+
+                var outputMonth = await _orderRepository.GetAll()
+                    .Include(o => o.Options)
+                    .Where(o => o.CreateAt.Date == date)
+                    .SumAsync(option => option.Quantity);
+
+                monthEntries.Add(new DataEntry {
+                    Date = date.ToString("yyyy-MM-dd"),
+                    Input = inputMonth,
+                    Output = outputMonth
+                });
+            }
+
+            var response = new AreaChartResponse {
+                Day = dayEntries,
+                Week = weekEntries,
+                Month = monthEntries
+            };
+
+            var result = new Response<AreaChartResponse>(HttpStatusCode.OK, response);
+            await _cacheService.SetData(cacheKey, result, DateTimeOffset.UtcNow.AddMinutes(10));
+            return result;
         }
 
         public async Task<Response<AnalyticCountResponse>> GetCountResponseAsync() {
@@ -306,5 +398,7 @@ namespace AMAK.Application.Services.Analytics {
                 return string.Empty;
             }
         }
+
     }
+
 }

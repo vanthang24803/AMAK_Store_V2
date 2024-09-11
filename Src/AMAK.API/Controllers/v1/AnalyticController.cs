@@ -22,6 +22,13 @@ namespace AMAK.API.Controllers.v1 {
             return Ok(await _analyticService.GetBarChartAsync());
         }
 
+        [HttpGet]
+        [Route("AreaChart")]
+        [AllowAnonymous]
+        public async Task<IActionResult> AreaChart() {
+            return Ok(await _analyticService.GetAreaChartAsync());
+        }
+
 
         [HttpGet]
         [Route("Statistical")]
@@ -29,7 +36,7 @@ namespace AMAK.API.Controllers.v1 {
             return Ok(await _analyticService.GetStatisticalAsync(query));
         }
 
-        
+
 
         [HttpGet]
         [Route("Count")]
