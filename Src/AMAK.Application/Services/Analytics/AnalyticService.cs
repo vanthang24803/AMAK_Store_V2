@@ -25,11 +25,16 @@ namespace AMAK.Application.Services.Analytics {
 
         private readonly IRepository<Domain.Models.Product> _productRepository;
 
+        private readonly IRepository<Domain.Models.Option> _optionRepository;
+
         private readonly ICacheService _cacheService;
 
         private readonly Dictionary<string, EOrderStatus> status;
 
-        public AnalyticService(IRepository<Domain.Models.Order> orderRepository, IRepository<Domain.Models.OrderDetail> orderDetailRepository, ICacheService cacheService, UserManager<ApplicationUser> userManager, IRepository<Category> categoryRepository, IRepository<Domain.Models.Product> productRepository) {
+        private readonly Dictionary<(double, double?), string> rank;
+
+
+        public AnalyticService(IRepository<Domain.Models.Order> orderRepository, IRepository<Domain.Models.OrderDetail> orderDetailRepository, ICacheService cacheService, UserManager<ApplicationUser> userManager, IRepository<Category> categoryRepository, IRepository<Domain.Models.Product> productRepository, IRepository<Option> optionRepository) {
             _cacheService = cacheService;
             _orderRepository = orderRepository;
             _orderDetailRepository = orderDetailRepository;
@@ -42,30 +47,184 @@ namespace AMAK.Application.Services.Analytics {
                 {"Cancel" , EOrderStatus.CANCEL},
                 {"Return" , EOrderStatus.RETURN}
             };
+            rank = new Dictionary<(double, double?), string>()
+         {
+                { (0 , 100000), "Bronze" },
+                { (100000, 500000),"Silver" },
+                { (500000 , 1500000),"Gold" },
+                { (1500000 , 3500000),"Platinum" },
+                { (3500000, null),"Diamond" }
+            };
             _userManager = userManager;
             _categoryRepository = categoryRepository;
             _productRepository = productRepository;
+            _optionRepository = optionRepository;
         }
 
-        public async Task<Response<Dictionary<string, double>>> GetBarChartAsync() {
 
+
+        public async Task<Response<BarChartResponse>> GetBarChartAsync() {
+            var cacheKey = $"Analytics_BarChart";
+
+            var cachedData = await _cacheService.GetData<Response<BarChartResponse>>(cacheKey);
+
+            if (cachedData != null) {
+                return cachedData;
+            }
             var orders = await _orderRepository.GetAll()
                 .Where(x => x.Status == EOrderStatus.SUCCESS)
                 .ToListAsync();
 
             var monthlyRevenue = new Dictionary<string, double>
-           {
+            {
                 {"Jan", 0}, {"Feb", 0}, {"Mar", 0}, {"Apr", 0},
                 {"May", 0}, {"Jun", 0}, {"Jul", 0}, {"Aug", 0},
                 {"Sep", 0}, {"Oct", 0}, {"Nov", 0}, {"Dec", 0}
             };
 
+            var dailyRevenue = new Dictionary<string, double>();
+            var weeklyRevenue = new Dictionary<string, double>();
+
+            DateTime today = DateTime.UtcNow;
+            DateTime startOfLast30Days = today.AddDays(-30).Date;
+            DateTime startOfLast7Days = today.AddDays(-7).Date;
+
             foreach (var order in orders) {
-                var month = order.CreateAt.ToString("MMM");
+                var orderDate = order.CreateAt.Date;
+
+                string month = order.CreateAt.ToString("MMM", CultureInfo.InvariantCulture);
                 monthlyRevenue[month] += order.TotalPrice;
+
+                if (orderDate >= startOfLast30Days && orderDate <= today) {
+                    string dayKey = orderDate.ToString("yyyy-MM-dd");
+                    if (!dailyRevenue.ContainsKey(dayKey)) {
+                        dailyRevenue[dayKey] = 0;
+                    }
+                    dailyRevenue[dayKey] += order.TotalPrice;
+                }
+
+                if (orderDate >= startOfLast7Days && orderDate <= today) {
+                    string weekKey = orderDate.ToString("yyyy-MM-dd");
+                    if (!weeklyRevenue.ContainsKey(weekKey)) {
+                        weeklyRevenue[weekKey] = 0;
+                    }
+                    weeklyRevenue[weekKey] += order.TotalPrice;
+                }
             }
 
-            return new Response<Dictionary<string, double>>(HttpStatusCode.OK, monthlyRevenue);
+            for (DateTime date = startOfLast30Days; date <= today; date = date.AddDays(1)) {
+                string dayKey = date.ToString("yyyy-MM-dd");
+                if (!dailyRevenue.ContainsKey(dayKey)) {
+                    dailyRevenue[dayKey] = 0;
+                }
+            }
+
+            for (DateTime date = startOfLast7Days; date <= today; date = date.AddDays(1)) {
+                string weekKey = date.ToString("yyyy-MM-dd");
+                if (!weeklyRevenue.ContainsKey(weekKey)) {
+                    weeklyRevenue[weekKey] = 0;
+                }
+            }
+
+            var newBarChart = new BarChartResponse {
+                Year = monthlyRevenue,
+                Week = weeklyRevenue,
+                Month = dailyRevenue,
+            };
+
+            var result = new Response<BarChartResponse>(HttpStatusCode.OK, newBarChart);
+
+            await _cacheService.SetData(cacheKey, result, DateTimeOffset.UtcNow.AddMinutes(10));
+            return result;
+        }
+
+        public async Task<Response<AreaChartResponse>> GetAreaChartAsync() {
+            var cacheKey = $"Analytics_AreaChart";
+
+            var cachedData = await _cacheService.GetData<Response<AreaChartResponse>>(cacheKey);
+
+            if (cachedData != null) {
+                return cachedData;
+            }
+
+            DateTime today = DateTime.UtcNow;
+            DateTime startOfLast30Days = today.AddDays(-30).Date;
+            DateTime startOfLast7Days = today.AddDays(-7).Date;
+
+            List<DateTime> daysInMonth = Enumerable.Range(0, (today - startOfLast30Days).Days + 1)
+                .Select(offset => startOfLast30Days.AddDays(offset))
+                .ToList();
+
+            List<DateTime> daysInWeek = Enumerable.Range(0, (today - startOfLast7Days).Days + 1)
+                .Select(offset => startOfLast7Days.AddDays(offset))
+                .ToList();
+
+            List<DateTime> daysInDay = [today.Date];
+
+            var dayEntries = new List<DataEntry>();
+            var weekEntries = new List<DataEntry>();
+            var monthEntries = new List<DataEntry>();
+
+            foreach (var date in daysInDay) {
+                var inputDay = await _optionRepository.GetAll()
+                    .Where(o => o.UpdateAt.Date == date)
+                    .SumAsync(x => x.Quantity);
+
+                var outputDay = await _orderRepository.GetAll()
+                    .Include(o => o.Options)
+                    .Where(o => o.CreateAt.Date == date)
+                    .SumAsync(option => option.Quantity);
+
+                dayEntries.Add(new DataEntry {
+                    Date = date.ToString("yyyy-MM-dd"),
+                    Input = inputDay,
+                    Output = outputDay
+                });
+            }
+
+            foreach (var date in daysInWeek) {
+                var inputWeek = await _optionRepository.GetAll()
+                    .Where(o => o.UpdateAt.Date == date)
+                    .SumAsync(x => x.Quantity);
+
+                var outputWeek = await _orderRepository.GetAll()
+                    .Include(o => o.Options)
+                    .Where(o => o.CreateAt.Date == date)
+                    .SumAsync(option => option.Quantity);
+
+                weekEntries.Add(new DataEntry {
+                    Date = date.ToString("yyyy-MM-dd"),
+                    Input = inputWeek,
+                    Output = outputWeek
+                });
+            }
+
+            foreach (var date in daysInMonth) {
+                var inputMonth = await _optionRepository.GetAll()
+                    .Where(o => o.UpdateAt.Date == date)
+                    .SumAsync(x => x.Quantity);
+
+                var outputMonth = await _orderRepository.GetAll()
+                    .Include(o => o.Options)
+                    .Where(o => o.CreateAt.Date == date)
+                    .SumAsync(option => option.Quantity);
+
+                monthEntries.Add(new DataEntry {
+                    Date = date.ToString("yyyy-MM-dd"),
+                    Input = inputMonth,
+                    Output = outputMonth
+                });
+            }
+
+            var response = new AreaChartResponse {
+                Day = dayEntries,
+                Week = weekEntries,
+                Month = monthEntries
+            };
+
+            var result = new Response<AreaChartResponse>(HttpStatusCode.OK, response);
+            await _cacheService.SetData(cacheKey, result, DateTimeOffset.UtcNow.AddMinutes(10));
+            return result;
         }
 
         public async Task<Response<AnalyticCountResponse>> GetCountResponseAsync() {
@@ -185,5 +344,61 @@ namespace AMAK.Application.Services.Analytics {
 
             return result;
         }
+
+        public async Task<Response<List<AnalyticsUserResponse>>> GetAnalyticsUserAsync() {
+            var cacheKey = $"Analytics_Accounts";
+
+            var cachedData = await _cacheService.GetData<Response<List<AnalyticsUserResponse>>>(cacheKey);
+            if (cachedData != null) {
+                return cachedData;
+            }
+
+
+            var users = await _userManager.Users.ToListAsync();
+            var analyticsUserResponseList = new List<AnalyticsUserResponse>();
+
+            foreach (var user in users) {
+                var totalPrice = await _orderRepository.GetAll()
+                   .Where(x => x.UserId == user.Id && !x.IsDeleted && x.Status.Equals(EOrderStatus.SUCCESS))
+                   .SumAsync(x => x.TotalPrice);
+
+                var roles = await _userManager.GetRolesAsync(user);
+
+                var isAdmin = roles.Contains(Role.ADMIN);
+                var isManager = roles.Contains(Role.MANAGER);
+
+                var analyticsUserResponse = new AnalyticsUserResponse {
+                    Id = Guid.Parse(user.Id),
+                    Email = user.Email!,
+                    FullName = $"{user.FirstName} {user.LastName}",
+                    Avatar = user.Avatar,
+                    IsAdmin = isAdmin,
+                    IsManager = isManager,
+                    Rank = GetRank(totalPrice),
+                    CreateAt = user.CreateAt,
+                    UpdateAt = user.UpdateAt
+                };
+
+                analyticsUserResponseList.Add(analyticsUserResponse);
+            }
+
+            var result = new Response<List<AnalyticsUserResponse>>(HttpStatusCode.OK, analyticsUserResponseList);
+
+            await _cacheService.SetData(cacheKey, result, DateTimeOffset.UtcNow.AddMinutes(10));
+
+            return result;
+        }
+
+        private string GetRank(double totalPrice) {
+            var rankThreshold = rank.Keys.LastOrDefault(k => k.Item1 <= totalPrice && (k.Item2 == null || k.Item2 >= totalPrice));
+
+            if (!rankThreshold.Equals(default)) {
+                return rank[rankThreshold];
+            } else {
+                return string.Empty;
+            }
+        }
+
     }
+
 }
