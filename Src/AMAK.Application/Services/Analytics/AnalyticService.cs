@@ -229,6 +229,14 @@ namespace AMAK.Application.Services.Analytics {
 
 
         public async Task<Response<List<PieChartResponse>>> GetPieChartAsync() {
+            var cacheKey = $"Analytics_PieChart";
+
+            var cachedData = await _cacheService.GetData<Response<List<PieChartResponse>>>(cacheKey);
+
+            if (cachedData != null) {
+                return cachedData;
+            }
+
             var currentDate = DateTime.UtcNow;
 
             var lastSixMonths = Enumerable.Range(0, 6)
@@ -239,8 +247,8 @@ namespace AMAK.Application.Services.Analytics {
             var sixMonthsAgo = currentDate.AddMonths(-6);
 
             var userData = await _userManager.Users
-                .Where(u => u.UpdateAt >= sixMonthsAgo) 
-                .GroupBy(u => new { u.UpdateAt.Year, u.UpdateAt.Month }) 
+                .Where(u => u.UpdateAt >= sixMonthsAgo)
+                .GroupBy(u => new { u.UpdateAt.Year, u.UpdateAt.Month })
                 .Select(g => new {
                     g.Key.Year,
                     g.Key.Month,
@@ -248,18 +256,20 @@ namespace AMAK.Application.Services.Analytics {
                 })
                 .ToListAsync();
 
-            var result = lastSixMonths
+            var resultResponse = lastSixMonths
                 .GroupJoin(userData,
                     month => new { month.Year, month.Month },
                     data => new { data.Year, data.Month },
                     (month, dataGroup) => new PieChartResponse {
-                        Month = month.MonthName, 
-                        Account = dataGroup.FirstOrDefault()?.Account ?? 0 
+                        Month = month.MonthName,
+                        Account = dataGroup.FirstOrDefault()?.Account ?? 0
                     })
-                .OrderByDescending(r => r.Month) 
+                .OrderByDescending(r => r.Month)
                 .ToList();
 
-            return new Response<List<PieChartResponse>>(HttpStatusCode.OK, result);
+            var result = new Response<List<PieChartResponse>>(HttpStatusCode.OK, resultResponse);
+            await _cacheService.SetData(cacheKey, result, DateTimeOffset.UtcNow.AddMinutes(10));
+            return result;
         }
 
 
@@ -390,7 +400,6 @@ namespace AMAK.Application.Services.Analytics {
                 return cachedData;
             }
 
-
             var users = await _userManager.Users.ToListAsync();
             var analyticsUserResponseList = new List<AnalyticsUserResponse>();
 
@@ -426,6 +435,83 @@ namespace AMAK.Application.Services.Analytics {
             return result;
         }
 
+        public async Task<Response<AnalyticStatisticsResponse>> GetAnalyticStatisticsAsync() {
+            var cacheKey = $"Analytics_Statistics";
+
+            var cachedData = await _cacheService.GetData<Response<AnalyticStatisticsResponse>>(cacheKey);
+            if (cachedData != null) {
+                return cachedData;
+            }
+
+            var currentDate = DateTime.UtcNow;
+            var currentMonth = new DateTime(currentDate.Year, currentDate.Month, 1, 0, 0, 0, DateTimeKind.Utc);
+            var previousMonth = currentMonth.AddMonths(-1);
+
+            var orders = await _orderRepository.GetAll().ToListAsync();
+            var options = await _optionRepository.GetAll().ToListAsync();
+
+            var currentMonthOrderCount = orders.Count(o => o.CreateAt >= currentMonth && o.CreateAt < currentMonth.AddMonths(1));
+            var previousMonthOrderCount = orders.Count(o => o.CreateAt >= previousMonth && o.CreateAt < currentMonth);
+
+            var currentMonthSaleCount = orders.Where(o => o.CreateAt >= currentMonth && o.CreateAt < currentMonth.AddMonths(1) && o.Status == EOrderStatus.SUCCESS)
+                                               .Sum(o => o.Quantity);
+            var previousMonthSaleCount = orders.Where(o => o.CreateAt >= previousMonth && o.CreateAt < currentMonth && o.Status == EOrderStatus.SUCCESS)
+                                                .Sum(o => o.Quantity);
+
+            var currentMonthRevenueCount = orders.Where(o => o.CreateAt >= currentMonth && o.CreateAt < currentMonth.AddMonths(1) && o.Status == EOrderStatus.SUCCESS)
+                                                  .Sum(o => o.TotalPrice);
+            var previousMonthRevenueCount = orders.Where(o => o.CreateAt >= previousMonth && o.CreateAt < currentMonth && o.Status == EOrderStatus.SUCCESS)
+                                                   .Sum(o => o.TotalPrice);
+
+            var currentMonthProductCount = options.Where(o => o.CreateAt >= currentMonth && o.CreateAt < currentMonth.AddMonths(1) && !o.IsDeleted)
+                                                  .Sum(o => o.Quantity);
+            var previousMonthProductCount = options.Where(o => o.CreateAt >= previousMonth && o.CreateAt < currentMonth && !o.IsDeleted)
+                                                   .Sum(o => o.Quantity);
+
+            double CalculateGrowthPercentage(double current, double previous) {
+                if (previous > 0) {
+                    return (current - previous) / previous * 100;
+                } else if (current > 0) {
+                    return 100;
+                }
+                return 0;
+            }
+
+            var growthPercentageOrder = CalculateGrowthPercentage(currentMonthOrderCount, previousMonthOrderCount);
+            var growthPercentageSale = CalculateGrowthPercentage(currentMonthSaleCount, previousMonthSaleCount);
+            var growthPercentageRevenue = CalculateGrowthPercentage(currentMonthRevenueCount, previousMonthRevenueCount);
+            var growthPercentageProduct = CalculateGrowthPercentage(currentMonthProductCount, previousMonthProductCount);
+
+            var response = new AnalyticStatisticsResponse {
+                Order = new Statistic {
+                    IsStock = growthPercentageOrder >= 0,
+                    Stock = (int)Math.Abs(growthPercentageOrder),
+                    Total = currentMonthOrderCount,
+                },
+                SaleOut = new Statistic {
+                    IsStock = growthPercentageSale >= 0,
+                    Stock = (int)Math.Abs(growthPercentageSale),
+                    Total = currentMonthSaleCount,
+                },
+                Revenue = new Statistic {
+                    IsStock = growthPercentageRevenue >= 0,
+                    Stock = (int)Math.Abs(growthPercentageRevenue),
+                    Total = currentMonthRevenueCount,
+                },
+                Warehouse = new Statistic {
+                    IsStock = growthPercentageProduct >= 0,
+                    Stock = (int)Math.Abs(growthPercentageProduct),
+                    Total = currentMonthProductCount,
+                }
+            };
+
+            var result = new Response<AnalyticStatisticsResponse>(HttpStatusCode.OK, response);
+
+            await _cacheService.SetData(cacheKey, result, DateTimeOffset.UtcNow.AddMinutes(10));
+
+            return result;
+        }
+
         private string GetRank(double totalPrice) {
             var rankThreshold = rank.Keys.LastOrDefault(k => k.Item1 <= totalPrice && (k.Item2 == null || k.Item2 >= totalPrice));
 
@@ -435,7 +521,6 @@ namespace AMAK.Application.Services.Analytics {
                 return string.Empty;
             }
         }
-
 
     }
 

@@ -29,10 +29,17 @@ namespace AMAK.API.Controllers.v1 {
 
         [HttpGet]
         [Route("PieChart")]
-        [AllowAnonymous]
         public async Task<IActionResult> PieChart() {
             return Ok(await _analyticService.GetPieChartAsync());
 
+        }
+
+        [HttpGet]
+        [Route("Statistic")]
+        [AllowAnonymous]
+
+        public async Task<IActionResult> GetStatistic() {
+            return Ok(await _analyticService.GetAnalyticStatisticsAsync());
         }
 
 
