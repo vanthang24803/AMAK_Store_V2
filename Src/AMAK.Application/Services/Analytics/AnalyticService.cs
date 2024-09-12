@@ -31,7 +31,14 @@ namespace AMAK.Application.Services.Analytics {
 
         private readonly Dictionary<string, EOrderStatus> status;
 
-        private readonly Dictionary<(double, double?), string> rank;
+        private static readonly Dictionary<(double, double?), string> rank = new()
+         {
+                { (0 , 100000), "Bronze" },
+                { (100000, 500000),"Silver" },
+                { (500000 , 1500000),"Gold" },
+                { (1500000 , 3500000),"Platinum" },
+                { (3500000, null),"Diamond" }
+            };
 
 
         public AnalyticService(IRepository<Domain.Models.Order> orderRepository, IRepository<Domain.Models.OrderDetail> orderDetailRepository, ICacheService cacheService, UserManager<ApplicationUser> userManager, IRepository<Category> categoryRepository, IRepository<Domain.Models.Product> productRepository, IRepository<Option> optionRepository) {
@@ -47,22 +54,11 @@ namespace AMAK.Application.Services.Analytics {
                 {"Cancel" , EOrderStatus.CANCEL},
                 {"Return" , EOrderStatus.RETURN}
             };
-            rank = new Dictionary<(double, double?), string>()
-         {
-                { (0 , 100000), "Bronze" },
-                { (100000, 500000),"Silver" },
-                { (500000 , 1500000),"Gold" },
-                { (1500000 , 3500000),"Platinum" },
-                { (3500000, null),"Diamond" }
-            };
             _userManager = userManager;
             _categoryRepository = categoryRepository;
             _productRepository = productRepository;
             _optionRepository = optionRepository;
         }
-
-
-
         public async Task<Response<BarChartResponse>> GetBarChartAsync() {
             var cacheKey = $"Analytics_BarChart";
 
@@ -227,6 +223,53 @@ namespace AMAK.Application.Services.Analytics {
             return result;
         }
 
+
+        public async Task<Response<List<PieChartResponse>>> GetPieChartAsync() {
+            var cacheKey = $"Analytics_PieChart";
+
+            var cachedData = await _cacheService.GetData<Response<List<PieChartResponse>>>(cacheKey);
+
+            if (cachedData != null) {
+                return cachedData;
+            }
+
+            var currentDate = DateTime.UtcNow;
+
+            var lastSixMonths = Enumerable.Range(0, 6)
+                .Select(i => currentDate.AddMonths(-i))
+                .Select(date => new { date.Year, date.Month, MonthName = date.ToString("MMM") })
+                .ToList();
+
+            var sixMonthsAgo = currentDate.AddMonths(-6);
+
+            var userData = await _userManager.Users
+                .Where(u => u.UpdateAt >= sixMonthsAgo)
+                .GroupBy(u => new { u.UpdateAt.Year, u.UpdateAt.Month })
+                .Select(g => new {
+                    g.Key.Year,
+                    g.Key.Month,
+                    Account = g.Count()
+                })
+                .ToListAsync();
+
+            var resultResponse = lastSixMonths
+                .GroupJoin(userData,
+                    month => new { month.Year, month.Month },
+                    data => new { data.Year, data.Month },
+                    (month, dataGroup) => new PieChartResponse {
+                        Month = month.MonthName,
+                        Account = dataGroup.FirstOrDefault()?.Account ?? 0
+                    })
+                .OrderByDescending(r => r.Month)
+                .ToList();
+
+            var result = new Response<List<PieChartResponse>>(HttpStatusCode.OK, resultResponse);
+            await _cacheService.SetData(cacheKey, result, DateTimeOffset.UtcNow.AddMinutes(10));
+            return result;
+        }
+
+
+
         public async Task<Response<AnalyticCountResponse>> GetCountResponseAsync() {
 
             var customers = await _userManager.GetUsersInRoleAsync(Role.CUSTOMER);
@@ -353,7 +396,6 @@ namespace AMAK.Application.Services.Analytics {
                 return cachedData;
             }
 
-
             var users = await _userManager.Users.ToListAsync();
             var analyticsUserResponseList = new List<AnalyticsUserResponse>();
 
@@ -389,7 +431,184 @@ namespace AMAK.Application.Services.Analytics {
             return result;
         }
 
-        private string GetRank(double totalPrice) {
+        public async Task<Response<AnalyticStatisticsResponse>> GetAnalyticStatisticsAsync() {
+            var cacheKey = $"Analytics_Statistics";
+
+            var cachedData = await _cacheService.GetData<Response<AnalyticStatisticsResponse>>(cacheKey);
+            if (cachedData != null) {
+                return cachedData;
+            }
+
+            var currentDate = DateTime.UtcNow;
+            var currentMonth = new DateTime(currentDate.Year, currentDate.Month, 1, 0, 0, 0, DateTimeKind.Utc);
+            var previousMonth = currentMonth.AddMonths(-1);
+
+            var orders = await _orderRepository.GetAll().ToListAsync();
+            var options = await _optionRepository.GetAll().ToListAsync();
+
+            var currentMonthOrderCount = orders.Count(o => o.CreateAt >= currentMonth && o.CreateAt < currentMonth.AddMonths(1));
+            var previousMonthOrderCount = orders.Count(o => o.CreateAt >= previousMonth && o.CreateAt < currentMonth);
+
+            var currentMonthSaleCount = orders.Where(o => o.CreateAt >= currentMonth && o.CreateAt < currentMonth.AddMonths(1) && o.Status == EOrderStatus.SUCCESS)
+                                               .Sum(o => o.Quantity);
+            var previousMonthSaleCount = orders.Where(o => o.CreateAt >= previousMonth && o.CreateAt < currentMonth && o.Status == EOrderStatus.SUCCESS)
+                                                .Sum(o => o.Quantity);
+
+            var currentMonthRevenueCount = orders.Where(o => o.CreateAt >= currentMonth && o.CreateAt < currentMonth.AddMonths(1) && o.Status == EOrderStatus.SUCCESS)
+                                                  .Sum(o => o.TotalPrice);
+            var previousMonthRevenueCount = orders.Where(o => o.CreateAt >= previousMonth && o.CreateAt < currentMonth && o.Status == EOrderStatus.SUCCESS)
+                                                   .Sum(o => o.TotalPrice);
+
+            var currentMonthProductCount = options.Where(o => o.CreateAt >= currentMonth && o.CreateAt < currentMonth.AddMonths(1) && !o.IsDeleted)
+                                                  .Sum(o => o.Quantity);
+            var previousMonthProductCount = options.Where(o => o.CreateAt >= previousMonth && o.CreateAt < currentMonth && !o.IsDeleted)
+                                                   .Sum(o => o.Quantity);
+
+            static double CalculateGrowthPercentage(double current, double previous) {
+                if (previous > 0) {
+                    return (current - previous) / previous * 100;
+                } else if (current > 0) {
+                    return 100;
+                }
+                return 0;
+            }
+
+            var growthPercentageOrder = CalculateGrowthPercentage(currentMonthOrderCount, previousMonthOrderCount);
+            var growthPercentageSale = CalculateGrowthPercentage(currentMonthSaleCount, previousMonthSaleCount);
+            var growthPercentageRevenue = CalculateGrowthPercentage(currentMonthRevenueCount, previousMonthRevenueCount);
+            var growthPercentageProduct = CalculateGrowthPercentage(currentMonthProductCount, previousMonthProductCount);
+
+            var response = new AnalyticStatisticsResponse {
+                Order = new Statistic {
+                    IsStock = growthPercentageOrder >= 0,
+                    Stock = (int)Math.Abs(growthPercentageOrder),
+                    Total = currentMonthOrderCount,
+                },
+                SaleOut = new Statistic {
+                    IsStock = growthPercentageSale >= 0,
+                    Stock = (int)Math.Abs(growthPercentageSale),
+                    Total = currentMonthSaleCount,
+                },
+                Revenue = new Statistic {
+                    IsStock = growthPercentageRevenue >= 0,
+                    Stock = (int)Math.Abs(growthPercentageRevenue),
+                    Total = currentMonthRevenueCount,
+                },
+                Warehouse = new Statistic {
+                    IsStock = growthPercentageProduct >= 0,
+                    Stock = (int)Math.Abs(growthPercentageProduct),
+                    Total = currentMonthProductCount,
+                }
+            };
+
+            var result = new Response<AnalyticStatisticsResponse>(HttpStatusCode.OK, response);
+
+            await _cacheService.SetData(cacheKey, result, DateTimeOffset.UtcNow.AddMinutes(10));
+
+            return result;
+        }
+
+        public async Task<Response<AnalyticTopProductResponse>> GetAnalyticTopProductsAsync() {
+            var cacheKey = $"Analytics_TopProducts";
+
+            var cachedData = await _cacheService.GetData<Response<AnalyticTopProductResponse>>(cacheKey);
+            if (cachedData != null) {
+                return cachedData;
+            }
+
+            var currentDate = DateTime.UtcNow;
+
+            var startOfToday = currentDate.Date.ToUniversalTime();
+            var startOfWeek = currentDate.AddDays(-(int)currentDate.DayOfWeek).Date.ToUniversalTime();
+            var startOfMonth = new DateTime(currentDate.Year, currentDate.Month, 1, 0, 0, 0, DateTimeKind.Utc);
+
+            var topProductsDay = await GetTopSellingProducts(startOfToday, startOfToday.AddDays(1).ToUniversalTime());
+            var topProductsWeek = await GetTopSellingProducts(startOfWeek, startOfWeek.AddDays(7).ToUniversalTime());
+            var topProductsMonth = await GetTopSellingProducts(startOfMonth, startOfMonth.AddMonths(1).ToUniversalTime());
+
+            var response = new AnalyticTopProductResponse {
+                Day = topProductsDay,
+                Week = topProductsWeek,
+                Month = topProductsMonth
+            };
+
+            var result = new Response<AnalyticTopProductResponse>(HttpStatusCode.OK, response);
+
+            await _cacheService.SetData(cacheKey, result, DateTimeOffset.UtcNow.AddMinutes(10));
+
+            return result;
+        }
+
+        public async Task<Response<AnalyticTopCustomerResponse>> GetAnalyticTopCustomerAsync() {
+            var cacheKey = $"Analytics_Customers";
+
+            var cachedData = await _cacheService.GetData<Response<AnalyticTopCustomerResponse>>(cacheKey);
+            if (cachedData != null) {
+                return cachedData;
+            }
+            var currentDate = DateTime.UtcNow;
+
+            var startOfToday = currentDate.Date.ToUniversalTime();
+            var startOfWeek = currentDate.AddDays(-(int)currentDate.DayOfWeek).Date.ToUniversalTime();
+            var startOfMonth = new DateTime(currentDate.Year, currentDate.Month, 1, 0, 0, 0, DateTimeKind.Utc);
+
+            var topCustomersDay = await GetTopCustomersAsync(startOfToday, startOfToday.AddDays(1));
+            var topCustomersWeek = await GetTopCustomersAsync(startOfWeek, startOfWeek.AddDays(7));
+            var topCustomersMonth = await GetTopCustomersAsync(startOfMonth, startOfMonth.AddMonths(1));
+
+            var response = new AnalyticTopCustomerResponse {
+                Day = topCustomersDay,
+                Week = topCustomersWeek,
+                Month = topCustomersMonth
+            };
+
+            var result = new Response<AnalyticTopCustomerResponse>(HttpStatusCode.OK, response);
+
+            await _cacheService.SetData(cacheKey, result, DateTimeOffset.UtcNow.AddMinutes(10));
+
+            return result;
+        }
+
+        private async Task<List<TopProduct>> GetTopSellingProducts(DateTime startDate, DateTime endDate, int topCount = 10) {
+            var topProducts = await _orderRepository.GetAll()
+                .Where(o => o.CreateAt >= startDate && o.CreateAt < endDate)
+                .SelectMany(o => o.Options)
+                .GroupBy(o => new { o.ProductId, o.Product.Name, o.Product.Brand, o.Product.Sold })
+                .Select(g => new TopProduct {
+                    Id = g.Key.ProductId,
+                    Name = g.Key.Name,
+                    Brand = g.Key.Brand!,
+                    Sold = g.Key.Sold
+                })
+                .OrderByDescending(tp => tp.Sold)
+                .Take(topCount)
+                .ToListAsync();
+
+            return topProducts;
+        }
+
+        private async Task<List<TopCustomer>> GetTopCustomersAsync(DateTime startDate, DateTime endDate, int topCount = 10) {
+            #pragma warning disable CS8602 
+            var topCustomers = await _orderRepository.GetAll()
+                .Where(o => o.CreateAt >= startDate && o.CreateAt < endDate)
+                .GroupBy(o => new { o.UserId, o.User.FirstName, o.User.LastName, o.User.Email, o.User.Avatar })
+                .Select(g => new TopCustomer {
+                    Id = !string.IsNullOrEmpty(g.Key.UserId) ? Guid.Parse(g.Key.UserId) : Guid.Empty,
+                    CustomerName = $"{g.Key.FirstName} {g.Key.LastName}",
+                    Email = g.Key.Email!,
+                    Avatar = g.Key.Avatar ?? string.Empty,
+                    TotalPrice = g.Sum(o => o.TotalPrice),
+                    Rank = GetRank(g.Sum(o => o.TotalPrice))
+                })
+                .OrderByDescending(tc => tc.TotalPrice)
+                .Take(topCount)
+                .ToListAsync();
+            #pragma warning restore CS8602 
+
+            return topCustomers;
+        }
+
+        private static string GetRank(double totalPrice) {
             var rankThreshold = rank.Keys.LastOrDefault(k => k.Item1 <= totalPrice && (k.Item2 == null || k.Item2 >= totalPrice));
 
             if (!rankThreshold.Equals(default)) {
@@ -398,7 +617,5 @@ namespace AMAK.Application.Services.Analytics {
                 return string.Empty;
             }
         }
-
     }
-
 }
