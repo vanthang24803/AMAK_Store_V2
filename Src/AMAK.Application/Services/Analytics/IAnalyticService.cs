@@ -8,6 +8,8 @@ namespace AMAK.Application.Services.Analytics {
 
         Task<Response<AreaChartResponse>> GetAreaChartAsync();
 
+        Task<Response<List<PieChartResponse>>> GetPieChartAsync();
+
         Task<Response<StatisticalResponse>> GetStatisticalAsync(AnalyticQuery query);
 
         Task<Response<AnalyticCountResponse>> GetCountResponseAsync();

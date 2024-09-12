@@ -227,6 +227,43 @@ namespace AMAK.Application.Services.Analytics {
             return result;
         }
 
+
+        public async Task<Response<List<PieChartResponse>>> GetPieChartAsync() {
+            var currentDate = DateTime.UtcNow;
+
+            var lastSixMonths = Enumerable.Range(0, 6)
+                .Select(i => currentDate.AddMonths(-i))
+                .Select(date => new { date.Year, date.Month, MonthName = date.ToString("MMM") })
+                .ToList();
+
+            var sixMonthsAgo = currentDate.AddMonths(-6);
+
+            var userData = await _userManager.Users
+                .Where(u => u.UpdateAt >= sixMonthsAgo) 
+                .GroupBy(u => new { u.UpdateAt.Year, u.UpdateAt.Month }) 
+                .Select(g => new {
+                    g.Key.Year,
+                    g.Key.Month,
+                    Account = g.Count()
+                })
+                .ToListAsync();
+
+            var result = lastSixMonths
+                .GroupJoin(userData,
+                    month => new { month.Year, month.Month },
+                    data => new { data.Year, data.Month },
+                    (month, dataGroup) => new PieChartResponse {
+                        Month = month.MonthName, 
+                        Account = dataGroup.FirstOrDefault()?.Account ?? 0 
+                    })
+                .OrderByDescending(r => r.Month) 
+                .ToList();
+
+            return new Response<List<PieChartResponse>>(HttpStatusCode.OK, result);
+        }
+
+
+
         public async Task<Response<AnalyticCountResponse>> GetCountResponseAsync() {
 
             var customers = await _userManager.GetUsersInRoleAsync(Role.CUSTOMER);
@@ -398,6 +435,7 @@ namespace AMAK.Application.Services.Analytics {
                 return string.Empty;
             }
         }
+
 
     }
 

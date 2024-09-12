@@ -17,16 +17,22 @@ namespace AMAK.API.Controllers.v1 {
 
         [HttpGet]
         [Route("BarChart")]
-        [AllowAnonymous]
-        public async Task<IActionResult> ExportChart() {
+        public async Task<IActionResult> BarChart() {
             return Ok(await _analyticService.GetBarChartAsync());
         }
 
         [HttpGet]
         [Route("AreaChart")]
-        [AllowAnonymous]
         public async Task<IActionResult> AreaChart() {
             return Ok(await _analyticService.GetAreaChartAsync());
+        }
+
+        [HttpGet]
+        [Route("PieChart")]
+        [AllowAnonymous]
+        public async Task<IActionResult> PieChart() {
+            return Ok(await _analyticService.GetPieChartAsync());
+
         }
 
 
@@ -40,7 +46,6 @@ namespace AMAK.API.Controllers.v1 {
 
         [HttpGet]
         [Route("Count")]
-        [AllowAnonymous]
 
         public async Task<IActionResult> GetCountResponse() {
             return Ok(await _analyticService.GetCountResponseAsync());
@@ -49,7 +54,6 @@ namespace AMAK.API.Controllers.v1 {
 
         [HttpGet]
         [Route("Accounts")]
-        [AllowAnonymous]
 
         public async Task<IActionResult> GetAnalyticsUser() {
             return Ok(await _analyticService.GetAnalyticsUserAsync());
