@@ -36,10 +36,20 @@ namespace AMAK.API.Controllers.v1 {
 
         [HttpGet]
         [Route("Statistic")]
-        [AllowAnonymous]
-
         public async Task<IActionResult> GetStatistic() {
             return Ok(await _analyticService.GetAnalyticStatisticsAsync());
+        }
+
+        [HttpGet]
+        [Route("TopProduct")]
+        public async Task<IActionResult> GetTopProducts(){
+            return Ok(await _analyticService.GetAnalyticTopProductsAsync());
+        }
+
+         [HttpGet]
+        [Route("TopCustomer")]
+        public async Task<IActionResult> GetTopCustomers(){
+            return Ok(await _analyticService.GetAnalyticTopCustomerAsync());
         }
 
 
@@ -50,10 +60,8 @@ namespace AMAK.API.Controllers.v1 {
         }
 
 
-
         [HttpGet]
         [Route("Count")]
-
         public async Task<IActionResult> GetCountResponse() {
             return Ok(await _analyticService.GetCountResponseAsync());
         }
@@ -61,7 +69,6 @@ namespace AMAK.API.Controllers.v1 {
 
         [HttpGet]
         [Route("Accounts")]
-
         public async Task<IActionResult> GetAnalyticsUser() {
             return Ok(await _analyticService.GetAnalyticsUserAsync());
         }

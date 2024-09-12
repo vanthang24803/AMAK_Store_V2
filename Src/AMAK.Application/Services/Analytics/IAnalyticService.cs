@@ -10,12 +10,17 @@ namespace AMAK.Application.Services.Analytics {
 
         Task<Response<List<PieChartResponse>>> GetPieChartAsync();
 
-        Task<Response<AnalyticStatisticsResponse>> GetAnalyticStatisticsAsync(); 
+        Task<Response<AnalyticStatisticsResponse>> GetAnalyticStatisticsAsync();
 
         Task<Response<StatisticalResponse>> GetStatisticalAsync(AnalyticQuery query);
 
         Task<Response<AnalyticCountResponse>> GetCountResponseAsync();
 
         Task<Response<List<AnalyticsUserResponse>>> GetAnalyticsUserAsync();
+
+        Task<Response<AnalyticTopProductResponse>> GetAnalyticTopProductsAsync();
+
+        Task<Response<AnalyticTopCustomerResponse>> GetAnalyticTopCustomerAsync();
+
     }
 }
