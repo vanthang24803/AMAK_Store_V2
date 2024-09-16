@@ -17,6 +17,9 @@ using AMAK.Application.Providers.Momo;
 using AMAK.Application.Providers.Cache;
 using AMAK.Application.Services.Analytics;
 using AMAK.Application.Providers.ElasticSearch;
+using AMAK.Application.Providers.Google;
+using MailKit;
+using AMAK.Application.Services.Gmail;
 
 namespace AMAK.API.Common.Extensions {
     public static class IocExtension {
@@ -40,9 +43,11 @@ namespace AMAK.API.Common.Extensions {
             services.AddScoped<INotificationService, NotificationService>();
             services.AddScoped<IAnalyticService, AnalyticService>();
             services.AddScoped<IMomoService, MomoService>();
+            services.AddScoped<IGmailStoreService, GmailStoreService>();
 
+            services.AddSingleton<IGoogleService, GoogleService>();
             services.AddSingleton<IUploadService, UploadService>();
-            services.AddSingleton<IMailService, MailService>();
+            services.AddSingleton<Application.Providers.Mail.IMailService, Application.Providers.Mail.MailService>();
             services.AddSingleton<ITokenService, TokenService>();
             services.AddSingleton<ICacheService, CacheService>();
             return services;

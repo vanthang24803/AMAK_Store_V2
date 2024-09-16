@@ -3,6 +3,7 @@ using AMAK.Application.Common.Helpers;
 using AMAK.Application.Common.Query;
 using AMAK.Application.Interfaces;
 using AMAK.Application.Providers.Cache;
+using AMAK.Application.Providers.Google;
 using AMAK.Application.Services.Analytics.Dtos;
 using AMAK.Application.Services.Order.Dtos;
 using AMAK.Domain.Enums;
@@ -11,6 +12,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System.Globalization;
 using System.Net;
+using System.Text.RegularExpressions;
 
 namespace AMAK.Application.Services.Analytics {
     public class AnalyticService : IAnalyticService {
@@ -30,6 +32,7 @@ namespace AMAK.Application.Services.Analytics {
         private readonly ICacheService _cacheService;
 
         private readonly Dictionary<string, EOrderStatus> status;
+
 
         private static readonly Dictionary<(double, double?), string> rank = new()
          {
@@ -573,12 +576,13 @@ namespace AMAK.Application.Services.Analytics {
             var topProducts = await _orderRepository.GetAll()
                 .Where(o => o.CreateAt >= startDate && o.CreateAt < endDate)
                 .SelectMany(o => o.Options)
-                .GroupBy(o => new { o.ProductId, o.Product.Name, o.Product.Brand, o.Product.Sold })
+                .GroupBy(o => new { o.ProductId, o.Product.Name, o.Product.Brand, o.Product.Sold, o.Product.Thumbnail })
                 .Select(g => new TopProduct {
                     Id = g.Key.ProductId,
                     Name = g.Key.Name,
                     Brand = g.Key.Brand!,
-                    Sold = g.Key.Sold
+                    Sold = g.Key.Sold,
+                    Thumbnail = g.Key.Thumbnail
                 })
                 .OrderByDescending(tp => tp.Sold)
                 .Take(topCount)
@@ -588,7 +592,7 @@ namespace AMAK.Application.Services.Analytics {
         }
 
         private async Task<List<TopCustomer>> GetTopCustomersAsync(DateTime startDate, DateTime endDate, int topCount = 10) {
-            #pragma warning disable CS8602 
+#pragma warning disable CS8602
             var topCustomers = await _orderRepository.GetAll()
                 .Where(o => o.CreateAt >= startDate && o.CreateAt < endDate)
                 .GroupBy(o => new { o.UserId, o.User.FirstName, o.User.LastName, o.User.Email, o.User.Avatar })
@@ -603,7 +607,7 @@ namespace AMAK.Application.Services.Analytics {
                 .OrderByDescending(tc => tc.TotalPrice)
                 .Take(topCount)
                 .ToListAsync();
-            #pragma warning restore CS8602 
+#pragma warning restore CS8602
 
             return topCustomers;
         }
@@ -617,5 +621,9 @@ namespace AMAK.Application.Services.Analytics {
                 return string.Empty;
             }
         }
+
+
+
+
     }
 }
