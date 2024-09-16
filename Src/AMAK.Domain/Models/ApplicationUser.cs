@@ -15,6 +15,7 @@ namespace AMAK.Domain.Models {
         public ICollection<Order> Orders { get; set; } = [];
 
         public List<Notification> Notifications { get; } = [];
+        public Cart? Cart { get; set; }
 
         public DateTime CreateAt { get; set; } = DateTime.UtcNow;
         public DateTime UpdateAt { get; set; } = DateTime.UtcNow;
