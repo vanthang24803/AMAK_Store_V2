@@ -32,7 +32,11 @@ namespace AMAK.Infrastructure.Context {
 
         public DbSet<MessageUser> MessageUsers { get; set; }
 
-        public DbSet<Domain.Models.Chat> Chats { get; set; }
+        public DbSet<Chat> Chats { get; set; }
+
+        public DbSet<Cart> Carts { get; set; }
+
+        public DbSet<CartDetail> CartDetails { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder) {
 
@@ -67,6 +71,13 @@ namespace AMAK.Infrastructure.Context {
                 e.Property(x => x.Shipping).HasDefaultValue(true);
             });
 
+            // TODO: One-to-One
+
+            modelBuilder.Entity<ApplicationUser>()
+                       .HasOne(u => u.Cart)
+                       .WithOne(c => c.User)
+                       .HasForeignKey<Cart>(c => c.UserId);
+
             // TODO: May-to-Many
             modelBuilder.Entity<Product>()
                         .HasMany(e => e.Categories)
@@ -100,6 +111,12 @@ namespace AMAK.Infrastructure.Context {
                         .HasOne(u => u.User)
                         .WithMany(a => a.Addresses)
                         .HasForeignKey(u => u.UserId)
+                        .IsRequired();
+
+            modelBuilder.Entity<CartDetail>()
+                        .HasOne(c => c.Cart)
+                        .WithMany(x => x.Details)
+                        .HasForeignKey(c => c.CartId)
                         .IsRequired();
 
             modelBuilder.Entity<Review>()
