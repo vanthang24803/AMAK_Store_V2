@@ -10,5 +10,6 @@ namespace AMAK.Application.Services.Analytics.Dtos {
         public string Name { get; set; } = null!;
         public string Brand { get; set; } = null!;
         public long Sold { get; set; }
+        public string? Thumbnail {get;set;}
     }
 }
