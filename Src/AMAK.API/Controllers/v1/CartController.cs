@@ -36,8 +36,14 @@ namespace AMAK.API.Controllers.v1 {
         [HttpDelete]
         [Route("Clear")]
 
-        public async Task<IActionResult> ClearCache() {
-            return Ok(await _cartService.ClearCacheAsync(User));
+        public async Task<IActionResult> ClearCart() {
+            return Ok(await _cartService.ClearCartAsync(User));
+        }
+
+        [HttpPost]
+        [Route("Remove/All")]
+        public async Task<IActionResult> DeleteOptionCart([FromBody] CartRequest request) {
+            return Ok(await _cartService.RemoveOptionsAsync(User, request));
         }
     }
 }

@@ -1,6 +1,5 @@
 using AMAK.Application.Interfaces;
 using AMAK.Application.Services.Authentication;
-using AMAK.Application.Providers.Mail;
 using AMAK.Domain.Models;
 using AMAK.Infrastructure.Repository;
 using AMAK.Infrastructure.Token;
@@ -18,10 +17,8 @@ using AMAK.Application.Providers.Cache;
 using AMAK.Application.Services.Analytics;
 using AMAK.Application.Providers.ElasticSearch;
 using AMAK.Application.Providers.Google;
-using MailKit;
 using AMAK.Application.Services.Gmail;
 using AMAK.Application.Services.Cart;
-using AMAK.Application.Services.Cart.Dtos;
 
 namespace AMAK.API.Common.Extensions {
     public static class IocExtension {

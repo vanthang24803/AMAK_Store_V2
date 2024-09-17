@@ -7,8 +7,9 @@ using AMAK.Domain.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System.Net;
+using AMAK.Application.Services.Cart.Dtos;
 
-namespace AMAK.Application.Services.Cart.Dtos {
+namespace AMAK.Application.Services.Cart {
     public class CartService : ICartService {
         private readonly ICacheService _cacheService;
         private readonly IRepository<Domain.Models.Cart> _cartRepository;
@@ -42,7 +43,7 @@ namespace AMAK.Application.Services.Cart.Dtos {
                     Price = request.Price,
                     Thumbnail = request.Thumbnail,
                     Sale = request.Sale,
-                    Quantity = 1,
+                    Quantity = request.Quantity,
                     CartId = existingUser.Id
                 };
 
@@ -55,7 +56,7 @@ namespace AMAK.Application.Services.Cart.Dtos {
         }
 
 
-        public async Task<Response<string>> ClearCacheAsync(ClaimsPrincipal claims) {
+        public async Task<Response<string>> ClearCartAsync(ClaimsPrincipal claims) {
             var existingUser = await _userManager.GetUserAsync(claims)
                 ?? throw new NotFoundException("Account not found!");
 
@@ -103,6 +104,21 @@ namespace AMAK.Application.Services.Cart.Dtos {
 
 
             return new Response<List<CartResponse>>(HttpStatusCode.OK, cartResponse);
+        }
+
+        public async Task<Response<string>> RemoveOptionsAsync(ClaimsPrincipal claims, CartRequest request) {
+            var existingUser = await _userManager.GetUserAsync(claims)
+                 ?? throw new NotFoundException("Account not found!");
+
+            var existingItem = await _cartDetailRepository.GetAll()
+                .FirstOrDefaultAsync(x => x.OptionId == request.OptionId && x.CartId == existingUser.Id)
+                ?? throw new NotFoundException("Cart item not found!");
+
+            _cartDetailRepository.Remove(existingItem);
+
+            await _cartDetailRepository.SaveChangesAsync();
+
+            return new Response<string>(HttpStatusCode.OK, "Deleted cart success!");
         }
 
         public async Task<Response<string>> RemoveToCartAsync(ClaimsPrincipal claims, CartRequest request) {
