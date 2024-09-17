@@ -2,23 +2,20 @@ using System.Security.Claims;
 using AMAK.Application.Common.Exceptions;
 using AMAK.Application.Common.Helpers;
 using AMAK.Application.Interfaces;
-using AMAK.Application.Providers.Cache;
 using AMAK.Domain.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System.Net;
 using AMAK.Application.Services.Cart.Dtos;
+using AMAK.Application.Services.Order.Dtos;
 
 namespace AMAK.Application.Services.Cart {
     public class CartService : ICartService {
-        private readonly ICacheService _cacheService;
         private readonly IRepository<Domain.Models.Cart> _cartRepository;
         private readonly IRepository<CartDetail> _cartDetailRepository;
         private readonly UserManager<ApplicationUser> _userManager;
 
-
-        public CartService(ICacheService cacheService, IRepository<Domain.Models.Cart> cartRepository, IRepository<Domain.Models.CartDetail> cartDetailRepository, UserManager<ApplicationUser> userManager) {
-            _cacheService = cacheService;
+        public CartService(IRepository<Domain.Models.Cart> cartRepository, IRepository<CartDetail> cartDetailRepository, UserManager<ApplicationUser> userManager) {
             _cartRepository = cartRepository;
             _cartDetailRepository = cartDetailRepository;
             _userManager = userManager;
@@ -29,6 +26,7 @@ namespace AMAK.Application.Services.Cart {
                 ?? throw new NotFoundException("Account not found!");
 
             var existingItem = await _cartDetailRepository.GetAll()
+                .Include(o => o.Option)
                 .FirstOrDefaultAsync(x => x.OptionId == request.OptionId && x.CartId == existingUser.Id);
 
             if (existingItem != null) {
@@ -37,12 +35,6 @@ namespace AMAK.Application.Services.Cart {
             } else {
                 var newCartItem = new CartDetail {
                     OptionId = request.OptionId,
-                    OptionName = request.OptionName,
-                    ProductId = request.ProductId,
-                    ProductName = request.ProductName,
-                    Price = request.Price,
-                    Thumbnail = request.Thumbnail,
-                    Sale = request.Sale,
                     Quantity = request.Quantity,
                     CartId = existingUser.Id
                 };
@@ -75,35 +67,71 @@ namespace AMAK.Application.Services.Cart {
 
         public async Task<Response<List<CartResponse>>> GetCartAsync(ClaimsPrincipal claims) {
             var existingUser = await _userManager.GetUserAsync(claims)
-            ?? throw new NotFoundException("Account not found!");
+                ?? throw new NotFoundException("Account not found!");
 
-            var cart = await _cartRepository.GetAll().Include(x => x.Details).FirstOrDefaultAsync(x => x.Id == existingUser.Id);
+            var cartResponse = await _cartRepository.GetAll()
+                .Where(x => x.UserId == existingUser.Id)
+                .Select(cart => cart.Details.Select(detail => new CartResponse {
+                    ProductId = detail.Option.ProductId,
+                    ProductName = detail.Option.Product.Name,
+                    Thumbnail = detail.Option.Product.Thumbnail ?? "",
+                    OptionId = detail.OptionId,
+                    OptionName = detail.Option.Name,
+                    Quantity = detail.Quantity,
+                    Price = detail.Option.Price,
+                    Sale = detail.Option.Sale,
+                }).OrderBy(c => c.ProductName).ToList())
+                .FirstOrDefaultAsync();
 
-
-            if (cart == null) {
-                cart = new Domain.Models.Cart {
+            if (cartResponse == null) {
+                var newCart = new Domain.Models.Cart {
                     Id = existingUser.Id,
                     UserId = existingUser.Id,
                     User = existingUser,
                 };
 
-                _cartRepository.Add(cart);
+                _cartRepository.Add(newCart);
                 await _cartRepository.SaveChangesAsync();
+
+                cartResponse = [];
             }
 
-            var cartResponse = cart.Details.Select(detail => new CartResponse {
-                ProductId = detail.ProductId,
-                ProductName = detail.ProductName,
-                Thumbnail = detail.Thumbnail,
-                OptionId = detail.OptionId,
-                OptionName = detail.OptionName,
-                Quantity = detail.Quantity,
-                Price = detail.Price,
-                Sale = detail.Sale,
-            }).ToList();
-
-
             return new Response<List<CartResponse>>(HttpStatusCode.OK, cartResponse);
+        }
+
+        public async Task<Response<string>> HandlerBuyBack(ClaimsPrincipal claims, List<OrderDetailResponse> orders) {
+            var existingUser = await _userManager.GetUserAsync(claims)
+                 ?? throw new NotFoundException("Account not found!");
+
+            var cart = await _cartRepository.GetAll()
+                .FirstOrDefaultAsync(x => x.UserId == existingUser.Id)
+                ?? throw new NotFoundException("Cart not found!");
+
+            var cartItems = await _cartDetailRepository.GetAll()
+                .Where(x => x.CartId == cart.Id)
+                .ToListAsync();
+
+            var cartItemsDict = cartItems.ToDictionary(x => x.OptionId, x => x);
+
+            foreach (var order in orders) {
+                var optionId = order.OptionId;
+                if (cartItemsDict.TryGetValue(optionId, out var existingItem)) {
+                    existingItem.Quantity += 1;
+                    _cartDetailRepository.Update(existingItem);
+                } else {
+                    var newCartItem = new CartDetail() {
+                        CartId = cart.Id,
+                        OptionId = optionId,
+                        Quantity = order.Quantity,
+                    };
+
+                    _cartDetailRepository.Add(newCartItem);
+                }
+            }
+
+            await _cartDetailRepository.SaveChangesAsync();
+
+            return new Response<string>(HttpStatusCode.OK, "Add to Cart Success!");
         }
 
         public async Task<Response<string>> RemoveOptionsAsync(ClaimsPrincipal claims, CartRequest request) {

@@ -25,6 +25,7 @@ namespace AMAK.Application.Services.Order.Dtos {
 
     public class OrderDetailResponse {
         public Guid ProductId { get; set; }
+        public Guid OptionId { get; set; }
         public string Thumbnail { get; set; } = null!;
         public string Name { get; set; } = null!;
         public int Quantity { get; set; }

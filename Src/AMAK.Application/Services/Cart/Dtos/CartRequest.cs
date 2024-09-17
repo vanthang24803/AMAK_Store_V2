@@ -4,7 +4,7 @@ namespace AMAK.Application.Services.Cart.Dtos {
         public string ProductId { get; set; } = null!;
         public string ProductName { get; set; } = null!;
         public string Thumbnail { get; set; } = null!;
-        public string OptionId { get; set; } = null!;
+        public Guid OptionId { get; set; }
         public string OptionName { get; set; } = null!;
         public int Sale { get; set; }
         public int Quantity { get; set; }

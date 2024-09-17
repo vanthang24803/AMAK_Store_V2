@@ -117,7 +117,15 @@ namespace AMAK.Infrastructure.Context {
                         .HasOne(c => c.Cart)
                         .WithMany(x => x.Details)
                         .HasForeignKey(c => c.CartId)
-                        .IsRequired();
+                        .IsRequired()
+                        .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<CartDetail>()
+                        .HasOne(cd => cd.Option)
+                        .WithMany(o => o.Carts)
+                        .HasForeignKey(cd => cd.OptionId)
+                        .OnDelete(DeleteBehavior.Cascade);
+
 
             modelBuilder.Entity<Review>()
                         .HasOne(u => u.User)
