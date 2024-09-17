@@ -1,5 +1,6 @@
 using AMAK.Application.Services.Cart;
 using AMAK.Application.Services.Cart.Dtos;
+using AMAK.Application.Services.Order.Dtos;
 using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -38,6 +39,13 @@ namespace AMAK.API.Controllers.v1 {
 
         public async Task<IActionResult> ClearCart() {
             return Ok(await _cartService.ClearCartAsync(User));
+        }
+
+        [HttpPost]
+        [Route("BuyBack")]
+
+        public async Task<IActionResult> BuyBack([FromBody] List<OrderDetailResponse> orders) {
+            return Ok(await _cartService.HandlerBuyBack(User, orders));
         }
 
         [HttpPost]
