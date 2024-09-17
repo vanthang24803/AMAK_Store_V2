@@ -73,7 +73,8 @@ namespace AMAK.Application.Services.Order.Queries.GetByUser {
                             Price = x.Price,
                             Quantity = x.Quantity,
                             Sale = x.Sale,
-                            Thumbnail = x.Thumbnail
+                            Thumbnail = x.Thumbnail,
+                            OptionId = x.OptionId,
                         })
                         .ToListAsync(cancellationToken: cancellationToken);
 
