@@ -21,6 +21,7 @@ namespace AMAK.API.Controllers.v1 {
 
         [HttpGet]
         [Route("BarChart")]
+        [AllowAnonymous]
         public async Task<IActionResult> BarChart() {
             return Ok(await _analyticService.GetBarChartAsync());
         }

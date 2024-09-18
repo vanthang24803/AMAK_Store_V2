@@ -40,7 +40,6 @@ namespace AMAK.Application.Services.Order.Commands.Create {
         }
 
         public async Task<Response<string>> Handle(CreateOrderCommand request, CancellationToken cancellationToken) {
-
             var user = request.User;
             var data = request.Data;
 
@@ -57,7 +56,12 @@ namespace AMAK.Application.Services.Order.Commands.Create {
                     Quantity = data.Quantity,
                     Shipping = true,
                     NumberPhone = data.NumberPhone,
-                    Status = EOrderStatus.PENDING,
+                    Status = [
+                        new OrderStatus() {
+                        OrderId = data.Id,
+                        Status = EOrderStatus.PENDING,
+                    }
+                    ],
                     TotalPrice = data.TotalPrice,
                     UserId = existingAccount.Id,
                 };

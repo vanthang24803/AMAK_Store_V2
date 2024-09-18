@@ -18,9 +18,13 @@ namespace AMAK.Application.Services.Order.Queries.GetOrderById {
             _orderRepository = orderRepository;
         }
 
+
+
         public async Task<Response<OrderResponse>> Handle(GetOrderByIdQuery request, CancellationToken cancellationToken) {
             var existingOrder = await _orderRepository.GetAll()
-              .FirstOrDefaultAsync(x => x.Id == request.Id && !x.IsDeleted) ?? throw new NotFoundException("Order not found!");
+                .Include(o => o.Status)
+                .FirstOrDefaultAsync(x => x.Id == request.Id && !x.IsDeleted, cancellationToken: cancellationToken)
+                ?? throw new NotFoundException("Order not found!");
 
             var details = await _orderDetailRepository.GetAll()
                        .Where(x => x.OrderId == existingOrder.Id)
@@ -35,12 +39,16 @@ namespace AMAK.Application.Services.Order.Queries.GetOrderById {
                        })
                        .ToListAsync(cancellationToken: cancellationToken);
 
+            var latestStatus = existingOrder.Status
+               .OrderByDescending(s => s.TimeStamp)
+               .FirstOrDefault() ?? throw new NotFoundException("Order status not found!");
+
             var orderResponse = new OrderResponse() {
                 Id = existingOrder.Id,
                 Customer = existingOrder.Customer,
                 Address = existingOrder.Address,
                 Email = existingOrder.Email,
-                Status = existingOrder.Status,
+                Status = latestStatus.Status,
                 NumberPhone = existingOrder.NumberPhone!,
                 Payment = existingOrder.Payment,
                 Quantity = existingOrder.Quantity,

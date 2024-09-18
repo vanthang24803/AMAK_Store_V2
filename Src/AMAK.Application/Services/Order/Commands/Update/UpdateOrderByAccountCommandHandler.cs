@@ -34,7 +34,11 @@ namespace AMAK.Application.Services.Order.Commands.Update {
                         cancellationToken: cancellationToken)
                         ?? throw new NotFoundException("Order not found!");
 
-                if (existingOrder.IsDeleted && existingOrder.Status != Domain.Enums.EOrderStatus.PENDING) {
+                var latestStatus = existingOrder.Status
+                     .OrderByDescending(s => s.TimeStamp)
+                     .FirstOrDefault() ?? throw new NotFoundException("Order status not found!");
+
+                if (existingOrder.IsDeleted && latestStatus.Status != Domain.Enums.EOrderStatus.PENDING) {
                     throw new BadRequestException("Only orders in initialization state can be edited!");
                 }
 

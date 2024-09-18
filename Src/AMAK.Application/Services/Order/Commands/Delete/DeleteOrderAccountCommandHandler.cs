@@ -24,10 +24,15 @@ namespace AMAK.Application.Services.Order.Commands.Delete {
                ?? throw new UnauthorizedException();
 
             var existingOrder = await _orderRepository.GetAll()
-                .FirstOrDefaultAsync(x => x.Id == request.Id && !x.IsDeleted && x.UserId == existingAccount.Id)
+                .Include(s => s.Status)
+                .FirstOrDefaultAsync(x => x.Id == request.Id && !x.IsDeleted && x.UserId == existingAccount.Id, cancellationToken: cancellationToken)
                 ?? throw new NotFoundException("Order not found!");
 
-            if (!existingOrder.Status.Equals(EOrderStatus.PENDING) && !existingOrder.Status.Equals(EOrderStatus.SUCCESS)) {
+            var latestStatus = existingOrder.Status
+                    .OrderByDescending(s => s.TimeStamp)
+                    .FirstOrDefault() ?? throw new NotFoundException("Order status not found!");
+
+            if (!latestStatus.Status.Equals(EOrderStatus.PENDING) && !latestStatus.Status.Equals(EOrderStatus.SUCCESS)) {
                 throw new BadRequestException("Can't delete order!");
             }
 

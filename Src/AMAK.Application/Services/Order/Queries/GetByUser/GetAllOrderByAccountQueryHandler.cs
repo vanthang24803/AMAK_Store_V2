@@ -25,64 +25,71 @@ namespace AMAK.Application.Services.Order.Queries.GetByUser {
         }
 
         public async Task<PaginationResponse<List<OrderResponse>>> Handle(GetAllOrderByAccountQuery request, CancellationToken cancellationToken) {
-
             var existingAccount = await _userManager.GetUserAsync(request.Claims) ?? throw new UnauthorizedException();
-
-            var orderQuery = _orderRepository
-                    .GetAll()
-                    .Where(x => !x.IsDeleted && x.UserId == existingAccount.Id)
-                    .OrderByDescending(x => x.CreateAt)
-                    .AsSplitQuery();
 
             var query = request.Query;
 
+            var orderQuery = _orderRepository
+                .GetAll()
+                .Include(s => s.Status)
+                .Where(x => !x.IsDeleted && x.UserId == existingAccount.Id)
+                .OrderByDescending(x => x.CreateAt)
+                .AsSplitQuery();
+
+            var ordersWithLatestStatus = orderQuery
+                .Select(o => new {
+                    Order = o,
+                    LatestStatus = o.Status
+                        .OrderByDescending(st => st.TimeStamp)
+                        .FirstOrDefault()
+                });
+
             if (!string.IsNullOrEmpty(query.OrderBy)) {
-                orderQuery = query.OrderBy switch {
-                    "All" => orderQuery,
-                    "Pending" => orderQuery.Where(x => x.Status == EOrderStatus.PENDING),
-                    "Create" => orderQuery.Where(x => x.Status == EOrderStatus.CREATE),
-                    "Shipping" => orderQuery.Where(x => x.Status == EOrderStatus.SHIPPING),
-                    "Success" => orderQuery.Where(x => x.Status == EOrderStatus.SUCCESS),
-                    "Cancel" => orderQuery.Where(x => x.Status == EOrderStatus.CANCEL),
-                    "Return" => orderQuery.Where(x => x.Status == EOrderStatus.RETURN),
-                    _ => orderQuery
+                ordersWithLatestStatus = query.OrderBy switch {
+                    "All" => ordersWithLatestStatus,
+                    "Pending" => ordersWithLatestStatus.Where(o => o.LatestStatus != null && o.LatestStatus.Status == EOrderStatus.PENDING),
+                    "Create" => ordersWithLatestStatus.Where(o => o.LatestStatus != null && o.LatestStatus.Status == EOrderStatus.CREATE),
+                    "Shipping" => ordersWithLatestStatus.Where(o => o.LatestStatus != null && o.LatestStatus.Status == EOrderStatus.SHIPPING),
+                    "Success" => ordersWithLatestStatus.Where(o => o.LatestStatus != null && o.LatestStatus.Status == EOrderStatus.SUCCESS),
+                    "Cancel" => ordersWithLatestStatus.Where(o => o.LatestStatus != null && o.LatestStatus.Status == EOrderStatus.CANCEL),
+                    "Return" => ordersWithLatestStatus.Where(o => o.LatestStatus != null && o.LatestStatus.Status == EOrderStatus.RETURN),
+                    _ => ordersWithLatestStatus
                 };
             }
 
-            var totalOrders = await orderQuery.CountAsync(cancellationToken: cancellationToken);
 
+            var totalOrders = await ordersWithLatestStatus.CountAsync(cancellationToken: cancellationToken);
             var totalPages = (int)Math.Ceiling(totalOrders / (double)query.Limit);
 
-            var orders = await orderQuery
-                .OrderBy(p => p.Id)
+            var paginatedOrders = await ordersWithLatestStatus
                 .Skip((query.Page - 1) * query.Limit)
                 .Take(query.Limit)
                 .ToListAsync(cancellationToken: cancellationToken);
 
-
             var response = new List<OrderResponse>();
 
-            foreach (var order in orders) {
+            foreach (var orderWithStatus in paginatedOrders) {
+                var order = orderWithStatus.Order;
 
                 var details = await _orderDetailRepository.GetAll()
-                        .Where(x => x.OrderId == order.Id)
-                        .Select(x => new OrderDetailResponse {
-                            ProductId = x.ProductId,
-                            Name = x.ProductName,
-                            OptionName = x.OptionName,
-                            Price = x.Price,
-                            Quantity = x.Quantity,
-                            Sale = x.Sale,
-                            Thumbnail = x.Thumbnail,
-                            OptionId = x.OptionId,
-                        })
-                        .ToListAsync(cancellationToken: cancellationToken);
+                    .Where(x => x.OrderId == order.Id)
+                    .Select(x => new OrderDetailResponse {
+                        ProductId = x.ProductId,
+                        Name = x.ProductName,
+                        OptionName = x.OptionName,
+                        Price = x.Price,
+                        Quantity = x.Quantity,
+                        Sale = x.Sale,
+                        Thumbnail = x.Thumbnail,
+                        OptionId = x.OptionId,
+                    })
+                    .ToListAsync(cancellationToken: cancellationToken);
 
-                var orderResponse = new OrderResponse() {
+                var orderResponse = new OrderResponse {
                     Id = order.Id,
                     Customer = order.Customer,
                     Email = order.Email,
-                    Status = order.Status,
+                    Status = orderWithStatus.LatestStatus != null ? orderWithStatus.LatestStatus.Status : EOrderStatus.PENDING,
                     Address = order.Address,
                     NumberPhone = order.NumberPhone!,
                     IsReviewed = order.IsReviewed,
@@ -97,7 +104,6 @@ namespace AMAK.Application.Services.Order.Queries.GetByUser {
                 response.Add(orderResponse);
             }
 
-
             var paginatedResponse = new PaginationResponse<List<OrderResponse>> {
                 CurrentPage = query.Page,
                 TotalPage = totalPages,
@@ -108,5 +114,6 @@ namespace AMAK.Application.Services.Order.Queries.GetByUser {
 
             return paginatedResponse;
         }
+
     }
 }

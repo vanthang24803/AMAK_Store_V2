@@ -65,16 +65,30 @@ namespace AMAK.Application.Services.Me {
 
             response.NumberPhone = existingUser.PhoneNumber;
 
+            var ordersWithLatestStatus = await _orderRepository.GetAll()
+                .Include(o => o.Status)
+                .Where(o => o.UserId == existingUser.Id && !o.IsDeleted)
+                .Select(o => new {
+                    Order = o,
+                    LatestStatus = o.Status
+                        .OrderByDescending(st => st.TimeStamp)
+                        .FirstOrDefault()
+                })
+                .ToListAsync();
+
+            var successfulOrders = ordersWithLatestStatus
+                .Where(o => o.LatestStatus != null && o.LatestStatus.Status == EOrderStatus.SUCCESS)
+                .Select(o => o.Order)
+                .ToList();
+
             var totalOrder = await _orderRepository.GetAll()
                 .Where(x => x.UserId == existingUser.Id && !x.IsDeleted)
                 .CountAsync();
 
-            var orderProcessing = await _orderRepository.GetAll()
-                .Where(x => x.UserId == existingUser.Id && !x.IsDeleted && !x.Status.Equals(EOrderStatus.SUCCESS))
-                .CountAsync();
+            var orderProcessing = successfulOrders.Count;
 
             var totalPrice = await _orderRepository.GetAll()
-                    .Where(x => x.UserId == existingUser.Id && !x.IsDeleted && x.Status.Equals(EOrderStatus.SUCCESS))
+                    .Where(x => x.UserId == existingUser.Id && !x.IsDeleted)
                     .SumAsync(x => x.TotalPrice);
 
             response.Roles = roles;
