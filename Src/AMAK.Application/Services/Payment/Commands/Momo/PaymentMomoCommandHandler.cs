@@ -36,6 +36,8 @@ namespace AMAK.Application.Services.Payment.Commands.Momo {
             _momoService = momoService;
         }
 
+
+
         public async Task<Response<string>> Handle(PaymentMomoCommand request, CancellationToken cancellationToken) {
 
             var user = request.User;
@@ -54,7 +56,13 @@ namespace AMAK.Application.Services.Payment.Commands.Momo {
                     Quantity = data.Quantity,
                     Shipping = true,
                     NumberPhone = data.NumberPhone,
-                    Status = EOrderStatus.PENDING,
+                    Status = [
+                        new OrderStatus() {
+                            OrderId = data.Id,
+                            Status = EOrderStatus.PENDING,
+                            TimeStamp = DateTime.UtcNow,
+                        }
+                    ],
                     TotalPrice = data.TotalPrice,
                     UserId = existingAccount.Id,
                 };
