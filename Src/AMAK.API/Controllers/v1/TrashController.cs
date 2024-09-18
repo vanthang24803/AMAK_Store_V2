@@ -16,21 +16,18 @@ namespace AMAK.API.Controllers.v1 {
 
         [HttpGet]
         [Route("Product")]
-        [AllowAnonymous]
         public async Task<IActionResult> GetTrashProduct() {
             return Ok(await _trashService.GetProductTrashAsync());
         }
 
         [HttpGet]
         [Route("Option")]
-        [AllowAnonymous]
         public async Task<IActionResult> GetTrashOption() {
             return Ok(await _trashService.GetOptionTrashAsync());
         }
 
         [HttpGet]
         [Route("Media")]
-        [AllowAnonymous]
         public async Task<IActionResult> GetTrashMedia() {
             return Ok(await _trashService.GetPhotoResponse());
         }

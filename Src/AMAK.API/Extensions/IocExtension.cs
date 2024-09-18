@@ -46,6 +46,7 @@ namespace AMAK.API.Common.Extensions {
             services.AddScoped<IGmailStoreService, GmailStoreService>();
             services.AddScoped<ICartService, CartService>();
             services.AddScoped<ITrashService, TrashService>();
+            services.AddScoped<IReviewService, ReviewService>();
 
             services.AddSingleton<IGoogleService, GoogleService>();
             services.AddSingleton<IUploadService, UploadService>();
