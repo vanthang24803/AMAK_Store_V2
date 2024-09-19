@@ -3,7 +3,6 @@ using AMAK.Application.Common.Helpers;
 using AMAK.Application.Common.Query;
 using AMAK.Application.Interfaces;
 using AMAK.Application.Providers.Cache;
-using AMAK.Application.Providers.Google;
 using AMAK.Application.Services.Analytics.Dtos;
 using AMAK.Application.Services.Order.Dtos;
 using AMAK.Domain.Enums;
@@ -12,7 +11,6 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System.Globalization;
 using System.Net;
-using System.Text.RegularExpressions;
 
 namespace AMAK.Application.Services.Analytics {
     public class AnalyticService : IAnalyticService {
@@ -70,9 +68,12 @@ namespace AMAK.Application.Services.Analytics {
             if (cachedData != null) {
                 return cachedData;
             }
+
             var orders = await _orderRepository.GetAll()
-                .Where(x => x.Status == EOrderStatus.SUCCESS)
-                .ToListAsync();
+                 .Include(s => s.Status)
+                 .Where(o => o.Status.All(st => st.Status != EOrderStatus.CANCEL))
+                 .ToListAsync();
+
 
             var monthlyRevenue = new Dictionary<string, double>
             {
@@ -277,7 +278,10 @@ namespace AMAK.Application.Services.Analytics {
 
             var customers = await _userManager.GetUsersInRoleAsync(Role.CUSTOMER);
 
-            var orders = await _orderRepository.GetAll().Where(x => x.Status != EOrderStatus.SUCCESS).CountAsync();
+            var orders = await _orderRepository.GetAll()
+                .Include(s => s.Status)
+                .Where(o => o.Status.All(st => st.Status == EOrderStatus.SUCCESS))
+                .CountAsync();
 
             var productArchive = await _productRepository.GetAll().Where(x => x.IsDeleted).CountAsync();
             var productActive = await _productRepository.GetAll().Where(x => !x.IsDeleted).CountAsync();
@@ -310,10 +314,10 @@ namespace AMAK.Application.Services.Analytics {
                 filterStatus = value;
             }
 
-            var orderQuery = _orderRepository.GetAll().AsSplitQuery();
+            var orderQuery = _orderRepository.GetAll().Include(s => s.Status).AsSplitQuery();
 
             if (filterStatus.HasValue) {
-                orderQuery = orderQuery.Where(o => o.Status == filterStatus.Value);
+                orderQuery = orderQuery.Where(o => o.Status.All(st => st.Status == filterStatus.Value));
             }
 
             var culture = new CultureInfo("vi-VN");
@@ -327,6 +331,7 @@ namespace AMAK.Application.Services.Analytics {
                 endAt = DateTime.SpecifyKind(endAt, DateTimeKind.Utc);
                 orderQuery = orderQuery.Where(o => o.CreateAt <= endAt);
             }
+
 
             // Pagination
             var totalCount = await orderQuery.CountAsync();
@@ -352,19 +357,27 @@ namespace AMAK.Application.Services.Analytics {
             var orderDetailsGroupedByOrderId = await orderDetailsQuery
                                                .ToListAsync()
                                                .ContinueWith(task => task.Result.GroupBy(d => d.ProductId).ToDictionary(g => g.Key, g => g.ToList()));
+            var orders = await orderQuery
+                    .Select(order => new {
+                        Order = order,
+                        LatestStatus = order.Status
+                            .OrderByDescending(st => st.TimeStamp)
+                            .FirstOrDefault()
+                    })
+                    .ToListAsync();
 
-            var orderResponseList = await orderQuery.Select(order => new StatisticalOrderResponse {
-                Id = order.Id,
-                Customer = order.Customer,
-                Email = order.Email,
-                Status = order.Status,
-                Address = order.Address,
-                NumberPhone = order.NumberPhone!,
-                Payment = order.Payment,
-                Quantity = order.Quantity,
-                TotalPrice = order.TotalPrice,
-                CreateAt = order.CreateAt,
-            }).ToListAsync();
+            var orderResponseList = orders.Select(o => new StatisticalOrderResponse {
+                Id = o.Order.Id,
+                Customer = o.Order.Customer,
+                Email = o.Order.Email,
+                Status = o.LatestStatus!.Status,
+                Address = o.Order.Address,
+                NumberPhone = o.Order.NumberPhone!,
+                Payment = o.Order.Payment,
+                Quantity = o.Order.Quantity,
+                TotalPrice = o.Order.TotalPrice,
+                CreateAt = o.Order.CreateAt,
+            }).ToList();
 
             var totalSold = orderDetailsGroupedByOrderId.Sum(group => group.Value.Sum(detail => detail.Quantity));
 
@@ -449,18 +462,49 @@ namespace AMAK.Application.Services.Analytics {
             var orders = await _orderRepository.GetAll().ToListAsync();
             var options = await _optionRepository.GetAll().ToListAsync();
 
-            var currentMonthOrderCount = orders.Count(o => o.CreateAt >= currentMonth && o.CreateAt < currentMonth.AddMonths(1));
-            var previousMonthOrderCount = orders.Count(o => o.CreateAt >= previousMonth && o.CreateAt < currentMonth);
+            var ordersWithLatestStatus = await _orderRepository.GetAll()
+                .Include(o => o.Status)
+                .Select(o => new {
+                    Order = o,
+                    LatestStatus = o.Status
+                        .OrderByDescending(st => st.TimeStamp)
+                        .FirstOrDefault()
+                })
+                .ToListAsync();
 
-            var currentMonthSaleCount = orders.Where(o => o.CreateAt >= currentMonth && o.CreateAt < currentMonth.AddMonths(1) && o.Status == EOrderStatus.SUCCESS)
-                                               .Sum(o => o.Quantity);
-            var previousMonthSaleCount = orders.Where(o => o.CreateAt >= previousMonth && o.CreateAt < currentMonth && o.Status == EOrderStatus.SUCCESS)
-                                                .Sum(o => o.Quantity);
 
-            var currentMonthRevenueCount = orders.Where(o => o.CreateAt >= currentMonth && o.CreateAt < currentMonth.AddMonths(1) && o.Status == EOrderStatus.SUCCESS)
-                                                  .Sum(o => o.TotalPrice);
-            var previousMonthRevenueCount = orders.Where(o => o.CreateAt >= previousMonth && o.CreateAt < currentMonth && o.Status == EOrderStatus.SUCCESS)
-                                                   .Sum(o => o.TotalPrice);
+            var currentMonthOrderCount = ordersWithLatestStatus.Count(o => o.LatestStatus != null
+                    && o.LatestStatus.Status == EOrderStatus.SUCCESS
+                    && o.Order.CreateAt >= currentMonth
+                    && o.Order.CreateAt < currentMonth.AddMonths(1)
+            );
+
+            var previousMonthOrderCount = ordersWithLatestStatus.Count(o => o.LatestStatus != null
+                    && o.LatestStatus.Status == EOrderStatus.SUCCESS
+                    && o.Order.CreateAt >= previousMonth
+                    && o.Order.CreateAt < currentMonth
+            );
+
+            var currentMonthSaleCount = ordersWithLatestStatus
+                .Where(o => o.LatestStatus != null && o.LatestStatus.Status == EOrderStatus.SUCCESS
+                    && o.Order.CreateAt >= currentMonth
+                    && o.Order.CreateAt < currentMonth.AddMonths(1))
+                .Sum(o => o.Order.Quantity);
+
+            var previousMonthSaleCount = ordersWithLatestStatus
+                .Where(o => o.LatestStatus != null && o.LatestStatus.Status == EOrderStatus.SUCCESS
+                && o.Order.CreateAt >= previousMonth && o.Order.CreateAt < currentMonth)
+                .Sum(o => o.Order.Quantity);
+
+            var currentMonthRevenueCount = ordersWithLatestStatus
+                .Where(o => o.LatestStatus != null && o.LatestStatus.Status == EOrderStatus.SUCCESS
+                && o.Order.CreateAt >= currentMonth && o.Order.CreateAt < currentMonth.AddMonths(1))
+                .Sum(o => o.Order.TotalPrice);
+
+            var previousMonthRevenueCount = ordersWithLatestStatus
+                .Where(o => o.LatestStatus != null && o.LatestStatus.Status == EOrderStatus.SUCCESS
+                 && o.Order.CreateAt >= previousMonth && o.Order.CreateAt < currentMonth)
+                .Sum(o => o.Order.TotalPrice);
 
             var currentMonthProductCount = options.Where(o => o.CreateAt >= currentMonth && o.CreateAt < currentMonth.AddMonths(1) && !o.IsDeleted)
                                                   .Sum(o => o.Quantity);

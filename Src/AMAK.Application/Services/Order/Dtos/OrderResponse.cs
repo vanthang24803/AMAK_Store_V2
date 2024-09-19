@@ -17,6 +17,8 @@ namespace AMAK.Application.Services.Order.Dtos {
         public double TotalPrice { get; set; }
         public List<OrderDetailResponse> OrderDetails { get; set; } = [];
 
+        public List<StatusOrder> StatusOrders { get; set; } = [];
+
         public DateTime CreateAt { get; set; }
 
         public DateTime UpdateAt { get; set; }
@@ -32,5 +34,13 @@ namespace AMAK.Application.Services.Order.Dtos {
         public string OptionName { get; set; } = null!;
         public double Price { get; set; }
         public int Sale { get; set; }
+    }
+
+    public class StatusOrder {
+        [JsonConverter(typeof(JsonStringEnumConverter))]
+        public EOrderStatus Status { get; set; }
+
+        public DateTime Timestamp { get; set; }
+
     }
 }

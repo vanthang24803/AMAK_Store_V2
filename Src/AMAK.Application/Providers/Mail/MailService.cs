@@ -93,6 +93,10 @@ namespace AMAK.Application.Providers.Mail {
                 Console.WriteLine(e);
             }
 
+            var latestStatus = order.Status
+              .OrderBy(s => s.TimeStamp)
+              .LastOrDefault();
+
 
             htmlContent = htmlContent.Replace("{ID}", order.Id.ToString());
             htmlContent = htmlContent.Replace("{CUSTOMER}", order.Customer);
@@ -101,7 +105,7 @@ namespace AMAK.Application.Providers.Mail {
             htmlContent = htmlContent.Replace("{QUANTITY}", order.Quantity.ToString());
             htmlContent = htmlContent.Replace("{TOTAL_PRICE}", order.TotalPrice.ToString());
             htmlContent = htmlContent.Replace("{PAYMENT}", order.Payment.ToString());
-            htmlContent = htmlContent.Replace("{STATUS}", order.Status.ToString());
+            htmlContent = htmlContent.Replace("{STATUS}", latestStatus?.Status.ToString());
 
             StringBuilder detailsBuilder = new();
             foreach (var detail in orderResponses) {

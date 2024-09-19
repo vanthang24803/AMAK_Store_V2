@@ -9,34 +9,20 @@ namespace AMAK.Infrastructure.Context {
         }
 
         public DbSet<Address> Addresses { get; set; }
-
         public DbSet<Billboard> Billboards { get; set; }
-
         public DbSet<Product> Products { get; set; }
-
         public DbSet<Category> Categories { get; set; }
-
         public DbSet<Photo> Photos { get; set; }
-
         public DbSet<Option> Options { get; set; }
-
         public DbSet<Order> Orders { get; set; }
-
-        public DbSet<Review> Reviews { get; set; }
-
         public DbSet<ReviewPhoto> ReviewPhotos { get; set; }
-
         public DbSet<Voucher> Vouchers { get; set; }
-
         public DbSet<Notification> Notifications { get; set; }
-
         public DbSet<MessageUser> MessageUsers { get; set; }
-
         public DbSet<Chat> Chats { get; set; }
-
         public DbSet<Cart> Carts { get; set; }
-
         public DbSet<CartDetail> CartDetails { get; set; }
+        public DbSet<OrderStatus> OrderStatus { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder) {
 
@@ -66,7 +52,6 @@ namespace AMAK.Infrastructure.Context {
                 e.Property(x => x.Email).HasMaxLength(128);
                 e.Property(x => x.Customer).HasMaxLength(128);
                 e.Property(x => x.Address).HasMaxLength(256);
-                e.Property(x => x.Status).HasDefaultValue(EOrderStatus.PENDING);
                 e.Property(x => x.Payment).HasDefaultValue(EPayment.COD);
                 e.Property(x => x.Shipping).HasDefaultValue(true);
             });
@@ -112,6 +97,12 @@ namespace AMAK.Infrastructure.Context {
                         .WithMany(a => a.Addresses)
                         .HasForeignKey(u => u.UserId)
                         .IsRequired();
+
+            modelBuilder.Entity<Order>()
+                        .HasMany(o => o.Status)
+                        .WithOne(os => os.Order)
+                        .HasForeignKey(os => os.OrderId)
+                        .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<CartDetail>()
                         .HasOne(c => c.Cart)

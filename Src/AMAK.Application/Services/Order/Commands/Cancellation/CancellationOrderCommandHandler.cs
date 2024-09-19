@@ -26,14 +26,22 @@ namespace AMAK.Application.Services.Order.Commands.Cancellation {
 
             var existingAccount = await _userManager.GetUserAsync(request.User) ?? throw new UnauthorizedException();
 
-            var existingOrder = await _orderRepository.GetAll().FirstOrDefaultAsync(x => x.Id == request.Id && x.UserId == existingAccount.Id, cancellationToken: cancellationToken) ?? throw new NotFoundException("Order not found!");
+            var existingOrder = await _orderRepository.GetAll()
+                    .Include(s => s.Status)
+                    .FirstOrDefaultAsync(x => x.Id == request.Id && x.UserId == existingAccount.Id, cancellationToken: cancellationToken)
+                    ?? throw new NotFoundException("Order not found!");
 
-            var orderDetails = await _orderDetailRepository.GetAll().Where(x => x.OrderId == existingOrder.Id).ToListAsync(cancellationToken: cancellationToken);
+            var orderDetails = await _orderDetailRepository.GetAll()
+                    .Where(x => x.OrderId == existingOrder.Id).ToListAsync(cancellationToken: cancellationToken);
+
+            var latestStatus = existingOrder.Status
+                     .OrderByDescending(s => s.TimeStamp)
+                     .FirstOrDefault() ?? throw new NotFoundException("Order status not found!");
 
             await _orderRepository.BeginTransactionAsync();
             try {
-                if (existingOrder.Status != Domain.Enums.EOrderStatus.PENDING) {
-                    throw new BadRequestException("Can't update to CREATE status from the current status!");
+                if (latestStatus.Status != Domain.Enums.EOrderStatus.PENDING) {
+                    throw new BadRequestException("Cannot cancel the order as it is no longer in PENDING status.");
                 }
 
                 foreach (var detail in orderDetails) {
@@ -44,17 +52,22 @@ namespace AMAK.Application.Services.Order.Commands.Cancellation {
                     await _optionRepository.SaveChangesAsync();
                 }
 
-                existingOrder.Status = Domain.Enums.EOrderStatus.CANCEL;
+                existingOrder.Status.Add(new OrderStatus() {
+                    OrderId = existingOrder.Id,
+                    Status = Domain.Enums.EOrderStatus.CANCEL,
+                    TimeStamp = DateTime.UtcNow
+                });
 
                 await _orderRepository.SaveChangesAsync();
                 await _orderRepository.CommitTransactionAsync();
 
-            } catch (Exception) {
+            } catch (Exception ex) {
                 await _orderRepository.RollbackTransactionAsync();
-                throw new BadRequestException("Query wrong!");
+                throw new BadRequestException($"An error occurred: {ex.Message}");
             }
 
             return new Response<string>(HttpStatusCode.OK, "Cancellation order successfully!");
         }
+
     }
 }
