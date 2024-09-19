@@ -39,9 +39,15 @@ namespace AMAK.Application.Services.Order.Queries.GetOrderById {
                        })
                        .ToListAsync(cancellationToken: cancellationToken);
 
-            var latestStatus = existingOrder.Status
-               .OrderByDescending(s => s.TimeStamp)
-               .FirstOrDefault() ?? throw new NotFoundException("Order status not found!");
+            var statuses = existingOrder.Status
+              .OrderBy(s => s.TimeStamp)
+              .Select(s => new StatusOrder {
+                  Status = s.Status,
+                  Timestamp = s.TimeStamp
+              })
+              .ToList();
+
+            var latestStatus = statuses.LastOrDefault() ?? throw new NotFoundException("Order status not found!");
 
             var orderResponse = new OrderResponse() {
                 Id = existingOrder.Id,
@@ -54,6 +60,7 @@ namespace AMAK.Application.Services.Order.Queries.GetOrderById {
                 Quantity = existingOrder.Quantity,
                 TotalPrice = existingOrder.TotalPrice,
                 OrderDetails = details,
+                StatusOrders = statuses,
                 CreateAt = existingOrder.CreateAt,
                 UpdateAt = existingOrder.UpdateAt
             };
