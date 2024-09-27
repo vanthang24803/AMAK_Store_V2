@@ -24,6 +24,7 @@ namespace AMAK.Service.API.IntegrationTests.Controllers.v1 {
         private readonly Mock<IMediator> _mediatorMock;
         private readonly ProductsController _controller;
         private readonly ProductResponse productResponse;
+
         private readonly Mock<IFormFile> fileMock;
         public ProductControllerTest() {
             // TODO: Arrange
@@ -225,7 +226,7 @@ namespace AMAK.Service.API.IntegrationTests.Controllers.v1 {
             _mediatorMock.Setup(m => m.Send(It.IsAny<UpdateProductCommand>(), default))
                         .ReturnsAsync(new Response<ProductResponse>(HttpStatusCode.OK, productResponse));
 
-            var result = await _controller.Update(productId, updateProductRequest, fileMock.Object);
+            var result = await _controller.Update(productId, updateProductRequest);
 
             var createdResult = Assert.IsType<OkObjectResult>(result);
 
