@@ -16,11 +16,8 @@ namespace AMAK.Application.Services.Order.Dtos {
         public int Quantity { get; set; }
         public double TotalPrice { get; set; }
         public List<OrderDetailResponse> OrderDetails { get; set; } = [];
-
         public List<StatusOrder> StatusOrders { get; set; } = [];
-
         public DateTime CreateAt { get; set; }
-
         public DateTime UpdateAt { get; set; }
     }
 

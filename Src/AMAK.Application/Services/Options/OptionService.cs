@@ -1,6 +1,7 @@
 using AMAK.Application.Common.Exceptions;
 using AMAK.Application.Common.Helpers;
 using AMAK.Application.Interfaces;
+using AMAK.Application.Providers.Cache;
 using AMAK.Application.Services.Options.Dtos;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
@@ -13,15 +14,20 @@ namespace AMAK.Application.Services.Options {
 
         private readonly IRepository<Domain.Models.Product> _productRepository;
 
+        private readonly ICacheService _cacheService;
+
         private readonly IMapper _mapper;
 
-        public OptionService(IRepository<Domain.Models.Option> optionRepository, IRepository<Domain.Models.Product> productRepository, IMapper mapper) {
+        public OptionService(IRepository<Domain.Models.Option> optionRepository, IRepository<Domain.Models.Product> productRepository, IMapper mapper, ICacheService cacheService) {
             _productRepository = productRepository;
             _optionRepository = optionRepository;
             _mapper = mapper;
+            _cacheService = cacheService;
         }
 
         public async Task<Response<OptionResponse>> CreateAsync(Guid productId, OptionRequest request) {
+            var cacheKey = $"GetDetailProduct_{productId}";
+
             var existingProduct = await _productRepository.GetById(productId) ?? throw new NotFoundException("Product not found!");
 
             var newOption = _mapper.Map<Domain.Models.Option>(request);
@@ -33,10 +39,14 @@ namespace AMAK.Application.Services.Options {
 
             await _optionRepository.SaveChangesAsync();
 
+            await _cacheService.RemoveData(cacheKey);
+
             return new Response<OptionResponse>(HttpStatusCode.Created, _mapper.Map<OptionResponse>(newOption));
         }
 
         public async Task<Response<string>> DeleteAsync(Guid productId, Guid id) {
+            var cacheKey = $"GetDetailProduct_{productId}";
+
             var existingOption = await _optionRepository.GetAll()
                     .FirstOrDefaultAsync(x => x.Id == id && x.ProductId == productId && !x.IsDeleted) ?? throw new NotFoundException("Option not found!");
 
@@ -49,6 +59,7 @@ namespace AMAK.Application.Services.Options {
 
             await _optionRepository.SaveChangesAsync();
 
+            await _cacheService.RemoveData(cacheKey);
 
             return new Response<string>(HttpStatusCode.OK, "Option deleted successfully!");
         }
@@ -67,12 +78,16 @@ namespace AMAK.Application.Services.Options {
         }
 
         public async Task<Response<OptionResponse>> UpdateAsync(Guid id, Guid productId, OptionRequest request) {
+            var cacheKey = $"GetDetailProduct_{productId}";
+
             var existingOption = await _optionRepository.GetAll()
                  .FirstOrDefaultAsync(x => x.Id == id && x.ProductId == productId && !x.IsDeleted) ?? throw new NotFoundException("Option not found!");
 
             _mapper.Map(existingOption, request);
 
             await _productRepository.SaveChangesAsync();
+
+            await _cacheService.RemoveData(cacheKey);
 
             return new Response<OptionResponse>(HttpStatusCode.OK, _mapper.Map<OptionResponse>(existingOption));
 
