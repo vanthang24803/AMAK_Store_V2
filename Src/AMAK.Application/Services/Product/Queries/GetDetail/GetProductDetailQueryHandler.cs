@@ -32,10 +32,12 @@ namespace AMAK.Application.Services.Product.Queries.GetDetail {
 
 
             var existingProduct = await _productRepository.GetAll()
+                                                        .AsNoTracking()
                                                           .Where(x => !x.IsDeleted)
                                                           .Include(c => c.Categories)
                                                           .Include(o => o.Options)
-                                                          .Include(pt => pt.Photos)
+                                                                .Where(o => !o.IsDeleted).OrderByDescending(o => o.CreateAt)
+                                                          .Include(pt => pt.Photos).OrderByDescending(o => o.CreateAt)
                                                           .Include(r => r.Reviews)
                                                           .FirstOrDefaultAsync(p => p.Id == request.Id, cancellationToken)
             ?? throw new NotFoundException("Product not found!");

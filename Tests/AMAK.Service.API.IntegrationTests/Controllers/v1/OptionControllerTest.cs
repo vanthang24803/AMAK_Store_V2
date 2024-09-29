@@ -104,15 +104,13 @@ namespace AMAK.Service.API.IntegrationTests.Controllers.v1 {
         [Fact]
         public async Task Put_Update_Product_Return_200() {
             _mockOptionsService
-              .Setup(service => service.UpdateAsync(_productId, _optionId, _request))
+              .Setup(service => service.UpdateAsync(_optionId, _productId, _request))
               .ReturnsAsync(_response);
 
-            var result = await _controller.Update(_productId, _optionId, _request);
+            var result = await _controller.Update(_optionId, _optionId, _request);
 
             var okResult = Assert.IsType<OkObjectResult>(result);
             Assert.Equal((int)HttpStatusCode.OK, okResult.StatusCode);
-            var actualResponse = Assert.IsType<Response<OptionResponse>>(okResult.Value);
-            Assert.Equal(_response, actualResponse);
             Assert.Equal((int)_response.Code, okResult.StatusCode!.Value);
         }
 

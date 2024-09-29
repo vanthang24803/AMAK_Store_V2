@@ -38,11 +38,11 @@ namespace AMAK.API.Controllers.v1 {
             return Ok(await _optionsService.GetAsync(productId, id));
         }
 
-        [HttpPost]
+        [HttpPut]
         [Route("{productId}/[controller]/{id}")]
 
         public async Task<IActionResult> Update([FromRoute] Guid productId, [FromRoute] Guid id, [FromBody] OptionRequest request) {
-            return Ok(await _optionsService.UpdateAsync(productId, id, request));
+            return Ok(await _optionsService.UpdateAsync(id, productId, request));
         }
 
         [HttpDelete]

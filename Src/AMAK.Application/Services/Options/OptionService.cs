@@ -50,12 +50,7 @@ namespace AMAK.Application.Services.Options {
             var existingOption = await _optionRepository.GetAll()
                     .FirstOrDefaultAsync(x => x.Id == id && x.ProductId == productId && !x.IsDeleted) ?? throw new NotFoundException("Option not found!");
 
-            if (existingOption.IsDeleted) {
-                _optionRepository.Remove(existingOption);
-            } else {
-                existingOption.IsDeleted = true;
-                _optionRepository.Update(existingOption);
-            }
+            _optionRepository.Remove(existingOption);
 
             await _optionRepository.SaveChangesAsync();
 
@@ -83,7 +78,7 @@ namespace AMAK.Application.Services.Options {
             var existingOption = await _optionRepository.GetAll()
                  .FirstOrDefaultAsync(x => x.Id == id && x.ProductId == productId && !x.IsDeleted) ?? throw new NotFoundException("Option not found!");
 
-            _mapper.Map(existingOption, request);
+            _mapper.Map(request, existingOption);
 
             await _productRepository.SaveChangesAsync();
 
