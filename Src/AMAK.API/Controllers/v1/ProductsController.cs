@@ -14,6 +14,7 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using AMAK.Application.Services.Product.Commands.Import;
+using AMAK.Application.Services.Product.Commands.Thumbnail;
 
 
 namespace AMAK.API.Controllers.v1 {
@@ -99,8 +100,8 @@ namespace AMAK.API.Controllers.v1 {
         [HttpPut]
         [Route("{id:guid}")]
 
-        public async Task<IActionResult> Update([FromRoute] Guid id, [FromForm] UpdateProductRequest request, IFormFile? file) {
-            return Ok(await _mediator.Send(new UpdateProductCommand(id, file, request)));
+        public async Task<IActionResult> Update([FromRoute] Guid id, [FromBody] UpdateProductRequest request) {
+            return Ok(await _mediator.Send(new UpdateProductCommand(id, request)));
         }
 
         [HttpPut]
@@ -113,6 +114,12 @@ namespace AMAK.API.Controllers.v1 {
         [Route("{id:guid}/Options")]
         public async Task<IActionResult> UpdateOptions([FromRoute] Guid id, [FromBody] OptionsProductRequest request) {
             return Ok(await _mediator.Send(new UpdateProductOptionCommand(id, request)));
+        }
+
+        [HttpPost]
+        [Route("{id:guid}/Thumbnail")]
+        public async Task<IActionResult> UpdateThumbnail([FromRoute] Guid id, IFormFile thumbnail) {
+            return Ok(await _mediator.Send(new UpdateThumbnailProductCommand(id, thumbnail)));
         }
 
         [HttpDelete]

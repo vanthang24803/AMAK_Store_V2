@@ -1,6 +1,7 @@
 using AMAK.Application.Common.Exceptions;
 using AMAK.Application.Common.Helpers;
 using AMAK.Application.Interfaces;
+using AMAK.Application.Providers.Cache;
 using AMAK.Application.Providers.Upload;
 using AMAK.Application.Services.Photo.Dtos;
 using AutoMapper;
@@ -15,15 +16,20 @@ namespace AMAK.Application.Services.Photo {
         private readonly IRepository<Domain.Models.Photo> _photoRepository;
         private readonly IRepository<Domain.Models.Product> _productRepository;
         private readonly IUploadService _uploadService;
+        private readonly ICacheService _cacheService;
 
-        public PhotoService(IMapper mapper, IRepository<Domain.Models.Photo> photoRepository, IRepository<Domain.Models.Product> productRepository, IUploadService uploadService) {
+
+        public PhotoService(IMapper mapper, IRepository<Domain.Models.Photo> photoRepository, IRepository<Domain.Models.Product> productRepository, IUploadService uploadService, ICacheService cacheService) {
             _mapper = mapper;
             _photoRepository = photoRepository;
             _productRepository = productRepository;
             _uploadService = uploadService;
+            _cacheService = cacheService;
         }
 
         public async Task<Response<List<PhotoResponse>>> CreateAsync(Guid productId, List<IFormFile> files) {
+            var cacheKey = $"GetDetailProduct_{productId}";
+
             var existingProduct = await _productRepository.GetById(productId) ?? throw new NotFoundException("Product not found!");
 
             var photos = new List<Domain.Models.Photo>();
@@ -49,10 +55,14 @@ namespace AMAK.Application.Services.Photo {
 
             await _photoRepository.SaveChangesAsync();
 
+            await _cacheService.RemoveData(cacheKey);
+
             return new Response<List<PhotoResponse>>(HttpStatusCode.Created, _mapper.Map<List<PhotoResponse>>(photos));
         }
 
         public async Task<Response<string>> DeleteAsync(Guid productId, Guid id) {
+            var cacheKey = $"GetDetailProduct_{productId}";
+
             var existingPhoto = await _photoRepository.GetAll()
                                 .Include(x => x.Product)
                                 .Where(x => !x.IsDeleted)
@@ -68,6 +78,8 @@ namespace AMAK.Application.Services.Photo {
             _photoRepository.Remove(existingPhoto);
 
             await _photoRepository.SaveChangesAsync();
+
+            await _cacheService.RemoveData(cacheKey);
 
             return new Response<string>(HttpStatusCode.OK, "Delete photo successfully!");
         }

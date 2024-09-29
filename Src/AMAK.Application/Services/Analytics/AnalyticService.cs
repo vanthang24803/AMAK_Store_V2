@@ -417,7 +417,7 @@ namespace AMAK.Application.Services.Analytics {
 
             foreach (var user in users) {
                 var totalPrice = await _orderRepository.GetAll()
-                   .Where(x => x.UserId == user.Id && !x.IsDeleted && x.Status.Equals(EOrderStatus.SUCCESS))
+                   .Where(x => x.UserId == user.Id && !x.IsDeleted)
                    .SumAsync(x => x.TotalPrice);
 
                 var roles = await _userManager.GetRolesAsync(user);
