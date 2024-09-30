@@ -11,7 +11,6 @@ namespace AMAK.Application.Services.Product.Common {
         [StringLength(128)]
 
         public string Brand { get; set; } = null!;
-
         public string? Introduction { get; set; }
         public string? Specifications { get; set; }
 

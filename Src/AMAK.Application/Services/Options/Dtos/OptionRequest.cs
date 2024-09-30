@@ -16,6 +16,6 @@ namespace AMAK.Application.Services.Options.Dtos {
         public double Price { get; set; }
 
         [Required]
-        public bool IsActive { get; set; }
+        public bool IsActive { get; set; } = true;
     }
 }
