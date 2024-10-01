@@ -79,6 +79,7 @@ namespace AMAK.Application.Services.Product.Queries.GetAll {
             }
 
             //  TODO: OrderBy
+            // TODO: OrderBy
             if (!string.IsNullOrEmpty(query.OrderBy)) {
                 filteredProductsQuery = query.OrderBy switch {
                     "Alphabet" => filteredProductsQuery.OrderBy(n => n.Name),
@@ -97,7 +98,6 @@ namespace AMAK.Application.Services.Product.Queries.GetAll {
             var totalPages = (int)Math.Ceiling(totalItemsCount / (double)query.Limit);
 
             var products = await filteredProductsQuery
-                .OrderBy(p => p.Id)
                 .Skip((query.Page - 1) * query.Limit)
                 .Take(query.Limit)
                 .ToListAsync(cancellationToken);
