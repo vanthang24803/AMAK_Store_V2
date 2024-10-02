@@ -7,6 +7,7 @@ using AMAK.Application.Services.Options.Dtos;
 using AMAK.Application.Services.Photo.Dtos;
 using AMAK.Application.Services.Product.Common;
 using AMAK.Application.Services.Review.Dtos;
+using AMAK.Application.Services.Tickets.Dtos;
 using AMAK.Domain.Models;
 using AutoMapper;
 
@@ -24,6 +25,9 @@ namespace AMAK.Application.Mapper {
             CreateMap<Photo, PhotoResponse>();
             CreateMap<Billboard, BillboardResponse>();
             CreateMap<Review, ReviewResponse>();
+            CreateMap<Voucher, TicketSchema>()
+            .ForMember(dest => dest.StartDate, opt => opt.MapFrom(src => src.StartAt))
+            .ForMember(dest => dest.EndDate, opt => opt.MapFrom(src => src.EndAt));
         }
     }
 }
