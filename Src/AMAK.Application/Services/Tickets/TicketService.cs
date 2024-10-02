@@ -47,15 +47,15 @@ namespace AMAK.Application.Services.Tickets {
             return new Response<string>(HttpStatusCode.OK, "Deleted ticket successfully!");
         }
 
-        public async Task<Response<TicketSchema>> FindTicketByCodeAsync(FindTicketRequest request) {
+        public async Task<Response<TicketResponse>> FindTicketByCodeAsync(FindTicketRequest request) {
             var existingTicket = await _voucherRepository.GetAll()
              .FirstOrDefaultAsync(x => x.Code == request.Code && !x.IsDeleted)
              ?? throw new NotFoundException("Ticket not found");
 
-            return new Response<TicketSchema>(HttpStatusCode.OK, _mapper.Map<TicketSchema>(existingTicket));
+            return new Response<TicketResponse>(HttpStatusCode.OK, _mapper.Map<TicketResponse>(existingTicket));
         }
 
-        public async Task<PaginationResponse<List<TicketSchema>>> GetAllAsync(BaseQuery query) {
+        public async Task<PaginationResponse<List<TicketResponse>>> GetAllAsync(BaseQuery query) {
 
             var totalRecords = await _voucherRepository.GetAll()
                .CountAsync(x => !x.IsDeleted);
@@ -69,9 +69,9 @@ namespace AMAK.Application.Services.Tickets {
                    .Take(query.Limit)
                    .ToListAsync();
 
-            var mappedItems = _mapper.Map<List<TicketSchema>>(items);
+            var mappedItems = _mapper.Map<List<TicketResponse>>(items);
 
-            var result = new PaginationResponse<List<TicketSchema>> {
+            var result = new PaginationResponse<List<TicketResponse>> {
                 Result = mappedItems,
                 Code = 200,
                 TotalItems = totalRecords,
@@ -84,12 +84,12 @@ namespace AMAK.Application.Services.Tickets {
             return result;
         }
 
-        public async Task<Response<TicketSchema>> GetDetailAsync(Guid id) {
+        public async Task<Response<TicketResponse>> GetDetailAsync(Guid id) {
             var existingTicket = await _voucherRepository.GetAll()
              .FirstOrDefaultAsync(x => x.Id == id && !x.IsDeleted)
              ?? throw new NotFoundException("Ticket not found");
 
-            return new Response<TicketSchema>(HttpStatusCode.OK, _mapper.Map<TicketSchema>(existingTicket));
+            return new Response<TicketResponse>(HttpStatusCode.OK, _mapper.Map<TicketResponse>(existingTicket));
         }
 
         public async Task<Response<string>> UpdateAsync(Guid id, TicketSchema request) {

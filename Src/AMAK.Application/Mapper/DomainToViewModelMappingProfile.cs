@@ -25,7 +25,7 @@ namespace AMAK.Application.Mapper {
             CreateMap<Photo, PhotoResponse>();
             CreateMap<Billboard, BillboardResponse>();
             CreateMap<Review, ReviewResponse>();
-            CreateMap<Voucher, TicketSchema>()
+            CreateMap<Voucher, TicketResponse>()
             .ForMember(dest => dest.StartDate, opt => opt.MapFrom(src => src.StartAt))
             .ForMember(dest => dest.EndDate, opt => opt.MapFrom(src => src.EndAt));
         }
