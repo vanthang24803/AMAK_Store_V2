@@ -76,9 +76,11 @@ namespace AMAK.Application.Services.Order.Commands.Create {
 
                     var existingProduct = await _productRepository.GetById(item.ProductId) ?? throw new NotFoundException("Product not found!");
 
-                    var existingOption = await _optionRepository.GetAll().Include(x => x.Product).FirstOrDefaultAsync(
-                        x => x.Id == item.OptionId && x.ProductId == existingProduct.Id
-                    ) ?? throw new NotFoundException("Option not found!");
+                    var existingOption = await _optionRepository.GetAll()
+                    .Include(x => x.Product)
+                    .FirstOrDefaultAsync(x => x.Id == item.OptionId
+                    && x.ProductId == existingProduct.Id, cancellationToken: cancellationToken)
+                    ?? throw new NotFoundException("Option not found!");
 
                     existingOption.Quantity -= item.Quantity;
 

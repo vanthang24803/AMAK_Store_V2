@@ -79,6 +79,13 @@ namespace AMAK.API.Controllers.v1 {
         }
 
         [HttpGet]
+        [Route("Accounts/{id}")]
+        public async Task<IActionResult> GetAccountDetail([FromRoute] string id) {
+            return Ok(await _analyticService.GetAccountDetail(id));
+        }
+
+
+        [HttpGet]
         [AllowAnonymous]
         [Route("Gmail")]
 

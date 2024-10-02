@@ -20,6 +20,7 @@ using AMAK.Application.Providers.Google;
 using AMAK.Application.Services.Gmail;
 using AMAK.Application.Services.Cart;
 using AMAK.Application.Services.Trash;
+using AMAK.Application.Services.Tickets;
 
 namespace AMAK.API.Common.Extensions {
     public static class IocExtension {
@@ -47,6 +48,7 @@ namespace AMAK.API.Common.Extensions {
             services.AddScoped<ICartService, CartService>();
             services.AddScoped<ITrashService, TrashService>();
             services.AddScoped<IReviewService, ReviewService>();
+            services.AddScoped<ITicketService, TicketService>();
 
             services.AddSingleton<IGoogleService, GoogleService>();
             services.AddSingleton<IUploadService, UploadService>();

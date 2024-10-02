@@ -1,12 +1,16 @@
 using AMAK.Application.Common.Constants;
+using AMAK.Application.Common.Exceptions;
 using AMAK.Application.Common.Helpers;
 using AMAK.Application.Common.Query;
 using AMAK.Application.Interfaces;
 using AMAK.Application.Providers.Cache;
+using AMAK.Application.Services.Address.Dtos;
 using AMAK.Application.Services.Analytics.Dtos;
+using AMAK.Application.Services.Me.Dtos;
 using AMAK.Application.Services.Order.Dtos;
 using AMAK.Domain.Enums;
 using AMAK.Domain.Models;
+using AutoMapper;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System.Globalization;
@@ -29,7 +33,11 @@ namespace AMAK.Application.Services.Analytics {
 
         private readonly ICacheService _cacheService;
 
+        private readonly IMapper _mapper;
+
         private readonly Dictionary<string, EOrderStatus> status;
+
+        private readonly IRepository<Domain.Models.Address> _addressRepository;
 
 
         private static readonly Dictionary<(double, double?), string> rank = new()
@@ -42,7 +50,7 @@ namespace AMAK.Application.Services.Analytics {
             };
 
 
-        public AnalyticService(IRepository<Domain.Models.Order> orderRepository, IRepository<Domain.Models.OrderDetail> orderDetailRepository, ICacheService cacheService, UserManager<ApplicationUser> userManager, IRepository<Category> categoryRepository, IRepository<Domain.Models.Product> productRepository, IRepository<Option> optionRepository) {
+        public AnalyticService(IRepository<Domain.Models.Order> orderRepository, IRepository<Domain.Models.OrderDetail> orderDetailRepository, ICacheService cacheService, UserManager<ApplicationUser> userManager, IRepository<Category> categoryRepository, IRepository<Domain.Models.Product> productRepository, IRepository<Option> optionRepository, IRepository<Domain.Models.Address> addressRepository, IMapper mapper) {
             _cacheService = cacheService;
             _orderRepository = orderRepository;
             _orderDetailRepository = orderDetailRepository;
@@ -59,6 +67,8 @@ namespace AMAK.Application.Services.Analytics {
             _categoryRepository = categoryRepository;
             _productRepository = productRepository;
             _optionRepository = optionRepository;
+            _addressRepository = addressRepository;
+            _mapper = mapper;
         }
         public async Task<Response<BarChartResponse>> GetBarChartAsync() {
             var cacheKey = $"Analytics_BarChart";
@@ -460,7 +470,7 @@ namespace AMAK.Application.Services.Analytics {
             var previousMonth = currentMonth.AddMonths(-1);
 
             var orders = await _orderRepository.GetAll().ToListAsync();
-            var options = await _optionRepository.GetAll().ToListAsync();
+            var options = await _optionRepository.GetAll().Where(x => !x.IsDeleted).ToListAsync();
 
             var ordersWithLatestStatus = await _orderRepository.GetAll()
                 .Include(o => o.Status)
@@ -666,8 +676,65 @@ namespace AMAK.Application.Services.Analytics {
             }
         }
 
+        public async Task<Response<ProfileResponse>> GetAccountDetail(string id) {
+            var existingUser = await _userManager.Users.FirstOrDefaultAsync(x => x.Id == id)
+            ?? throw new NotFoundException("Account not found!");
+
+            var cacheKey = $"Profile_{existingUser.Id}";
+
+            var cachedData = await _cacheService.GetData<Response<ProfileResponse>>(cacheKey);
+
+            if (cachedData != null) {
+                return cachedData;
+            }
+
+            var roles = await _userManager.GetRolesAsync(existingUser);
+
+            var addresses = await _addressRepository.GetAll().Where(x => x.UserId == existingUser.Id).ToListAsync();
+
+            var response = _mapper.Map<ProfileResponse>(existingUser);
+
+            response.NumberPhone = existingUser.PhoneNumber;
+
+            var ordersWithLatestStatus = await _orderRepository.GetAll()
+               .Include(o => o.Status)
+               .Where(o => o.UserId == existingUser.Id && !o.IsDeleted)
+               .Select(o => new {
+                   Order = o,
+                   LatestStatus = o.Status
+                       .OrderByDescending(st => st.TimeStamp)
+                       .FirstOrDefault()
+               })
+               .ToListAsync();
 
 
+            var successfulOrders = ordersWithLatestStatus
+                .Where(o => o.LatestStatus != null && o.LatestStatus.Status == EOrderStatus.SUCCESS)
+                .Select(o => o.Order)
+                .ToList();
 
+            var totalOrder = await _orderRepository.GetAll()
+                .Where(x => x.UserId == existingUser.Id && !x.IsDeleted)
+                .CountAsync();
+
+            var orderProcessing = successfulOrders.Count;
+
+            var totalPrice = await _orderRepository.GetAll()
+                    .Where(x => x.UserId == existingUser.Id && !x.IsDeleted)
+                    .SumAsync(x => x.TotalPrice);
+
+            response.Roles = roles;
+            response.TotalOrder = totalOrder;
+            response.ProcessOrder = orderProcessing;
+            response.TotalPrice = totalPrice;
+            response.Rank = GetRank(totalPrice);
+            response.Addresses = _mapper.Map<List<AddressResponse>>(addresses);
+
+            var result = new Response<ProfileResponse>(HttpStatusCode.OK, response);
+
+            await _cacheService.SetData(cacheKey, result, DateTimeOffset.UtcNow.AddMinutes(1));
+
+            return result;
+        }
     }
 }
