@@ -1,6 +1,8 @@
 using System.Text;
 using AMAK.Application.Common.Exceptions;
+using AMAK.Application.Interfaces;
 using AMAK.Domain.Models;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using MimeKit;
 
@@ -10,7 +12,10 @@ namespace AMAK.Application.Providers.Mail {
 
         private readonly MailSettings mailSettings;
 
-        public MailService(IOptions<MailSettings> options) {
+        private readonly IRepository<Domain.Models.EmailTemplate> _emailTemplatesRepository;
+
+        public MailService(IOptions<MailSettings> options, IRepository<EmailTemplate> emailTemplatesRepository) {
+            _emailTemplatesRepository = emailTemplatesRepository;
             mailSettings = options.Value;
         }
 
@@ -72,7 +77,7 @@ namespace AMAK.Application.Providers.Mail {
                 MailRequest mailRequest = new() {
                     ToEmail = to,
                     Subject = subject,
-                    Message = OrderMail(order, orderResponses)
+                    Message = await OrderMail(order, orderResponses)
                 };
 
                 await SendMailAsync(mailRequest);
@@ -82,16 +87,19 @@ namespace AMAK.Application.Providers.Mail {
             }
         }
 
-        private static string OrderMail(Order order, List<Domain.Models.OrderDetail> orderResponses) {
-            string htmlContent = "";
+        private async Task<string> OrderMail(Order order, List<Domain.Models.OrderDetail> orderResponses) {
+            var existingTemplate = await _emailTemplatesRepository.GetAll()
+            .FirstOrDefaultAsync(x => x.Name == Domain.Enums.ETemplate.ORDER) ?? throw new NotFoundException("Order Template Not Found");
 
-            try {
-                string path = Path.Combine(Directory.GetCurrentDirectory(), "Templates", "Order.html");
-                htmlContent = File.ReadAllText(path);
+            string htmlContent = existingTemplate.Template;
 
-            } catch (Exception e) {
-                Console.WriteLine(e);
-            }
+            // try {
+            //     string path = Path.Combine(Directory.GetCurrentDirectory(), "Templates", "Order.html");
+            //     htmlContent = File.ReadAllText(path);
+
+            // } catch (Exception e) {
+            //     Console.WriteLine(e);
+            // }
 
             var latestStatus = order.Status
               .OrderBy(s => s.TimeStamp)

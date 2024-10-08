@@ -21,6 +21,9 @@ namespace AMAK.Infrastructure.Context {
         public DbSet<MessageUser> MessageUsers { get; set; }
         public DbSet<Chat> Chats { get; set; }
         public DbSet<Cart> Carts { get; set; }
+        public DbSet<AccountConfig> AccountConfigs { get; set; }
+        public DbSet<Configuration> Configurations { get; set; }
+        public DbSet<EmailTemplate> Templates { get; set; }
         public DbSet<CartDetail> CartDetails { get; set; }
         public DbSet<OrderStatus> OrderStatus { get; set; }
 
@@ -56,12 +59,25 @@ namespace AMAK.Infrastructure.Context {
                 e.Property(x => x.Shipping).HasDefaultValue(true);
             });
 
+            modelBuilder.Entity<AccountConfig>(e => {
+                e.Property(x => x.IsBan).HasDefaultValue(false);
+                e.Property(x => x.IsActiveNotification).HasDefaultValue(false);
+                e.Property(x => x.Language).HasDefaultValue(ELanguage.VI);
+                e.Property(x => x.Timezone).HasDefaultValue(ETimezone.ICT);
+            });
+
             // TODO: One-to-One
 
             modelBuilder.Entity<ApplicationUser>()
                        .HasOne(u => u.Cart)
                        .WithOne(c => c.User)
                        .HasForeignKey<Cart>(c => c.UserId);
+
+            modelBuilder.Entity<ApplicationUser>()
+                       .HasOne(u => u.Config)
+                       .WithOne(c => c.User)
+                       .HasForeignKey<AccountConfig>(c => c.UserId);
+
 
             // TODO: May-to-Many
             modelBuilder.Entity<Product>()

@@ -16,7 +16,7 @@ namespace AMAK.Domain.Models {
 
         public List<Notification> Notifications { get; } = [];
         public Cart? Cart { get; set; }
-
+        public AccountConfig? Config { get; set; }
         public DateTime CreateAt { get; set; } = DateTime.UtcNow;
         public DateTime UpdateAt { get; set; } = DateTime.UtcNow;
     }
