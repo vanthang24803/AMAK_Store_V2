@@ -3,8 +3,6 @@ using AMAK.Application.Common.Helpers;
 using AMAK.Application.Interfaces;
 using AMAK.Application.Services.Template.Dtos;
 using AMAK.Domain.Models;
-using AutoMapper;
-using DocumentFormat.OpenXml.Office2010.Excel;
 using Microsoft.EntityFrameworkCore;
 using System.Net;
 

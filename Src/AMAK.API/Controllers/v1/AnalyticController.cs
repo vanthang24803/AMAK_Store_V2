@@ -41,6 +41,7 @@ namespace AMAK.API.Controllers.v1 {
 
         [HttpGet]
         [Route("Statistic")]
+        [AllowAnonymous]
         public async Task<IActionResult> GetStatistic() {
             return Ok(await _analyticService.GetAnalyticStatisticsAsync());
         }

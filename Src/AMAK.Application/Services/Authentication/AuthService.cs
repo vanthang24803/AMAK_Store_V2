@@ -69,7 +69,7 @@ namespace AMAK.Application.Services.Authentication {
             var token = await _userManager.GenerateEmailConfirmationTokenAsync(newUser);
 
 
-            _mailService.SendEmailConfirmationAccount(newUser.UserName, newUser.Id, token);
+            _mailService.SendEmailConfirmationAccount(newUser.UserName, $"{newUser.FirstName} {newUser.LastName}", newUser.Id, token);
 
 
             var response = _mapper.Map<RegisterResponse>(newUser);
@@ -237,7 +237,7 @@ namespace AMAK.Application.Services.Authentication {
             var token = await _userManager.GeneratePasswordResetTokenAsync(existingUser);
 
 
-            _mailService.SendMailResetPassword(request.Email, existingUser.Id, token);
+            _mailService.SendMailResetPassword(request.Email, $"{existingUser.FirstName} {existingUser.LastName}", existingUser.Id, token);
 
 
             return new Response<string>(HttpStatusCode.OK, "Send mail reset password successfully!");
@@ -352,7 +352,7 @@ namespace AMAK.Application.Services.Authentication {
                 LastName = "",
                 Avatar = "https://www.shutterstock.com/image-vector/chat-bot-logo-design-concept-600nw-1938811039.jpg",
                 SecurityStamp = Guid.NewGuid().ToString(),
-                Email =  $"{request.Name.Replace(" ", "").ToLower()}@amak.com",
+                Email = $"{request.Name.Replace(" ", "").ToLower()}@amak.com",
                 UserName = request.Name
             };
 

@@ -26,6 +26,8 @@ namespace AMAK.Infrastructure.Context {
         public DbSet<EmailTemplate> Templates { get; set; }
         public DbSet<CartDetail> CartDetails { get; set; }
         public DbSet<OrderStatus> OrderStatus { get; set; }
+        public DbSet<Prompt> Prompts { get; set; }
+        public DbSet<AIConfig> AIConfigs { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder) {
 
@@ -37,6 +39,11 @@ namespace AMAK.Infrastructure.Context {
                 entity.Property(x => x.PhoneNumber).HasMaxLength(12);
                 entity.Property(x => x.Email).HasMaxLength(128);
                 entity.HasIndex(x => x.Email).IsUnique();
+            });
+
+            modelBuilder.Entity<AIConfig>(e => {
+                e.Property(x => x.Name).HasMaxLength(128);
+                e.Property(x => x.Config).HasColumnType("jsonb");
             });
 
             modelBuilder.Entity<Option>(entity => {
@@ -65,6 +72,14 @@ namespace AMAK.Infrastructure.Context {
                 e.Property(x => x.Language).HasDefaultValue(ELanguage.VI);
                 e.Property(x => x.Timezone).HasDefaultValue(ETimezone.ICT);
             });
+
+            modelBuilder.Entity<Prompt>()
+                .HasIndex(p => p.Type)
+                .IsUnique();
+
+            modelBuilder.Entity<EmailTemplate>()
+                .HasIndex(et => et.Name)
+                .IsUnique();
 
             // TODO: One-to-One
 
@@ -175,6 +190,65 @@ namespace AMAK.Infrastructure.Context {
                         .WithMany(r => r.Photos)
                         .HasForeignKey(rp => rp.ReviewId)
                         .OnDelete(DeleteBehavior.Cascade);
+
+            // TODO: Seed Data
+
+            modelBuilder.Entity<AIConfig>().HasData(
+                new AIConfig() {
+                    Id = Guid.NewGuid(),
+                    Name = ILMM.Gemini.ToString()
+                },
+                new AIConfig() {
+                    Id = Guid.NewGuid(),
+                    Name = ILMM.ChatGPT4.ToString()
+                },
+                 new AIConfig() {
+                     Id = Guid.NewGuid(),
+                     Name = ILMM.ChatGPT3_5.ToString()
+                 }
+            );
+
+            modelBuilder.Entity<Prompt>().HasData(
+                new Prompt() {
+                    Id = Guid.NewGuid(),
+                    Type = EPrompt.ANALYTIC_REVENUE,
+                    Context = @"
+                        Bạn là một AI Phân tích dữ liệu 
+                        - Chỉ trả lời bằng tiếng Việt.
+                        - Dựa vào các dữ liệu đã gửi hãy phân tích chi tiết dữ liệu tăng giảm
+                        - Đây là dữ liệu tổng doanh thu trong các thời điểm trong năm với year month week đều là tháng hiện tại hãy đưa ra các phân tích theo từng
+                        mục thời gian rồi tóm lại tổng quát 
+                        - Có thể viết thành 1 bài phân tích ngắn không được nói chuyện dở dang khoảng 1000 ký tự
+                        Vui lòng phân tích dữ liệu sau: {DATA}.
+                    "
+                },
+                  new Prompt() {
+                      Id = Guid.NewGuid(),
+                      Type = EPrompt.ANALYTIC_REVIEW,
+                      Context = @"
+                        Bạn là một AI Phân tích dữ liệu 
+                        - Chỉ trả lời bằng tiếng Việt.
+                        - Dựa vào các dữ liệu đã gửi hãy phân tích và đưa ra đánh giá về các review đơn hàng hãy đưa ra phân tích chung về các review tốt và xấu của sản phẩm và đưa ra số liệu trung bình đây là 1 sản phẩm tốt hay xấu đáng mua hay không ?
+                        - Có thể viết thành 1 bài phân tích ngắn không được nói chuyện dở dang khoảng 500 ký tự
+                        Vui lòng phân tích dữ liệu sau: {DATA}.
+                        ",
+                  },
+                  new Prompt() {
+                      Id = Guid.NewGuid(),
+                      Type = EPrompt.ANALYTIC_STATISTIC,
+                      Context = @"
+                        Bạn là một AI Phân tích dữ liệu 
+                        - Chỉ trả lời bằng tiếng Việt.
+                        - Dựa vào các dữ liệu đã gửi hãy phân tích chi tiết dữ liệu tăng giảm
+                        - Nếu isStock là false thì đó là % giảm so với tháng trước tương ứng với stock ví dụ isStock là false và stock là 20% là giảm 20% so với tháng trước , total là tổng số dữ liệu trong tháng hiện tại hãy đưa ra các nhận xét về việc kinh doanh trong tháng hiện tại 
+                        - Trả lời không trả về ## đầu dòng
+                        - Mỗi ý trả lời xong phải . xuống dòng là có dấu cách đầu dòng và viết hoa chữ cái đầu mỗi dòng
+                        - Chỉ trả các phân tích chứ k cần thiết nói ra các trường data bằng tiếng anh
+                        - Không nói xen lẫn tiếng anh tiếng việt
+                        - Có thể viết thành 1 bài phân tích ngắn không được nói chuyện dở dang khoảng 1000 ký tự
+                        Vui lòng phân tích dữ liệu sau: {DATA}."
+                  }
+            );
         }
     }
 }

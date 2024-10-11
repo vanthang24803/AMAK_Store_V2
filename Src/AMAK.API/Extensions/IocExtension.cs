@@ -21,7 +21,7 @@ using AMAK.Application.Services.Gmail;
 using AMAK.Application.Services.Cart;
 using AMAK.Application.Services.Trash;
 using AMAK.Application.Services.Tickets;
-using AMAK.Application.Services.AI;
+using AMAK.Application.Providers.Gemini;
 using AMAK.Application.Services.Template;
 
 namespace AMAK.API.Common.Extensions {
@@ -53,7 +53,7 @@ namespace AMAK.API.Common.Extensions {
             services.AddScoped<ITicketService, TicketService>();
             services.AddScoped<ITemplateService, TemplateService>();
 
-            services.AddHttpClient<IAIService, AIService>();
+            services.AddHttpClient<IGeminiService, GeminiService>();
             services.AddScoped<Application.Providers.Mail.IMailService, Application.Providers.Mail.MailService>();
 
             services.AddSingleton<IGoogleService, GoogleService>();
