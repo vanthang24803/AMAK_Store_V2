@@ -25,6 +25,5 @@ namespace AMAK.Application.Services.Analytics {
         Task<Response<AnalyticTopCustomerResponse>> GetAnalyticTopCustomerAsync();
 
         Task<Response<ProfileResponse>> GetAccountDetail(string id);
-
     }
 }

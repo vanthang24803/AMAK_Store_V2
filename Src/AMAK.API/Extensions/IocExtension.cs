@@ -21,6 +21,8 @@ using AMAK.Application.Services.Gmail;
 using AMAK.Application.Services.Cart;
 using AMAK.Application.Services.Trash;
 using AMAK.Application.Services.Tickets;
+using AMAK.Application.Providers.Gemini;
+using AMAK.Application.Services.Template;
 
 namespace AMAK.API.Common.Extensions {
     public static class IocExtension {
@@ -49,12 +51,16 @@ namespace AMAK.API.Common.Extensions {
             services.AddScoped<ITrashService, TrashService>();
             services.AddScoped<IReviewService, ReviewService>();
             services.AddScoped<ITicketService, TicketService>();
+            services.AddScoped<ITemplateService, TemplateService>();
+
+            services.AddHttpClient<IGeminiService, GeminiService>();
+            services.AddScoped<Application.Providers.Mail.IMailService, Application.Providers.Mail.MailService>();
 
             services.AddSingleton<IGoogleService, GoogleService>();
             services.AddSingleton<IUploadService, UploadService>();
-            services.AddSingleton<Application.Providers.Mail.IMailService, Application.Providers.Mail.MailService>();
             services.AddSingleton<ITokenService, TokenService>();
             services.AddSingleton<ICacheService, CacheService>();
+
             return services;
         }
     }

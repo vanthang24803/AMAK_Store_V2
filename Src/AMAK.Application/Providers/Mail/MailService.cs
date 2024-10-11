@@ -1,6 +1,8 @@
 using System.Text;
 using AMAK.Application.Common.Exceptions;
+using AMAK.Application.Interfaces;
 using AMAK.Domain.Models;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using MimeKit;
 
@@ -10,17 +12,30 @@ namespace AMAK.Application.Providers.Mail {
 
         private readonly MailSettings mailSettings;
 
-        public MailService(IOptions<MailSettings> options) {
+        private readonly IRepository<EmailTemplate> _emailTemplatesRepository;
+
+        public MailService(IOptions<MailSettings> options, IRepository<EmailTemplate> emailTemplatesRepository) {
+            _emailTemplatesRepository = emailTemplatesRepository;
             mailSettings = options.Value;
         }
 
-        public async void SendEmailConfirmationAccount(string email, string userId, string token) {
+        public async void SendEmailConfirmationAccount(string email, string fullName, string userId, string token) {
+            var existingTemplate = await _emailTemplatesRepository.GetAll()
+                .FirstOrDefaultAsync(x => x.Name == Domain.Enums.ETemplate.VERIFY_ACCOUNT)
+                ?? throw new NotFoundException("Verify Email Template Not Found!");
+
+            string htmlContent = existingTemplate.Template;
+
+            string verifyLink = $"http://localhost:3000/verify-account?userId={userId}&token=${token}";
+
+            htmlContent = htmlContent.Replace("{USERNAME}", fullName);
+            htmlContent = htmlContent.Replace("{VERIFICATION_LINK}", verifyLink);
+
             try {
                 MailRequest mailRequest = new() {
                     ToEmail = email,
-                    Subject = "Verify account",
-                    Message = "<a href='" + "http://localhost:3000/" + "/verify-account?userId=" + userId + "&token=" + token
-                   + "' target='_blank'>Click here to verify your account</a>"
+                    Subject = "Xác nhận tài khoản",
+                    Message = htmlContent,
 
                 };
 
@@ -31,13 +46,24 @@ namespace AMAK.Application.Providers.Mail {
             }
         }
 
-        public async void SendMailResetPassword(string email, string userId, string token) {
+        public async void SendMailResetPassword(string email, string fullName, string userId, string token) {
+
+            var existingTemplate = await _emailTemplatesRepository.GetAll()
+              .FirstOrDefaultAsync(x => x.Name == Domain.Enums.ETemplate.FORGOT_PASSWORD)
+              ?? throw new NotFoundException("Forgot Password Template Not Found!");
+
+            string htmlContent = existingTemplate.Template;
+
+            string verifyLink = $"http://localhost:3000/verify-account?userId={userId}&token=${token}";
+
+            htmlContent = htmlContent.Replace("{USERNAME}", fullName);
+            htmlContent = htmlContent.Replace("{LINK}", verifyLink);
+
             try {
                 MailRequest mailRequest = new() {
                     ToEmail = email,
-                    Subject = "Verify account",
-                    Message = "<a href='" + "http://localhost:3000/" + "/reset-password?userId=" + userId + "&token=" + token
-                   + "' target='_blank'>Click here to reset password</a>"
+                    Subject = "Đổi mật khẩu",
+                    Message = htmlContent
 
                 };
 
@@ -67,12 +93,12 @@ namespace AMAK.Application.Providers.Mail {
             await smtp.DisconnectAsync(true);
         }
 
-        public async Task SendOrderMail(string to, string subject, Order order, List<Domain.Models.OrderDetail> orderResponses) {
+        public async Task SendOrderMail(string to, string subject, Order order, List<OrderDetail> orderResponses) {
             try {
                 MailRequest mailRequest = new() {
                     ToEmail = to,
                     Subject = subject,
-                    Message = OrderMail(order, orderResponses)
+                    Message = await OrderMail(order, orderResponses)
                 };
 
                 await SendMailAsync(mailRequest);
@@ -82,16 +108,12 @@ namespace AMAK.Application.Providers.Mail {
             }
         }
 
-        private static string OrderMail(Order order, List<Domain.Models.OrderDetail> orderResponses) {
-            string htmlContent = "";
+        private async Task<string> OrderMail(Order order, List<OrderDetail> orderResponses) {
+            var existingTemplate = await _emailTemplatesRepository.GetAll()
+            .FirstOrDefaultAsync(x => x.Name == Domain.Enums.ETemplate.ORDER) ?? throw new NotFoundException("Order Template Not Found");
 
-            try {
-                string path = Path.Combine(Directory.GetCurrentDirectory(), "Templates", "Order.html");
-                htmlContent = File.ReadAllText(path);
+            string htmlContent = existingTemplate.Template;
 
-            } catch (Exception e) {
-                Console.WriteLine(e);
-            }
 
             var latestStatus = order.Status
               .OrderBy(s => s.TimeStamp)
