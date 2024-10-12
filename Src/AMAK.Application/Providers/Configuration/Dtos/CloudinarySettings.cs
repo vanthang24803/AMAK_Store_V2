@@ -1,5 +1,5 @@
 
-namespace AMAK.Application.Providers.Upload {
+namespace AMAK.Application.Providers.Configuration.Dtos {
     public class CloudinarySettings {
         public string CloudName { get; set; } = null!;
         public string ApiKey { get; set; } = null!;

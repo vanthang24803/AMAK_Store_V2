@@ -1,4 +1,5 @@
 using AMAK.Application.Common.Exceptions;
+using AMAK.Application.Providers.Configuration.Dtos;
 using CloudinaryDotNet;
 using CloudinaryDotNet.Actions;
 using Microsoft.AspNetCore.Http;

@@ -1,4 +1,4 @@
-using AMAK.Application.Providers.Mail;
+using AMAK.Application.Providers.Configuration.Dtos;
 using AMAK.Application.Providers.Momo;
 using AMAK.Application.Providers.Upload;
 

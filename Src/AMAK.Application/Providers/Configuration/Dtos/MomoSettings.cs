@@ -1,4 +1,4 @@
-namespace AMAK.Application.Providers.Momo {
+namespace AMAK.Application.Providers.Configuration.Dtos {
     public class MomoSettings {
         public string PartnerCode { get; set; } = null!;
         public string ReturnUrl { get; set; } = null!;

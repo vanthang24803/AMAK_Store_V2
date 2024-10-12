@@ -1,6 +1,7 @@
 using System.Text;
 using AMAK.Application.Common.Exceptions;
 using AMAK.Application.Interfaces;
+using AMAK.Application.Providers.Configuration.Dtos;
 using AMAK.Domain.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;

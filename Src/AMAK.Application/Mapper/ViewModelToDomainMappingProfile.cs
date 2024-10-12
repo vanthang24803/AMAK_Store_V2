@@ -5,6 +5,7 @@ using AMAK.Application.Services.Me.Dtos;
 using AMAK.Application.Services.Options.Dtos;
 using AMAK.Application.Services.Order.Dtos;
 using AMAK.Application.Services.Product.Common;
+using AMAK.Application.Services.Prompt.Dtos;
 using AMAK.Application.Services.Tickets.Dtos;
 using AMAK.Domain.Models;
 using AutoMapper;
@@ -31,6 +32,9 @@ namespace AMAK.Application.Mapper {
 
             CreateMap<OptionRequest, Option>()
                 .ForMember(dest => dest.UpdateAt, opt => opt.MapFrom(src => DateTime.UtcNow));
+
+            CreateMap<PromptRequest, Prompt>()
+                  .ForMember(dest => dest.UpdateAt, opt => opt.MapFrom(src => DateTime.UtcNow));
 
             CreateMap<TicketSchema, Voucher>()
                 .ForMember(dest => dest.UpdateAt, opt => opt.MapFrom(src => DateTime.UtcNow))

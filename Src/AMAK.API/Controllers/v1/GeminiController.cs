@@ -27,8 +27,8 @@ namespace AMAK.API.Controllers.v1 {
 
 
         [HttpPost]
-        [AllowAnonymous]
         [Route("Review")]
+        [AllowAnonymous]
 
         public async Task<IActionResult> GetActionReviewAI([FromBody] AIRequest<List<ReviewResponse>> request) {
             return Ok(await _geminiService.GenerateReviewAnalytic(request));
@@ -36,7 +36,6 @@ namespace AMAK.API.Controllers.v1 {
         }
 
         [HttpPost]
-        [AllowAnonymous]
         [Route("Statistic")]
 
         public async Task<IActionResult> GetActionStatisticAI([FromBody] AIRequest<AnalyticStatisticsResponse> request) {
