@@ -11,19 +11,16 @@ using Microsoft.Extensions.Configuration;
 
 namespace AMAK.Application.Providers.Gemini {
     public class GeminiService : IGeminiService {
-
         private readonly HttpClient _httpClient;
-
         private readonly string _gemini;
-
         private readonly IRepository<Domain.Models.Prompt> _promptRepository;
 
         public GeminiService(HttpClient httpClient, IConfiguration configuration, IRepository<Domain.Models.Prompt> promptRepository) {
             _httpClient = httpClient;
 
-            var aiUrl = configuration["AISettings:Url"];
+            var aiUrl = configuration["GeminiSettings:Url"];
 
-            var token = configuration["AISettings:Token"];
+            var token = configuration["GeminiSettings:Token"];
 
             _gemini = $"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key={token}";
 

@@ -1,4 +1,4 @@
-namespace AMAK.Application.Providers.Momo {
+namespace AMAK.Application.Providers.Momo.Dtos {
     public class MomoRequest {
         public string orderInfo { get; set; } = null!;
         public string partnerCode { get; set; } = null!;

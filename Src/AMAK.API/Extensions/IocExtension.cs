@@ -23,6 +23,7 @@ using AMAK.Application.Services.Trash;
 using AMAK.Application.Services.Tickets;
 using AMAK.Application.Providers.Gemini;
 using AMAK.Application.Services.Template;
+using AMAK.Application.Services.Prompt;
 
 namespace AMAK.API.Common.Extensions {
     public static class IocExtension {
@@ -52,9 +53,13 @@ namespace AMAK.API.Common.Extensions {
             services.AddScoped<IReviewService, ReviewService>();
             services.AddScoped<ITicketService, TicketService>();
             services.AddScoped<ITemplateService, TemplateService>();
+            services.AddScoped<IPromptService, PromptService>();
 
             services.AddHttpClient<IGeminiService, GeminiService>();
+
             services.AddScoped<Application.Providers.Mail.IMailService, Application.Providers.Mail.MailService>();
+
+            services.AddScoped<Application.Providers.Configuration.IConfigurationProvider, Application.Providers.Configuration.ConfigurationProvider>();
 
             services.AddSingleton<IGoogleService, GoogleService>();
             services.AddSingleton<IUploadService, UploadService>();
