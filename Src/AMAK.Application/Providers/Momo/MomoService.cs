@@ -1,19 +1,27 @@
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using AMAK.Application.Providers.Configuration;
 using AMAK.Application.Providers.Configuration.Dtos;
 using AMAK.Application.Providers.Momo.Dtos;
 using AMAK.Application.Services.Order.Dtos;
-using Microsoft.Extensions.Options;
 
 namespace AMAK.Application.Providers.Momo {
     public class MomoService : IMomoService {
 
-        private static readonly HttpClient _httpClient = new();
         private readonly MomoSettings _momoSettings;
 
-        public MomoService(IOptions<MomoSettings> options) {
-            _momoSettings = options.Value;
+        private static readonly HttpClient _httpClient = new();
+
+        public MomoService(IConfigurationProvider configurationProvider) {
+            _momoSettings = InitializeConfig(configurationProvider).GetAwaiter().GetResult();
+        }
+
+        private static async Task<MomoSettings> InitializeConfig(IConfigurationProvider configurationProvider) {
+            var cloudinarySettingsResponse = await configurationProvider.GetMomoSettingAsync();
+            var settings = cloudinarySettingsResponse.Result;
+
+            return settings;
         }
 
         public async Task<string> CreateMomoPaymentAsync(CreateOrderRequest dataRequest) {

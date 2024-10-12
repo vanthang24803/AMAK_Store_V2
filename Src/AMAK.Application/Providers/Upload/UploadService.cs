@@ -1,27 +1,23 @@
 using AMAK.Application.Common.Exceptions;
-using AMAK.Application.Providers.Configuration.Dtos;
+using AMAK.Application.Providers.Configuration;
 using CloudinaryDotNet;
 using CloudinaryDotNet.Actions;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Options;
 
 namespace AMAK.Application.Providers.Upload {
     public class UploadService : IUploadService {
 
         private readonly Cloudinary _cloudinary;
+        public UploadService(IConfigurationProvider configurationProvider) {
+            _cloudinary = InitializeCloudinary(configurationProvider).GetAwaiter().GetResult();
+        }
 
-        private readonly CloudinarySettings _cloudinarySettings;
+        private static async Task<Cloudinary> InitializeCloudinary(IConfigurationProvider configurationProvider) {
+            var cloudinarySettingsResponse = await configurationProvider.GetCloudinarySettingAsync();
+            var settings = cloudinarySettingsResponse.Result;
 
-        public UploadService(IOptions<CloudinarySettings> options) {
-            _cloudinarySettings = options.Value;
-
-            var account = new Account(
-                _cloudinarySettings.CloudName,
-                _cloudinarySettings.ApiKey,
-                _cloudinarySettings.ApiSecret
-            );
-
-            _cloudinary = new Cloudinary(account);
+            var account = new Account(settings.CloudName, settings.ApiKey, settings.ApiSecret);
+            return new Cloudinary(account);
         }
 
 

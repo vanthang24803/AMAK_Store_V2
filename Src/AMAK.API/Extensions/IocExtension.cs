@@ -59,10 +59,11 @@ namespace AMAK.API.Common.Extensions {
 
             services.AddScoped<Application.Providers.Mail.IMailService, Application.Providers.Mail.MailService>();
 
+            services.AddScoped<IUploadService, UploadService>();
             services.AddScoped<Application.Providers.Configuration.IConfigurationProvider, Application.Providers.Configuration.ConfigurationProvider>();
 
-            services.AddSingleton<IGoogleService, GoogleService>();
-            services.AddSingleton<IUploadService, UploadService>();
+            services.AddScoped<IGoogleService, GoogleService>();
+
             services.AddSingleton<ITokenService, TokenService>();
             services.AddSingleton<ICacheService, CacheService>();
 

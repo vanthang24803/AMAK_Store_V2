@@ -59,7 +59,6 @@ namespace AMAK.API.Controllers.v1 {
 
         [HttpGet]
         [Route("Momo")]
-        [AllowAnonymous]
 
         public async Task<IActionResult> GetMomoSettings() {
             return Ok(await _configurationProvider.GetMomoSettingAsync());

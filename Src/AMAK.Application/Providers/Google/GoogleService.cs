@@ -1,6 +1,6 @@
+using AMAK.Application.Providers.Configuration;
 using AMAK.Application.Providers.Configuration.Dtos;
 using Google.Apis.Auth.OAuth2;
-using Microsoft.Extensions.Options;
 
 namespace AMAK.Application.Providers.Google {
 
@@ -11,9 +11,17 @@ namespace AMAK.Application.Providers.Google {
             Constants.Google.GOOGLE_MAIL_USER_INFO
         ];
 
-        public GoogleService(IOptions<GoogleSettings> options) {
-            _googleConfig = options.Value;
+        public GoogleService(IConfigurationProvider configurationProvider) {
+            _googleConfig = InitializeConfig(configurationProvider).GetAwaiter().GetResult();
         }
+
+        private static async Task<GoogleSettings> InitializeConfig(IConfigurationProvider configurationProvider) {
+            var cloudinarySettingsResponse = await configurationProvider.GetGoogleSettingAsync();
+            var settings = cloudinarySettingsResponse.Result;
+
+            return settings;
+        }
+
 
         public async Task<UserCredential> LoginAsync() {
             var clientSecrets = new ClientSecrets {
