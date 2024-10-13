@@ -5,64 +5,96 @@ using AMAK.Application.Interfaces;
 using AMAK.Application.Providers.Configuration.Dtos;
 using Microsoft.EntityFrameworkCore;
 using System.Net;
+using System.Text;
+using AMAK.Application.Providers.Cache;
 
 namespace AMAK.Application.Providers.Configuration {
     public class ConfigurationProvider : IConfigurationProvider {
         private readonly IRepository<Domain.Models.Configuration> _configurationRepository;
+        private readonly ICacheService _cacheService;
 
-        public ConfigurationProvider(IRepository<Domain.Models.Configuration> configurationRepository) {
+        public ConfigurationProvider(IRepository<Domain.Models.Configuration> configurationRepository, ICacheService cacheService) {
             _configurationRepository = configurationRepository;
+            _cacheService = cacheService;
         }
 
-        public Task<Response<CloudinarySettings>> GetCloudinarySettingAsync() {
-            return GetSettingAsync<CloudinarySettings>(Constants.Configuration.CLOUDINARY);
+        public async Task<Response<TSettings>> GetSettingsAsync<TSettings>(string cacheKey, string configKey) where TSettings : class {
+            var cachedData = await _cacheService.GetData<Response<TSettings>>(cacheKey);
+            if (cachedData != null) {
+                return cachedData;
+            }
+
+            var result = await GetAndDecodeSettingsAsync<TSettings>(configKey);
+            await _cacheService.SetData(cacheKey, result, DateTimeOffset.UtcNow.AddMinutes(30));
+
+            return result;
         }
 
-        public Task<Response<MailSettings>> GetEmailSettingAsync() {
-            return GetSettingAsync<MailSettings>(Constants.Configuration.EMAIL);
+        public async Task<Response<CloudinarySettings>> GetCloudinarySettingAsync() =>
+            await GetSettingsAsync<CloudinarySettings>("Config_Cloudinary", Constants.Configuration.CLOUDINARY);
+
+        public async Task<Response<MailSettings>> GetEmailSettingAsync() =>
+            await GetSettingsAsync<MailSettings>("Config_Mail", Constants.Configuration.EMAIL);
+
+        public async Task<Response<GoogleSettings>> GetGoogleSettingAsync() =>
+            await GetSettingsAsync<GoogleSettings>("Config_Google", Constants.Configuration.GOOGLE);
+
+        public async Task<Response<MomoSettings>> GetMomoSettingAsync() =>
+            await GetSettingsAsync<MomoSettings>("Config_Momo", Constants.Configuration.MOMO);
+
+        public async Task<Response<string>> UpdateSettingsAsync<TSettings>(TSettings settings, string cacheKey, string configKey) {
+            var result = await UpdateAndEncodeSettingsAsync(settings, configKey);
+            await _cacheService.RemoveData(cacheKey);
+            return result;
         }
 
-        public Task<Response<GoogleSettings>> GetGoogleSettingAsync() {
-            return GetSettingAsync<GoogleSettings>(Constants.Configuration.GOOGLE);
+        public async Task<Response<string>> UpdateCloudinarySettingAsync(CloudinarySettings settings) =>
+            await UpdateSettingsAsync(settings, "Config_Cloudinary", Constants.Configuration.CLOUDINARY);
+
+        public async Task<Response<string>> UpdateEmailSettingAsync(MailSettings settings) =>
+            await UpdateSettingsAsync(settings, "Config_Mail", Constants.Configuration.EMAIL);
+
+        public async Task<Response<string>> UpdateGoogleSettingAsync(GoogleSettings settings) =>
+            await UpdateSettingsAsync(settings, "Config_Google", Constants.Configuration.GOOGLE);
+
+        public async Task<Response<string>> UpdateMomoSettingAsync(MomoSettings settings) =>
+            await UpdateSettingsAsync(settings, "Config_Momo", Constants.Configuration.MOMO);
+
+        private async Task<Response<TSettings>> GetAndDecodeSettingsAsync<TSettings>(string key) where TSettings : class {
+            var settings = await GetSettingAsync<TSettings>(key);
+            DecodeBase64Properties(settings);
+            return new Response<TSettings>(HttpStatusCode.OK, settings);
         }
 
-        public Task<Response<MomoSettings>> GetMomoSettingAsync() {
-            return GetSettingAsync<MomoSettings>(Constants.Configuration.MOMO);
+        private async Task<Response<string>> UpdateAndEncodeSettingsAsync<TSettings>(TSettings settings, string key) {
+            EncodeBase64Properties(settings);
+            return await UpdateSettingAsync(settings, key, "Settings updated successfully.");
         }
 
-        public async Task<Response<string>> UpdateCloudinarySettingAsync(CloudinarySettings cloudinarySettings) {
-            return await UpdateSettingAsync(cloudinarySettings, Constants.Configuration.CLOUDINARY, "Cloudinary settings updated successfully.");
-        }
+        private async Task<TSettings> GetSettingAsync<TSettings>(string key) where TSettings : class {
+            var setting = await _configurationRepository.GetAll().FirstOrDefaultAsync(x => x.Key == key)
+                ?? throw new NotFoundException($"{key} setting not found!");
 
-        public async Task<Response<string>> UpdateEmailSettingAsync(MailSettings mailSettings) {
-            return await UpdateSettingAsync(mailSettings, Constants.Configuration.EMAIL, "Mail settings updated successfully.");
-        }
+            if (!setting.Value.HasValue) {
+                throw new BadRequestException($"{key} settings value is null.");
+            }
 
-        public async Task<Response<string>> UpdateGoogleSettingAsync(GoogleSettings googleSettings) {
-            return await UpdateSettingAsync(googleSettings, Constants.Configuration.GOOGLE, "Google settings updated successfully.");
-        }
-
-        public async Task<Response<string>> UpdateMomoSettingAsync(MomoSettings momo) {
-            return await UpdateSettingAsync(momo, Constants.Configuration.MOMO, "Momo settings updated successfully.");
+            return JsonSerializer.Deserialize<TSettings>(setting.Value.Value.GetRawText())
+                ?? throw new BadRequestException($"Could not deserialize {key} settings.");
         }
 
         private async Task<Response<string>> UpdateSettingAsync<TSettings>(TSettings settings, string key, string successMessage) {
             var existingSettings = await _configurationRepository.GetAll().FirstOrDefaultAsync(x => x.Key == key);
-
-            // TODO: Serialize the settings into JsonElement
             var serializedSettings = JsonSerializer.Deserialize<JsonElement>(JsonSerializer.Serialize(settings));
 
             if (existingSettings == null) {
-                //TODO: Create new settings if not found
                 var newSettings = new Domain.Models.Configuration {
                     Id = Guid.NewGuid(),
                     Key = key,
                     Value = serializedSettings
                 };
-
                 _configurationRepository.Add(newSettings);
             } else {
-                //TODO: Update existing settings
                 existingSettings.Value = serializedSettings;
                 _configurationRepository.Update(existingSettings);
             }
@@ -71,21 +103,27 @@ namespace AMAK.Application.Providers.Configuration {
             return new Response<string>(HttpStatusCode.OK, successMessage);
         }
 
+        private static void EncodeBase64Properties<TSettings>(TSettings settings) {
+            if (settings == null) return;
 
-
-        private async Task<Response<TSettings>> GetSettingAsync<TSettings>(string key) where TSettings : class {
-            var settingsData = await _configurationRepository.GetAll().FirstOrDefaultAsync(x => x.Key == key)
-                ?? throw new NotFoundException($"{key} setting not found!");
-
-            if (!settingsData.Value.HasValue) {
-                throw new BadRequestException($"{key} settings value is null.");
+            foreach (var prop in settings.GetType().GetProperties().Where(p => p.PropertyType == typeof(string))) {
+                if (prop.GetValue(settings) is string value) {
+                    prop.SetValue(settings, EncodeBase64(value));
+                }
             }
-
-            var settings = JsonSerializer.Deserialize<TSettings>(
-                settingsData.Value.Value.GetRawText()
-            ) ?? throw new BadRequestException($"Could not deserialize {key} settings.");
-
-            return new Response<TSettings>(HttpStatusCode.OK, settings);
         }
+
+        private static void DecodeBase64Properties<TSettings>(TSettings settings) {
+            if (settings == null) return;
+
+            foreach (var prop in settings.GetType().GetProperties().Where(p => p.PropertyType == typeof(string))) {
+                if (prop.GetValue(settings) is string value) {
+                    prop.SetValue(settings, DecodeBase64(value));
+                }
+            }
+        }
+
+        public static string EncodeBase64(string value) => Convert.ToBase64String(Encoding.UTF8.GetBytes(value));
+        public static string DecodeBase64(string value) => Encoding.UTF8.GetString(Convert.FromBase64String(value));
     }
 }

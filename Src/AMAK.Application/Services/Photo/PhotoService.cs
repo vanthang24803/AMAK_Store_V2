@@ -2,7 +2,7 @@ using AMAK.Application.Common.Exceptions;
 using AMAK.Application.Common.Helpers;
 using AMAK.Application.Interfaces;
 using AMAK.Application.Providers.Cache;
-using AMAK.Application.Providers.Upload;
+using AMAK.Application.Providers.Cloudinary;
 using AMAK.Application.Services.Photo.Dtos;
 using AutoMapper;
 using Microsoft.AspNetCore.Http;
@@ -15,15 +15,15 @@ namespace AMAK.Application.Services.Photo {
         private readonly IMapper _mapper;
         private readonly IRepository<Domain.Models.Photo> _photoRepository;
         private readonly IRepository<Domain.Models.Product> _productRepository;
-        private readonly IUploadService _uploadService;
+        private readonly ICloudinaryService _CloudinaryService;
         private readonly ICacheService _cacheService;
 
 
-        public PhotoService(IMapper mapper, IRepository<Domain.Models.Photo> photoRepository, IRepository<Domain.Models.Product> productRepository, IUploadService uploadService, ICacheService cacheService) {
+        public PhotoService(IMapper mapper, IRepository<Domain.Models.Photo> photoRepository, IRepository<Domain.Models.Product> productRepository, ICloudinaryService CloudinaryService, ICacheService cacheService) {
             _mapper = mapper;
             _photoRepository = photoRepository;
             _productRepository = productRepository;
-            _uploadService = uploadService;
+            _CloudinaryService = CloudinaryService;
             _cacheService = cacheService;
         }
 
@@ -35,7 +35,7 @@ namespace AMAK.Application.Services.Photo {
             var photos = new List<Domain.Models.Photo>();
 
             foreach (var file in files) {
-                var upload = await _uploadService.UploadPhotoAsync(file);
+                var upload = await _CloudinaryService.UploadPhotoAsync(file);
 
                 if (upload.Error != null) {
                     throw new BadRequestException(message: upload.Error.Message);
@@ -69,7 +69,7 @@ namespace AMAK.Application.Services.Photo {
                                 .FirstOrDefaultAsync(x => x.ProductId == productId)
             ?? throw new NotFoundException("Photo not found!");
 
-            var deleted = await _uploadService.DeletePhotoAsync(existingPhoto.PublicId!);
+            var deleted = await _CloudinaryService.DeletePhotoAsync(existingPhoto.PublicId!);
 
             if (deleted.Error != null) {
                 throw new BadRequestException(deleted.Error.Message);

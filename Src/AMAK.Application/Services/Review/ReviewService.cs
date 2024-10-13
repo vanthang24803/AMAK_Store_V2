@@ -7,7 +7,7 @@ using AMAK.Domain.Models;
 using Microsoft.AspNetCore.Identity;
 using System.Net;
 using Microsoft.AspNetCore.Http;
-using AMAK.Application.Providers.Upload;
+using AMAK.Application.Providers.Cloudinary;
 using Microsoft.EntityFrameworkCore;
 using AMAK.Application.Common.Query;
 using AMAK.Application.Services.Photo.Dtos;
@@ -22,7 +22,7 @@ namespace AMAK.Application.Services.Review {
         private readonly IRepository<OrderDetail> _orderDetailRepository;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IRepository<ReviewPhoto> _reviewPhotoRepository;
-        private readonly IUploadService _uploadService;
+        private readonly ICloudinaryService _CloudinaryService;
         private readonly ICacheService _cacheService;
         private readonly IMapper _mapper;
 
@@ -31,7 +31,7 @@ namespace AMAK.Application.Services.Review {
             IRepository<Domain.Models.Product> productRepository,
             UserManager<ApplicationUser> userManager,
             IRepository<ReviewPhoto> reviewPhotoRepository,
-            IUploadService uploadService,
+            ICloudinaryService CloudinaryService,
             IRepository<Domain.Models.Order> orderRepository,
             IRepository<OrderDetail> orderDetailRepository,
             IMapper mapper,
@@ -41,7 +41,7 @@ namespace AMAK.Application.Services.Review {
             _productRepository = productRepository;
             _userManager = userManager;
             _reviewPhotoRepository = reviewPhotoRepository;
-            _uploadService = uploadService;
+            _CloudinaryService = CloudinaryService;
             _orderRepository = orderRepository;
             _orderDetailRepository = orderDetailRepository;
             _mapper = mapper;
@@ -86,7 +86,7 @@ namespace AMAK.Application.Services.Review {
                     reviews.Add(newReview);
 
                     foreach (var file in files) {
-                        var upload = await _uploadService.UploadPhotoAsync(file);
+                        var upload = await _CloudinaryService.UploadPhotoAsync(file);
                         if (upload.Error != null) {
                             throw new BadRequestException(upload.Error.Message);
                         }

@@ -2,7 +2,7 @@ using AMAK.Application.Common.Exceptions;
 using AMAK.Application.Common.Helpers;
 using AMAK.Application.Interfaces;
 using AMAK.Application.Providers.Cache;
-using AMAK.Application.Providers.Upload;
+using AMAK.Application.Providers.Cloudinary;
 using AMAK.Application.Services.Product.Common;
 using AutoMapper;
 using MediatR;
@@ -15,7 +15,7 @@ namespace AMAK.Application.Services.Product.Commands.Create {
         private readonly IRepository<Domain.Models.Option> _optionRepository;
         private readonly IRepository<Domain.Models.Category> _categoryRepository;
         public readonly IRepository<Domain.Models.ProductCategory> _productCategoryRepository;
-        private readonly IUploadService _uploadService;
+        private readonly ICloudinaryService _CloudinaryService;
         private readonly ICacheService _cacheService;
 
         private readonly IMapper _mapper;
@@ -24,7 +24,7 @@ namespace AMAK.Application.Services.Product.Commands.Create {
             IRepository<Domain.Models.Product> productRepository,
             IRepository<Domain.Models.Option> optionRepository,
             IRepository<Domain.Models.Category> categoryRepository,
-            IUploadService uploadService,
+            ICloudinaryService CloudinaryService,
             IMapper mapper,
             IRepository<Domain.Models.ProductCategory> productCategoryRepository
 ,
@@ -32,7 +32,7 @@ namespace AMAK.Application.Services.Product.Commands.Create {
             _productRepository = productRepository;
             _optionRepository = optionRepository;
             _categoryRepository = categoryRepository;
-            _uploadService = uploadService;
+            _CloudinaryService = CloudinaryService;
             _mapper = mapper;
             _productCategoryRepository = productCategoryRepository;
             _cacheService = cacheService;
@@ -50,7 +50,7 @@ namespace AMAK.Application.Services.Product.Commands.Create {
                 Specifications = request.Product.Specifications,
             };
 
-            var upload = await _uploadService.UploadPhotoAsync(request.File);
+            var upload = await _CloudinaryService.UploadPhotoAsync(request.File);
 
             if (upload.Error != null) {
                 throw new BadRequestException(message: upload.Error.Message);

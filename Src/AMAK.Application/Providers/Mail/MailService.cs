@@ -1,23 +1,22 @@
 using System.Text;
 using AMAK.Application.Common.Exceptions;
 using AMAK.Application.Interfaces;
-using AMAK.Application.Providers.Configuration.Dtos;
+using AMAK.Application.Providers.Configuration;
 using AMAK.Domain.Models;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
 using MimeKit;
 
 
 namespace AMAK.Application.Providers.Mail {
     public class MailService : IMailService {
 
-        private readonly MailSettings mailSettings;
-
         private readonly IRepository<EmailTemplate> _emailTemplatesRepository;
 
-        public MailService(IOptions<MailSettings> options, IRepository<EmailTemplate> emailTemplatesRepository) {
+        private readonly IConfigurationProvider _configurationProvider;
+
+        public MailService(IRepository<EmailTemplate> emailTemplatesRepository, IConfigurationProvider configurationProvider) {
             _emailTemplatesRepository = emailTemplatesRepository;
-            mailSettings = options.Value;
+            _configurationProvider = configurationProvider;
         }
 
         public async void SendEmailConfirmationAccount(string email, string fullName, string userId, string token) {
@@ -76,6 +75,8 @@ namespace AMAK.Application.Providers.Mail {
         }
 
         public async Task SendMailAsync(MailRequest mailRequest) {
+            var mailSettings = (await _configurationProvider.GetEmailSettingAsync()).Result;
+
             var email = new MimeMessage {
                 Sender = MailboxAddress.Parse(mailSettings.Email)
             };
