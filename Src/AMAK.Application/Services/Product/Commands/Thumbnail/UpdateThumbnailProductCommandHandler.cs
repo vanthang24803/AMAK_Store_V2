@@ -2,19 +2,19 @@ using AMAK.Application.Common.Exceptions;
 using AMAK.Application.Common.Helpers;
 using AMAK.Application.Interfaces;
 using AMAK.Application.Providers.Cache;
-using AMAK.Application.Providers.Upload;
+using AMAK.Application.Providers.Cloudinary;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
 namespace AMAK.Application.Services.Product.Commands.Thumbnail {
     public class UpdateThumbnailProductCommandHandler : IRequestHandler<UpdateThumbnailProductCommand, Response<string>> {
-        private readonly IUploadService _uploadService;
+        private readonly ICloudinaryService _CloudinaryService;
         private readonly ICacheService _cacheService;
         private readonly IRepository<Domain.Models.Product> _productRepository;
 
-        public UpdateThumbnailProductCommandHandler(IRepository<Domain.Models.Product> productRepository, IUploadService uploadService, ICacheService cacheService) {
+        public UpdateThumbnailProductCommandHandler(IRepository<Domain.Models.Product> productRepository, ICloudinaryService CloudinaryService, ICacheService cacheService) {
             _productRepository = productRepository;
-            _uploadService = uploadService;
+            _CloudinaryService = CloudinaryService;
             _cacheService = cacheService;
         }
 
@@ -27,7 +27,7 @@ namespace AMAK.Application.Services.Product.Commands.Thumbnail {
                                        .FirstOrDefaultAsync(p => p.Id == request.ProductId, cancellationToken)
                                        ?? throw new NotFoundException("Product not found!");
 
-                var upload = await _uploadService.UploadPhotoAsync(request.Thumbnail);
+                var upload = await _CloudinaryService.UploadPhotoAsync(request.Thumbnail);
 
                 if (upload.Error != null) {
                     throw new BadRequestException(message: upload.Error.Message);

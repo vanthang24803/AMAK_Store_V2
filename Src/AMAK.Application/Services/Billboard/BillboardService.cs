@@ -2,7 +2,7 @@ using System.Net;
 using AMAK.Application.Common.Exceptions;
 using AMAK.Application.Common.Helpers;
 using AMAK.Application.Interfaces;
-using AMAK.Application.Providers.Upload;
+using AMAK.Application.Providers.Cloudinary;
 using AMAK.Application.Services.Billboard.Dtos;
 using AutoMapper;
 using Microsoft.AspNetCore.Http;
@@ -13,18 +13,18 @@ namespace AMAK.Application.Services.Billboard {
     public class BillboardService : IBillboardService {
         private readonly IRepository<Domain.Models.Billboard> _billboardRepository;
 
-        private readonly IUploadService _uploadService;
+        private readonly ICloudinaryService _CloudinaryService;
 
         private readonly IMapper _mapper;
 
-        public BillboardService(IRepository<Domain.Models.Billboard> billboardRepository, IUploadService uploadService, IMapper mapper) {
+        public BillboardService(IRepository<Domain.Models.Billboard> billboardRepository, ICloudinaryService CloudinaryService, IMapper mapper) {
             _billboardRepository = billboardRepository;
-            _uploadService = uploadService;
+            _CloudinaryService = CloudinaryService;
             _mapper = mapper;
         }
 
         public async Task<Response<BillboardResponse>> CreateAsync(IFormFile file, CreateBillboardRequest request) {
-            var upload = await _uploadService.UploadPhotoAsync(file);
+            var upload = await _CloudinaryService.UploadPhotoAsync(file);
 
             if (upload.Error != null) {
                 throw new BadRequestException(message: upload.Error.Message);
@@ -47,7 +47,7 @@ namespace AMAK.Application.Services.Billboard {
         public async Task<Response<string>> DeleteAsync(Guid id) {
             var existingBillboard = await _billboardRepository.GetById(id) ?? throw new NotFoundException("Billboard not found");
 
-            var deleted = await _uploadService.DeletePhotoAsync(existingBillboard.PublicId!);
+            var deleted = await _CloudinaryService.DeletePhotoAsync(existingBillboard.PublicId!);
 
             if (deleted.Error != null) {
                 throw new BadRequestException(deleted.Error.Message);

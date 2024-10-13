@@ -1,6 +1,6 @@
 using AMAK.Application.Providers.Configuration.Dtos;
 using AMAK.Application.Providers.Momo;
-using AMAK.Application.Providers.Upload;
+using AMAK.Application.Providers.Cloudinary;
 
 namespace AMAK.API.Extensions {
     public static class ProviderExtension {

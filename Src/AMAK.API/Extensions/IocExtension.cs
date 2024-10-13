@@ -5,7 +5,7 @@ using AMAK.Infrastructure.Repository;
 using AMAK.Infrastructure.Token;
 using Microsoft.AspNetCore.Identity;
 using AMAK.Application.Services.Me;
-using AMAK.Application.Providers.Upload;
+using AMAK.Application.Providers.Cloudinary;
 using AMAK.Application.Services.Address;
 using AMAK.Application.Services.Options;
 using AMAK.Application.Services.Photo;
@@ -59,7 +59,7 @@ namespace AMAK.API.Common.Extensions {
 
             services.AddScoped<Application.Providers.Mail.IMailService, Application.Providers.Mail.MailService>();
 
-            services.AddScoped<IUploadService, UploadService>();
+            services.AddScoped<ICloudinaryService, CloudinaryService>();
             services.AddScoped<Application.Providers.Configuration.IConfigurationProvider, Application.Providers.Configuration.ConfigurationProvider>();
 
             services.AddScoped<IGoogleService, GoogleService>();

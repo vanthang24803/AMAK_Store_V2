@@ -6,7 +6,7 @@ using AMAK.Domain.Models;
 using AutoMapper;
 using System.Net;
 using Microsoft.AspNetCore.Identity;
-using AMAK.Application.Providers.Upload;
+using AMAK.Application.Providers.Cloudinary;
 using Microsoft.AspNetCore.Http;
 using AMAK.Application.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -19,17 +19,17 @@ namespace AMAK.Application.Services.Me {
 
         private readonly IMapper _mapper;
         private readonly UserManager<ApplicationUser> _userManager;
-        private readonly IUploadService _uploadService;
+        private readonly ICloudinaryService _CloudinaryService;
         private readonly IRepository<Domain.Models.Address> _addressRepository;
         private readonly IRepository<Domain.Models.Order> _orderRepository;
         private readonly Dictionary<(double, double?), string> rank;
         private readonly ICacheService _cacheService;
 
 
-        public MeService(IMapper mapper, UserManager<ApplicationUser> userManager, IUploadService uploadService, IRepository<Domain.Models.Address> addressRepository, IRepository<Domain.Models.Order> orderRepository, ICacheService cacheService) {
+        public MeService(IMapper mapper, UserManager<ApplicationUser> userManager, ICloudinaryService CloudinaryService, IRepository<Domain.Models.Address> addressRepository, IRepository<Domain.Models.Order> orderRepository, ICacheService cacheService) {
             _mapper = mapper;
             _userManager = userManager;
-            _uploadService = uploadService;
+            _CloudinaryService = CloudinaryService;
             _addressRepository = addressRepository;
             _orderRepository = orderRepository;
 
@@ -153,7 +153,7 @@ namespace AMAK.Application.Services.Me {
 
             var roles = await _userManager.GetRolesAsync(existingUser);
 
-            var upload = await _uploadService.UploadPhotoAsync(file);
+            var upload = await _CloudinaryService.UploadPhotoAsync(file);
 
             if (upload.Error != null) {
                 throw new BadRequestException(message: upload.Error.Message);
