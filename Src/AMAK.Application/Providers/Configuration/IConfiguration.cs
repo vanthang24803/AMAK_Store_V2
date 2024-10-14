@@ -15,5 +15,8 @@ namespace AMAK.Application.Providers.Configuration {
 
         Task<Response<string>> UpdateGeminiConfig(GeminiSettings geminiSettings);
         Task<Response<GeminiSettings>> GetGeminiConfigAsync();
+
+        Task<Response<Config>> GetAllConfig();
+        Task<Response<string>> UpdateAllConfig(Config config);
     }
 }

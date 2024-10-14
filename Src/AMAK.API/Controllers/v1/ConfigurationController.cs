@@ -16,6 +16,19 @@ namespace AMAK.API.Controllers.v1 {
         }
 
         [HttpGet]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetConfig() {
+            return Ok(await _configurationProvider.GetAllConfig());
+        }
+
+        [HttpPost]
+        [AllowAnonymous]
+
+        public async Task<IActionResult> UpdateConfig([FromBody] Config config) {
+            return Ok(await _configurationProvider.UpdateAllConfig(config));
+        }
+
+        [HttpGet]
         [Route("Mail")]
         [AllowAnonymous]
         public async Task<IActionResult> GetMailSettings() {
@@ -24,14 +37,12 @@ namespace AMAK.API.Controllers.v1 {
 
         [HttpPost]
         [Route("Mail")]
-        [AllowAnonymous]
         public async Task<IActionResult> UpdateMailSettings([FromBody] MailSettings mailSettings) {
             return Ok(await _configurationProvider.UpdateEmailSettingAsync(mailSettings));
         }
 
         [HttpGet]
         [Route("Cloudinary")]
-        [AllowAnonymous]
         public async Task<IActionResult> GetCloudinarySettings() {
             return Ok(await _configurationProvider.GetCloudinarySettingAsync());
 
@@ -39,7 +50,6 @@ namespace AMAK.API.Controllers.v1 {
 
         [HttpPost]
         [Route("Cloudinary")]
-        [AllowAnonymous]
         public async Task<IActionResult> UpdateCloudinarySettings([FromBody] CloudinarySettings cloudinarySettings) {
             return Ok(await _configurationProvider.UpdateCloudinarySettingAsync(cloudinarySettings));
 
@@ -48,7 +58,6 @@ namespace AMAK.API.Controllers.v1 {
 
         [HttpGet]
         [Route("Google")]
-        [AllowAnonymous]
         public async Task<IActionResult> GetGoogleSettings() {
             return Ok(await _configurationProvider.GetGoogleSettingAsync());
 
@@ -56,7 +65,6 @@ namespace AMAK.API.Controllers.v1 {
 
         [HttpPost]
         [Route("Google")]
-        [AllowAnonymous]
         public async Task<IActionResult> UpdateGoogleSettings([FromBody] GoogleSettings googleSettings) {
             return Ok(await _configurationProvider.UpdateGoogleSettingAsync(googleSettings));
 
@@ -65,8 +73,6 @@ namespace AMAK.API.Controllers.v1 {
 
         [HttpGet]
         [Route("Momo")]
-        [AllowAnonymous]
-
         public async Task<IActionResult> GetMomoSettings() {
             return Ok(await _configurationProvider.GetMomoSettingAsync());
 
@@ -74,7 +80,6 @@ namespace AMAK.API.Controllers.v1 {
 
         [HttpPost]
         [Route("Momo")]
-        [AllowAnonymous]
         public async Task<IActionResult> UpdateMomoSettings([FromBody] MomoSettings momoSettings) {
             return Ok(await _configurationProvider.UpdateMomoSettingAsync(momoSettings));
 
@@ -82,8 +87,6 @@ namespace AMAK.API.Controllers.v1 {
 
         [HttpGet]
         [Route("Gemini")]
-        [AllowAnonymous]
-
         public async Task<IActionResult> GetGeminiSettings() {
             return Ok(await _configurationProvider.GetGeminiConfigAsync());
 
@@ -91,7 +94,6 @@ namespace AMAK.API.Controllers.v1 {
 
         [HttpPost]
         [Route("Gemini")]
-        [AllowAnonymous]
         public async Task<IActionResult> UpdateGeminiSettings([FromBody] GeminiSettings geminiSettings) {
             return Ok(await _configurationProvider.UpdateGeminiConfig(geminiSettings));
 
