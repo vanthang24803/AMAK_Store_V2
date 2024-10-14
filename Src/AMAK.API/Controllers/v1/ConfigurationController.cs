@@ -16,7 +16,21 @@ namespace AMAK.API.Controllers.v1 {
         }
 
         [HttpGet]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetConfig() {
+            return Ok(await _configurationProvider.GetAllConfig());
+        }
+
+        [HttpPost]
+        [AllowAnonymous]
+
+        public async Task<IActionResult> UpdateConfig([FromBody] Config config) {
+            return Ok(await _configurationProvider.UpdateAllConfig(config));
+        }
+
+        [HttpGet]
         [Route("Mail")]
+        [AllowAnonymous]
         public async Task<IActionResult> GetMailSettings() {
             return Ok(await _configurationProvider.GetEmailSettingAsync());
         }
@@ -59,7 +73,6 @@ namespace AMAK.API.Controllers.v1 {
 
         [HttpGet]
         [Route("Momo")]
-
         public async Task<IActionResult> GetMomoSettings() {
             return Ok(await _configurationProvider.GetMomoSettingAsync());
 
@@ -69,6 +82,20 @@ namespace AMAK.API.Controllers.v1 {
         [Route("Momo")]
         public async Task<IActionResult> UpdateMomoSettings([FromBody] MomoSettings momoSettings) {
             return Ok(await _configurationProvider.UpdateMomoSettingAsync(momoSettings));
+
+        }
+
+        [HttpGet]
+        [Route("Gemini")]
+        public async Task<IActionResult> GetGeminiSettings() {
+            return Ok(await _configurationProvider.GetGeminiConfigAsync());
+
+        }
+
+        [HttpPost]
+        [Route("Gemini")]
+        public async Task<IActionResult> UpdateGeminiSettings([FromBody] GeminiSettings geminiSettings) {
+            return Ok(await _configurationProvider.UpdateGeminiConfig(geminiSettings));
 
         }
     }

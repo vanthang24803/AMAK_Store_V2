@@ -17,7 +17,6 @@ namespace AMAK.API.Controllers.v1 {
         }
 
         [HttpGet]
-        [AllowAnonymous]
         public async Task<IActionResult> FindAll() {
             return Ok(await _promptService.GetAllAsync());
         }
