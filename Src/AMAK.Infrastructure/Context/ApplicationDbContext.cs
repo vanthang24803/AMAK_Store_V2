@@ -27,7 +27,6 @@ namespace AMAK.Infrastructure.Context {
         public DbSet<CartDetail> CartDetails { get; set; }
         public DbSet<OrderStatus> OrderStatus { get; set; }
         public DbSet<Prompt> Prompts { get; set; }
-        public DbSet<AIConfig> AIConfigs { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder) {
 
@@ -41,10 +40,7 @@ namespace AMAK.Infrastructure.Context {
                 entity.HasIndex(x => x.Email).IsUnique();
             });
 
-            modelBuilder.Entity<AIConfig>(e => {
-                e.Property(x => x.Name).HasMaxLength(128);
-                e.Property(x => x.Config).HasColumnType("jsonb");
-            });
+
 
             modelBuilder.Entity<Configuration>(e => {
                 e.Property(x => x.Key).HasMaxLength(128);
@@ -203,34 +199,32 @@ namespace AMAK.Infrastructure.Context {
                     Id = Guid.NewGuid(),
                     Key = Application.Constants.Configuration.GOOGLE
                 },
+                new Configuration() {
+                    Id = Guid.NewGuid(),
+                    Key = Application.Constants.Configuration.CLOUDINARY
+                },
+                new Configuration() {
+                    Id = Guid.NewGuid(),
+                    Key = Application.Constants.Configuration.EMAIL
+                },
+                new Configuration() {
+                    Id = Guid.NewGuid(),
+                    Key = Application.Constants.Configuration.MOMO
+                },
+                new Configuration() {
+                    Id = Guid.NewGuid(),
+                    Key = Application.Constants.LLM.GEMINI
+                },
+                new Configuration() {
+                    Id = Guid.NewGuid(),
+                    Key = Application.Constants.LLM.CHATGPT4
+                },
                  new Configuration() {
                      Id = Guid.NewGuid(),
-                     Key = Application.Constants.Configuration.CLOUDINARY
-                 },
-                  new Configuration() {
-                      Id = Guid.NewGuid(),
-                      Key = Application.Constants.Configuration.EMAIL
-                  },
-                    new Configuration() {
-                        Id = Guid.NewGuid(),
-                        Key = Application.Constants.Configuration.MOMO
-                    }
-            );
-
-            modelBuilder.Entity<AIConfig>().HasData(
-                new AIConfig() {
-                    Id = Guid.NewGuid(),
-                    Name = ILMM.Gemini.ToString()
-                },
-                new AIConfig() {
-                    Id = Guid.NewGuid(),
-                    Name = ILMM.ChatGPT4.ToString()
-                },
-                 new AIConfig() {
-                     Id = Guid.NewGuid(),
-                     Name = ILMM.ChatGPT3_5.ToString()
+                     Key = Application.Constants.LLM.CHATGPT4o
                  }
             );
+
 
             modelBuilder.Entity<Prompt>().HasData(
                 new Prompt() {

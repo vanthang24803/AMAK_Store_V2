@@ -11,6 +11,7 @@ using AMAK.Application.Providers.Cache;
 namespace AMAK.Application.Providers.Configuration {
     public class ConfigurationProvider : IConfigurationProvider {
         private readonly IRepository<Domain.Models.Configuration> _configurationRepository;
+
         private readonly ICacheService _cacheService;
 
         public ConfigurationProvider(IRepository<Domain.Models.Configuration> configurationRepository, ICacheService cacheService) {
@@ -42,11 +43,8 @@ namespace AMAK.Application.Providers.Configuration {
         public async Task<Response<MomoSettings>> GetMomoSettingAsync() =>
             await GetSettingsAsync<MomoSettings>("Config_Momo", Constants.Configuration.MOMO);
 
-        public async Task<Response<string>> UpdateSettingsAsync<TSettings>(TSettings settings, string cacheKey, string configKey) {
-            var result = await UpdateAndEncodeSettingsAsync(settings, configKey);
-            await _cacheService.RemoveData(cacheKey);
-            return result;
-        }
+        public async Task<Response<GeminiSettings>> GetGeminiConfigAsync() =>
+            await GetSettingsAsync<GeminiSettings>("Config_Gemini", Constants.LLM.GEMINI);
 
         public async Task<Response<string>> UpdateCloudinarySettingAsync(CloudinarySettings settings) =>
             await UpdateSettingsAsync(settings, "Config_Cloudinary", Constants.Configuration.CLOUDINARY);
@@ -60,6 +58,16 @@ namespace AMAK.Application.Providers.Configuration {
         public async Task<Response<string>> UpdateMomoSettingAsync(MomoSettings settings) =>
             await UpdateSettingsAsync(settings, "Config_Momo", Constants.Configuration.MOMO);
 
+        public async Task<Response<string>> UpdateGeminiConfig(GeminiSettings settings) =>
+             await UpdateSettingsAsync(settings, "Config_Gemini", Constants.LLM.GEMINI);
+
+
+        public async Task<Response<string>> UpdateSettingsAsync<TSettings>(TSettings settings, string cacheKey, string configKey) {
+            var result = await UpdateAndEncodeSettingsAsync(settings, configKey);
+            await _cacheService.RemoveData(cacheKey);
+            return result;
+        }
+
         private async Task<Response<TSettings>> GetAndDecodeSettingsAsync<TSettings>(string key) where TSettings : class {
             var settings = await GetSettingAsync<TSettings>(key);
             DecodeBase64Properties(settings);
@@ -70,6 +78,7 @@ namespace AMAK.Application.Providers.Configuration {
             EncodeBase64Properties(settings);
             return await UpdateSettingAsync(settings, key, "Settings updated successfully.");
         }
+
 
         private async Task<TSettings> GetSettingAsync<TSettings>(string key) where TSettings : class {
             var setting = await _configurationRepository.GetAll().FirstOrDefaultAsync(x => x.Key == key)
@@ -82,6 +91,7 @@ namespace AMAK.Application.Providers.Configuration {
             return JsonSerializer.Deserialize<TSettings>(setting.Value.Value.GetRawText())
                 ?? throw new BadRequestException($"Could not deserialize {key} settings.");
         }
+
 
         private async Task<Response<string>> UpdateSettingAsync<TSettings>(TSettings settings, string key, string successMessage) {
             var existingSettings = await _configurationRepository.GetAll().FirstOrDefaultAsync(x => x.Key == key);
@@ -125,5 +135,7 @@ namespace AMAK.Application.Providers.Configuration {
 
         public static string EncodeBase64(string value) => Convert.ToBase64String(Encoding.UTF8.GetBytes(value));
         public static string DecodeBase64(string value) => Encoding.UTF8.GetString(Convert.FromBase64String(value));
+
+
     }
 }

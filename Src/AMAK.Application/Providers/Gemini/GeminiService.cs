@@ -7,29 +7,26 @@ using AMAK.Application.Services.Analytics.Dtos;
 using AMAK.Application.Services.Review.Dtos;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 
 namespace AMAK.Application.Providers.Gemini {
     public class GeminiService : IGeminiService {
-        private readonly HttpClient _httpClient;
         private readonly string _gemini;
+        private readonly HttpClient _httpClient;
         private readonly IRepository<Domain.Models.Prompt> _promptRepository;
 
-        public GeminiService(HttpClient httpClient, IConfiguration configuration, IRepository<Domain.Models.Prompt> promptRepository) {
+        public GeminiService(HttpClient httpClient, IRepository<Domain.Models.Prompt> promptRepository, Configuration.IConfigurationProvider configurationProvider) {
             _httpClient = httpClient;
-
-            var aiUrl = configuration["GeminiSettings:Url"];
-
-            var token = configuration["GeminiSettings:Token"];
-
-            _gemini = $"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key={token}";
-
-            if (string.IsNullOrEmpty(aiUrl)) {
-                throw new ArgumentNullException(nameof(aiUrl), "AISettings URL cannot be null or empty.");
-            }
-
-            _httpClient.BaseAddress = new Uri(aiUrl);
             _promptRepository = promptRepository;
+            _gemini = InitializeGemini(configurationProvider).GetAwaiter().GetResult();
+        }
+
+        private static async Task<string> InitializeGemini(Configuration.IConfigurationProvider configurationProvider) {
+            var cloudinarySettingsResponse = await configurationProvider.GetGeminiConfigAsync();
+            var settings = cloudinarySettingsResponse.Result;
+
+            var gemini = $"https://generativelanguage.googleapis.com/v1beta/models/{settings.Model}:generateContent?key={settings.ApiKey}";
+            return gemini;
+
         }
 
         public async Task<AIResponse> GenerateRevenueAnalytic(AIRequest<BarChartResponse> request) {
