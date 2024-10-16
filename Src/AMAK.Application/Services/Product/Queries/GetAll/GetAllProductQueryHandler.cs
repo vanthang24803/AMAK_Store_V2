@@ -44,7 +44,7 @@ namespace AMAK.Application.Services.Product.Queries.GetAll {
                 .Include(c => c.Categories)
                 .Include(o => o.Options)
                 .Include(p => p.Photos)
-                .AsSplitQuery();
+                .AsNoTracking();
 
             // TODO: Search By Name
             if (!string.IsNullOrWhiteSpace(query.Name)) {

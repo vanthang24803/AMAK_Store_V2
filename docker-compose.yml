@@ -1,81 +1,24 @@
 version: "3.8"
 services:
   api:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    container_name: amak_be
+    image: vanthang24803/amak-api-prod:latest
     ports:
-      - "8080:8080"
-    depends_on:
-      - db
-      - redis
-      - pgadmin
-      - elasticsearch
-      - kibana
-    networks:
-      - amak
-
-  db:
-    image: postgres:16
-    container_name: amak_db
+      - "80:8080"
     environment:
-      - POSTGRES_DB=Amak
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=anhthang123
-    ports:
-      - 5432:5432
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - ASPNETCORE_URLS=http://*:8080
+    depends_on:
+      - redis
     networks:
       - amak
 
   redis:
     image: redis:latest
-    container_name: amak_redis
+    container_name: amak_prod_redis
     volumes:
       - redis-data:/data
     ports:
       - "6379:6379"
-    networks:
-      - amak
-
-  pgadmin:
-    image: dpage/pgadmin4
-    container_name: amak_pgadmin
-    ports:
-      - "5050:80"
-    environment:
-      - PGADMIN_DEFAULT_EMAIL=admin@example.com
-      - PGADMIN_DEFAULT_PASSWORD=admin123
-    depends_on:
-      - db
-    networks:
-      - amak
-
-  elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:8.5.3
-    container_name: amak_elasticsearch
-    environment:
-      - node.name=elasticsearch-node
-      - cluster.name=elasticsearch-cluster
-      - discovery.type=single-node
-    ports:
-      - "9200:9200"
-    volumes:
-      - elasticsearch_data:/usr/share/elasticsearch/data
-    networks:
-      - amak
-
-  kibana:
-    image: docker.elastic.co/kibana/kibana:8.5.3
-    container_name: amak_kibana
-    environment:
-      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
-      - SERVER_NAME=kibana
-    ports:
-      - "5601:5601"
-    depends_on:
-      - elasticsearch
     networks:
       - amak
 
@@ -84,6 +27,4 @@ networks:
     driver: bridge
 
 volumes:
-  postgres_data:
   redis-data:
-  elasticsearch_data:
