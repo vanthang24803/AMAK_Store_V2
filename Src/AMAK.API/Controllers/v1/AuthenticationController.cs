@@ -108,6 +108,13 @@ namespace AMAK.API.Controllers.v1 {
         }
 
         [HttpPost]
+        [Route("Downgrade/Manager")]
+        [Authorize(Roles = $"{Role.ADMIN}")]
+        public async Task<IActionResult> DowngradeManager([FromBody] UpgradeRole upgradeRole) {
+            return Ok(await _authService.DowngradeRoleManager(upgradeRole));
+        }
+
+        [HttpPost]
         [Route("Upgrade/Admin")]
         [Authorize(Roles = $"{Role.ADMIN}")]
         public async Task<IActionResult> UpgradeAdmin([FromBody] UpgradeRole upgradeRole) {

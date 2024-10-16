@@ -7,6 +7,16 @@ namespace AMAK.Application.Services.Notification.Dtos {
 
         [Required]
         public string Url { get; set; } = null!;
+
+        public bool IsGlobal { get; set; }
+
+        public List<UserNotification> Users { get; set; } = [];
+
+
+    }
+
+    public class UserNotification {
+        public string? Id { get; set; }
     }
 
 }

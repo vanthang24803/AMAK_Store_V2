@@ -18,15 +18,10 @@ namespace AMAK.Application.Services.Authentication {
     public class AuthService : IAuthService {
 
         private readonly UserManager<ApplicationUser> _userManager;
-
         private readonly RoleManager<IdentityRole> _roleManager;
-
         private readonly IMailService _mailService;
-
         private readonly ITokenService _tokenService;
-
         private readonly ICacheService _cacheService;
-
         private readonly IMapper _mapper;
 
         public AuthService(UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager, IMailService mailService, IMapper mapper, ITokenService tokenService, ICacheService cacheService) {
@@ -254,7 +249,19 @@ namespace AMAK.Application.Services.Authentication {
 
             response.Roles = roles;
 
+            await _cacheService.RemoveData("Analytics_Accounts");
+
             return new Response<ProfileResponse>(HttpStatusCode.OK, response);
+        }
+
+        public async Task<Response<string>> DowngradeRoleManager(UpgradeRole upgradeRole) {
+            var existingUser = await _userManager.FindByEmailAsync(upgradeRole.Email) ?? throw new NotFoundException("Account not found!");
+
+            await _userManager.RemoveFromRoleAsync(existingUser, Role.MANAGER);
+
+            await _cacheService.RemoveData("Analytics_Accounts");
+
+            return new Response<string>(HttpStatusCode.OK, "Downgrade Manage Role");
         }
 
         public async Task<Response<ProfileResponse>> UpgradeToAdmin(UpgradeRole upgrade) {
@@ -375,5 +382,7 @@ namespace AMAK.Application.Services.Authentication {
                 Avatar = newBot.Avatar
             });
         }
+
+
     }
 }

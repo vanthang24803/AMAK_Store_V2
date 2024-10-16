@@ -40,7 +40,7 @@ namespace AMAK.Application.Services.Product.Commands.Create {
 
         public async Task<Response<ProductResponse>> Handle(CreateProductCommand request, CancellationToken cancellationToken) {
 
-            var cacheKey = $"GetAllProducts_";
+            var cacheKey = $"GetAllProducts_1000_Lasted";
 
             var newProduct = new Domain.Models.Product() {
                 Id = Guid.NewGuid(),

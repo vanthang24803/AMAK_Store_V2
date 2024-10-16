@@ -23,7 +23,7 @@ namespace AMAK.Application.Providers.ElasticSearch {
         public async Task<IEnumerable<T>> GetAll(QueryContainer? query) {
             var response = await client.SearchAsync<T>(s => s
                 .Index(indexName)
-                 .Query(q => query ?? new MatchAllQuery())
+                .Query(q => query ?? new MatchAllQuery())
             );
 
             if (!response.IsValid || response.Documents == null) {
