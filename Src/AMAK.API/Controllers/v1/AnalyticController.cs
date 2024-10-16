@@ -5,6 +5,8 @@ using AMAK.Application.Services.Analytics;
 using Microsoft.AspNetCore.Mvc;
 using AMAK.Application.Common.Query;
 using AMAK.Application.Services.Gmail;
+using Nest;
+using AMAK.Application.Services.Search;
 
 namespace AMAK.API.Controllers.v1 {
     [ApiVersion(1)]
@@ -14,9 +16,12 @@ namespace AMAK.API.Controllers.v1 {
 
         private readonly IGmailStoreService _gmailStoreService;
 
-        public AnalyticController(IAnalyticService analyticService, IGmailStoreService gmailStoreService) {
+        private readonly ISearchService _searchService;
+
+        public AnalyticController(IAnalyticService analyticService, IGmailStoreService gmailStoreService, ISearchService searchService) {
             _analyticService = analyticService;
             _gmailStoreService = gmailStoreService;
+            _searchService = searchService;
         }
 
         [HttpGet]
@@ -93,6 +98,14 @@ namespace AMAK.API.Controllers.v1 {
         public async Task<IActionResult> GetGmail() {
             return Ok(await _gmailStoreService.GetEmailsByGmailAsync());
         }
+
+        [HttpGet]
+        [Route("Search")]
+        [AllowAnonymous]
+        public async Task<IActionResult> Search([FromQuery] SearchQuery searchQuery) {
+            return Ok(await _searchService.Search(searchQuery));
+        }
+
 
     }
 }

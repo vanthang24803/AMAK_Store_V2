@@ -22,8 +22,6 @@ namespace AMAK.Application.Services.Notification {
 
         public async Task<Response<string>> CreateGlobalNotification(CreateGlobalNotificationRequest request) {
 
-            var users = await _userManager.Users.ToListAsync();
-
             var newNotification = new Domain.Models.Notification() {
                 Id = Guid.NewGuid(),
                 IsGlobal = true,
@@ -33,21 +31,50 @@ namespace AMAK.Application.Services.Notification {
 
             _notificationRepository.Add(newNotification);
 
-            await _notificationRepository.SaveChangesAsync();
 
-            foreach (var user in users) {
+            if (request.IsGlobal) {
+
+                var users = await _userManager.Users.ToListAsync();
+
+
+                await _notificationRepository.SaveChangesAsync();
+
+                foreach (var user in users) {
+                    var newMessageUser = new MessageUser() {
+                        IsOpened = false,
+                        NonfictionId = newNotification.Id,
+                        IsSeen = false,
+                        UserId = user.Id,
+                    };
+
+                    _messageUserRepository.Add(newMessageUser);
+
+                }
+                await _messageUserRepository.SaveChangesAsync();
+            }
+
+
+            _notificationRepository.Add(newNotification);
+
+            foreach (var user in request.Users) {
+                var existingAccount = await _userManager.FindByIdAsync(user.Id ?? "")
+                           ?? throw new NotFoundException("Account not found!");
+
+                await _notificationRepository.SaveChangesAsync();
+
                 var newMessageUser = new MessageUser() {
                     IsOpened = false,
                     NonfictionId = newNotification.Id,
                     IsSeen = false,
-                    UserId = user.Id,
+                    UserId = existingAccount.Id,
                 };
 
                 _messageUserRepository.Add(newMessageUser);
 
+                await _messageUserRepository.SaveChangesAsync();
             }
-            await _messageUserRepository.SaveChangesAsync();
-            return new Response<string>(HttpStatusCode.Created, "Global notification created!");
+
+            return new Response<string>(HttpStatusCode.Created, "Notification created!");
         }
 
         public async Task<Response<NotificationResponse>> CreateNotification(CreateNotificationForAccountRequest request) {
