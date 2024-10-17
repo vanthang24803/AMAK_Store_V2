@@ -47,6 +47,8 @@ namespace AMAK.Application.Services.Product.Commands.Delete {
 
             await _cacheService.RemoveData(cacheKey);
 
+            await _cacheService.RemoveData("GetAllProducts_1000_Lasted");
+
             return new Response<string>(HttpStatusCode.OK, "Product deleted successfully!");
         }
     }

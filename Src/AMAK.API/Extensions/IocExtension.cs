@@ -25,6 +25,7 @@ using AMAK.Application.Providers.Gemini;
 using AMAK.Application.Services.Template;
 using AMAK.Application.Services.Prompt;
 using AMAK.Application.Services.Search;
+using AMAK.Application.Services.Revert;
 
 namespace AMAK.API.Common.Extensions {
     public static class IocExtension {
@@ -56,6 +57,7 @@ namespace AMAK.API.Common.Extensions {
             services.AddScoped<ITemplateService, TemplateService>();
             services.AddScoped<IPromptService, PromptService>();
             services.AddScoped<ISearchService, SearchService>();
+            services.AddScoped<IRevertService, RevertService>();
 
             services.AddHttpClient<IGeminiService, GeminiService>();
 
