@@ -73,6 +73,7 @@ namespace AMAK.Application.Services.Blog {
                     Title = b.Title,
                     Content = b.Content,
                     CreateAt = b.CreateAt,
+                    Thumbnail = b.Thumbnail,
                     Author = new Author() {
                         Id = b.Author.Id,
                         FullName = $"{b.Author.FirstName} {b.Author.LastName}",
@@ -129,6 +130,7 @@ namespace AMAK.Application.Services.Blog {
                     Id = b.Id,
                     Title = b.Title,
                     Content = b.Content,
+                    Thumbnail = b.Thumbnail,
                     CreateAt = b.CreateAt,
                     Author = new Author {
                         Id = b.Author.Id,
@@ -136,6 +138,7 @@ namespace AMAK.Application.Services.Blog {
                         Avatar = b.Author.Avatar ?? "",
                     }
                 })
+                .OrderByDescending(b => b.CreateAt)
                 .ToListAsync();
 
             return new PaginationResponse<List<BlogResponse>> {
@@ -166,6 +169,7 @@ namespace AMAK.Application.Services.Blog {
                     Id = b.Id,
                     Title = b.Title,
                     Content = b.Content,
+                    Thumbnail = b.Thumbnail,
                     CreateAt = b.CreateAt,
                     Author = new Author {
                         Id = b.Author.Id,
@@ -173,6 +177,7 @@ namespace AMAK.Application.Services.Blog {
                         Avatar = b.Author.Avatar ?? "",
                     }
                 })
+                .OrderByDescending(b => b.CreateAt)
                 .ToListAsync();
 
             return new PaginationResponse<List<BlogResponse>> {
