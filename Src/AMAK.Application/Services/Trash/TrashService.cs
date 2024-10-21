@@ -52,14 +52,14 @@ namespace AMAK.Application.Services.Trash {
         public async Task<Response<List<ProductDeletedResponse>>> GetProductTrashAsync() {
             var products = await _productRepository.GetAll()
             .Include(o => o.Options)
-            .Include(p => p.Photos)
             .Where(o => o.IsDeleted)
             .Select(p => new ProductDeletedResponse() {
                 Id = p.Id,
                 Name = p.Name,
                 Thumbnail = p.Thumbnail ?? "",
+                Brand = p.Brand ?? "",
                 Options = p.Options.Count(),
-                Photos = p.Photos.Count(),
+                Sold = p.Sold,
                 DeletedAt = p.DeleteAt
             }).ToListAsync();
 

@@ -48,19 +48,18 @@ namespace AMAK.Application.Services.Revert {
                 foreach (var item in request.Reverts) {
                     var existingItem = await _optionRepository.GetAll()
                         .FirstOrDefaultAsync(x => x.Id == item.Id)
-                        ?? throw new NotFoundException("Option not found!");
+                        ?? throw new NotFoundException("Product not found!");
 
                     existingItem.IsDeleted = false;
-                    existingItem.UpdateAt = DateTime.Now;
                     _optionRepository.Update(existingItem);
                 }
 
                 await _optionRepository.SaveChangesAsync();
 
                 await _optionRepository.CommitTransactionAsync();
-            } catch (Exception) {
+            } catch (Exception e) {
                 await _optionRepository.RollbackTransactionAsync();
-                throw new BadRequestException("Query failed !");
+                throw new BadRequestException(e.Message);
             }
 
             return new Response<string>(HttpStatusCode.OK, "Revert successfully!");
@@ -75,16 +74,15 @@ namespace AMAK.Application.Services.Revert {
                         ?? throw new NotFoundException("Product not found!");
 
                     existingItem.IsDeleted = false;
-                    existingItem.UpdateAt = DateTime.Now;
                     _productRepository.Update(existingItem);
                 }
 
                 await _productRepository.SaveChangesAsync();
 
                 await _productRepository.CommitTransactionAsync();
-            } catch (Exception) {
+            } catch (Exception e) {
                 await _productRepository.RollbackTransactionAsync();
-                throw new BadRequestException("Query failed !");
+                throw new BadRequestException(e.Message);
             }
 
             return new Response<string>(HttpStatusCode.OK, "Revert successfully!");
