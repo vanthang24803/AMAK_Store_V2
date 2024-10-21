@@ -50,14 +50,7 @@ namespace AMAK.Application.Services.Options {
             var existingOption = await _optionRepository.GetAll()
                     .FirstOrDefaultAsync(x => x.Id == id && x.ProductId == productId && !x.IsDeleted) ?? throw new NotFoundException("Option not found!");
 
-            if (existingOption.IsDeleted) {
-                _optionRepository.Remove(existingOption);
-            }
-
-            existingOption.IsDeleted = true;
-            existingOption.DeleteAt = DateTime.UtcNow;
-
-            _optionRepository.Update(existingOption);
+            _optionRepository.Remove(existingOption);
 
             await _optionRepository.SaveChangesAsync();
 

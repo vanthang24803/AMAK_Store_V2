@@ -9,24 +9,25 @@ namespace AMAK.Infrastructure.Context {
         }
 
         public DbSet<Address> Addresses { get; set; }
+        public DbSet<AccountConfig> AccountConfigs { get; set; }
         public DbSet<Billboard> Billboards { get; set; }
+        public DbSet<Blog> Blogs { get; set; }
         public DbSet<Product> Products { get; set; }
         public DbSet<Category> Categories { get; set; }
-        public DbSet<Photo> Photos { get; set; }
-        public DbSet<Option> Options { get; set; }
-        public DbSet<Order> Orders { get; set; }
-        public DbSet<ReviewPhoto> ReviewPhotos { get; set; }
-        public DbSet<Voucher> Vouchers { get; set; }
-        public DbSet<Notification> Notifications { get; set; }
-        public DbSet<MessageUser> MessageUsers { get; set; }
         public DbSet<Chat> Chats { get; set; }
         public DbSet<Cart> Carts { get; set; }
-        public DbSet<AccountConfig> AccountConfigs { get; set; }
         public DbSet<Configuration> Configurations { get; set; }
-        public DbSet<EmailTemplate> Templates { get; set; }
         public DbSet<CartDetail> CartDetails { get; set; }
+        public DbSet<Option> Options { get; set; }
+        public DbSet<Order> Orders { get; set; }
         public DbSet<OrderStatus> OrderStatus { get; set; }
+        public DbSet<MessageUser> MessageUsers { get; set; }
+        public DbSet<Notification> Notifications { get; set; }
+        public DbSet<Photo> Photos { get; set; }
         public DbSet<Prompt> Prompts { get; set; }
+        public DbSet<EmailTemplate> Templates { get; set; }
+        public DbSet<ReviewPhoto> ReviewPhotos { get; set; }
+        public DbSet<Voucher> Vouchers { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder) {
 
@@ -82,6 +83,15 @@ namespace AMAK.Infrastructure.Context {
                 .HasIndex(et => et.Name)
                 .IsUnique();
 
+
+            modelBuilder.Entity<Blog>(
+                e => {
+                    e.ToTable("Blogs");
+                    e.Property(e => e.Title).HasMaxLength(255);
+                }
+            );
+
+
             // TODO: One-to-One
 
             modelBuilder.Entity<ApplicationUser>()
@@ -128,6 +138,12 @@ namespace AMAK.Infrastructure.Context {
                         .HasOne(u => u.User)
                         .WithMany(a => a.Addresses)
                         .HasForeignKey(u => u.UserId)
+                        .IsRequired();
+
+            modelBuilder.Entity<Blog>()
+                        .HasOne(u => u.Author)
+                        .WithMany(b => b.Blogs)
+                        .HasForeignKey(u => u.AuthorId)
                         .IsRequired();
 
             modelBuilder.Entity<Order>()
