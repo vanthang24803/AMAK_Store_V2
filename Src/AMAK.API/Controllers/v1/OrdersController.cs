@@ -38,7 +38,7 @@ namespace AMAK.API.Controllers.v1 {
 
         [HttpGet]
         [Route("Analytic")]
-        [Authorize(Roles = $"{Role.ADMIN}, {Role.MANAGER}")]
+        [Authorize(Roles = $"{Role.Admin}, {Role.Manager}")]
 
         public async Task<IActionResult> GetAllOrders([FromQuery] BaseQuery query) {
             return Ok(await _mediator.Send(new GetAllOrderQuery(query)));
@@ -62,7 +62,7 @@ namespace AMAK.API.Controllers.v1 {
 
         [HttpPut]
         [Route("{id:guid}/Status")]
-        [Authorize(Roles = $"{Role.ADMIN}, {Role.MANAGER}")]
+        [Authorize(Roles = $"{Role.Admin}, {Role.Manager}")]
 
         public async Task<IActionResult> UpdateStatusByAdmin([FromRoute] Guid id, [FromBody] UpdateStatusOrderRequest request) {
             return Ok(await _mediator.Send(new UpdateOrderStatusCommand(id, request)));

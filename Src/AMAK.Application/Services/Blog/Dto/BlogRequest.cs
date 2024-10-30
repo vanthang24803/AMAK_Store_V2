@@ -9,7 +9,6 @@ namespace AMAK.Application.Services.Blog.Dto {
 
         [NotNull]
         [Required(ErrorMessage = "Content Required")]
-
         public string Content { get; set; } = null!;
     }
 }

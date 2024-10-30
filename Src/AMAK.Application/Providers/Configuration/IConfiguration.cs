@@ -9,13 +9,10 @@ namespace AMAK.Application.Providers.Configuration {
         Task<Response<GoogleSettings>> GetGoogleSettingAsync();
         Task<Response<string>> UpdateCloudinarySettingAsync(CloudinarySettings cloudinarySettings);
         Task<Response<CloudinarySettings>> GetCloudinarySettingAsync();
-
         Task<Response<string>> UpdateMomoSettingAsync(MomoSettings momo);
         Task<Response<MomoSettings>> GetMomoSettingAsync();
-
         Task<Response<string>> UpdateGeminiConfig(GeminiSettings geminiSettings);
         Task<Response<GeminiSettings>> GetGeminiConfigAsync();
-
         Task<Response<Config>> GetAllConfig();
         Task<Response<string>> UpdateAllConfig(Config config);
     }

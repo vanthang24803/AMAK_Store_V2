@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace AMAK.API.Controllers.v1 {
     [ApiVersion(1)]
-    [Authorize(Roles = $"{Role.ADMIN}, {Role.MANAGER}")]
+    [Authorize(Roles = $"{Role.Admin}, {Role.Manager}")]
 
     public class BillboardsController : BaseController {
         private readonly IBillboardService _billboardService;

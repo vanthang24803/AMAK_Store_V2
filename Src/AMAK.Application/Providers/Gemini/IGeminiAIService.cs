@@ -4,8 +4,8 @@ using AMAK.Application.Services.Review.Dtos;
 
 namespace AMAK.Application.Providers.Gemini {
     public interface IGeminiService {
-        Task<AIResponse> GenerateRevenueAnalytic(AIRequest<BarChartResponse> request);
-        Task<AIResponse> GenerateReviewAnalytic(AIRequest<List<ReviewResponse>> request);
-        Task<AIResponse> GenerateStatisticsAnalytic(AIRequest<AnalyticStatisticsResponse> request);
+        Task<AiResponse> GenerateRevenueAnalytic(AiRequest<BarChartResponse> request);
+        Task<AiResponse> GenerateReviewAnalytic(AiRequest<List<ReviewResponse>> request);
+        Task<AiResponse> GenerateStatisticsAnalytic(AiRequest<AnalyticStatisticsResponse> request);
     }
 }

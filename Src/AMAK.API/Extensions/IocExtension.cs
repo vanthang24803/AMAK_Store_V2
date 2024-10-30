@@ -1,36 +1,36 @@
 using AMAK.Application.Interfaces;
+using AMAK.Application.Providers.Cache;
+using AMAK.Application.Providers.Cloudinary;
+using AMAK.Application.Providers.ElasticSearch;
+using AMAK.Application.Providers.Gemini;
+using AMAK.Application.Providers.Google;
+using AMAK.Application.Providers.Momo;
+using AMAK.Application.Services.Address;
+using AMAK.Application.Services.Analytics;
 using AMAK.Application.Services.Authentication;
+using AMAK.Application.Services.Billboard;
+using AMAK.Application.Services.Blog;
+using AMAK.Application.Services.Cart;
+using AMAK.Application.Services.Gmail;
+using AMAK.Application.Services.Me;
+using AMAK.Application.Services.Notification;
+using AMAK.Application.Services.Options;
+using AMAK.Application.Services.Photo;
+using AMAK.Application.Services.Prompt;
+using AMAK.Application.Services.Revert;
+using AMAK.Application.Services.Review;
+using AMAK.Application.Services.Search;
+using AMAK.Application.Services.Template;
+using AMAK.Application.Services.Tickets;
+using AMAK.Application.Services.Trash;
 using AMAK.Domain.Models;
 using AMAK.Infrastructure.Repository;
 using AMAK.Infrastructure.Token;
 using Microsoft.AspNetCore.Identity;
-using AMAK.Application.Services.Me;
-using AMAK.Application.Providers.Cloudinary;
-using AMAK.Application.Services.Address;
-using AMAK.Application.Services.Options;
-using AMAK.Application.Services.Photo;
-using AMAK.Application.Services.Billboard;
-using AMAK.Application.Services.Review;
-using AMAK.Application.Services.Notification;
-using AMAK.Application.Providers.Momo;
-using AMAK.Application.Providers.Cache;
-using AMAK.Application.Services.Analytics;
-using AMAK.Application.Providers.ElasticSearch;
-using AMAK.Application.Providers.Google;
-using AMAK.Application.Services.Gmail;
-using AMAK.Application.Services.Cart;
-using AMAK.Application.Services.Trash;
-using AMAK.Application.Services.Tickets;
-using AMAK.Application.Providers.Gemini;
-using AMAK.Application.Services.Template;
-using AMAK.Application.Services.Prompt;
-using AMAK.Application.Services.Search;
-using AMAK.Application.Services.Revert;
-using AMAK.Application.Services.Blog;
 
-namespace AMAK.API.Common.Extensions {
+namespace AMAK.API.Extensions {
     public static class IocExtension {
-        public static IServiceCollection AddApplication(this IServiceCollection services) {
+        public static void AddApplication(this IServiceCollection services) {
             // TODO: Authentication
             services.AddScoped<UserManager<ApplicationUser>>();
             services.AddScoped<IAuthService, AuthService>();
@@ -72,8 +72,6 @@ namespace AMAK.API.Common.Extensions {
 
             services.AddSingleton<ITokenService, TokenService>();
             services.AddSingleton<ICacheService, CacheService>();
-
-            return services;
         }
     }
 }

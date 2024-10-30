@@ -1,3 +1,4 @@
+using AMAK.Application.Providers.Mail.Dtos;
 using AMAK.Domain.Models;
 
 namespace AMAK.Application.Providers.Mail {

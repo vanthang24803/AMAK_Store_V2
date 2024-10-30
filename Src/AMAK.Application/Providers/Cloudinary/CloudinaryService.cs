@@ -31,14 +31,13 @@ namespace AMAK.Application.Providers.Cloudinary {
         public async Task<ImageUploadResult> UploadPhotoAsync(IFormFile file) {
             var uploadResult = new ImageUploadResult();
 
-            if (ValidationFile(file)) {
-                using var stream = file.OpenReadStream();
-                var uploadParams = new ImageUploadParams {
-                    File = new FileDescription(file.Name, stream)
-                };
+            if (!ValidationFile(file)) return uploadResult;
+            await using var stream = file.OpenReadStream();
+            var uploadParams = new ImageUploadParams {
+                File = new FileDescription(file.Name, stream)
+            };
 
-                uploadResult = await _cloudinary.UploadAsync(uploadParams);
-            }
+            uploadResult = await _cloudinary.UploadAsync(uploadParams);
 
             return uploadResult;
         }
@@ -73,7 +72,7 @@ namespace AMAK.Application.Providers.Cloudinary {
                     throw new BadRequestException($"Invalid file: {file.Name}");
                 }
 
-                using var stream = file.OpenReadStream();
+                await using var stream = file.OpenReadStream();
                 var uploadParams = new ImageUploadParams {
                     File = new FileDescription(file.Name, stream)
                 };
@@ -101,18 +100,16 @@ namespace AMAK.Application.Providers.Cloudinary {
                 return cachedData;
             }
 
-            var imageUrls = new List<CloudinaryResponse>();
-
             var listParams = new ListResourcesParams {
                 ResourceType = ResourceType.Image,
                 MaxResults = query.Limit,
-                NextCursor = query.Page > 1 ? GetNextCursor(query.Page, query.Limit) : null
+                NextCursor = query.Page > 1 ? GetNextCursor(query.Limit) : null
             };
 
             var result = await _cloudinary.ListResourcesAsync(listParams);
 
-            foreach (var resource in result.Resources) {
-                imageUrls.Add(new CloudinaryResponse() {
+            var imageUrls = result.Resources.Select(resource => new CloudinaryResponse()
+                {
                     PublicId = resource.PublicId,
                     Format = resource.Format,
                     Url = resource.Url,
@@ -122,8 +119,8 @@ namespace AMAK.Application.Providers.Cloudinary {
                     Height = resource.Height,
                     ResourceType = resource.ResourceType,
                     CreatedAt = resource.CreatedAt,
-                });
-            }
+                })
+                .ToList();
 
             int totalItems = result.Resources.Length;
 
@@ -152,13 +149,13 @@ namespace AMAK.Application.Providers.Cloudinary {
 
             List<string> validExtensions = [".png", ".jpg", ".webp", ".svg"];
 
-            string extension = Path.GetExtension(file.FileName);
+            var extension = Path.GetExtension(file.FileName);
 
             if (!validExtensions.Contains(extension)) {
                 throw new BadRequestException("File type is not valid! || .png , .jpg , .webp , .svg");
             }
 
-            long size = file.Length;
+            var size = file.Length;
 
             if (size > 5 * 1024 * 1024) {
                 throw new BadRequestException("Max file size can be 5mb!");
@@ -167,7 +164,9 @@ namespace AMAK.Application.Providers.Cloudinary {
             return true;
         }
 
-        private static string? GetNextCursor(int page, int limit) {
+        private static string? GetNextCursor(int limit)
+        {
+            ArgumentOutOfRangeException.ThrowIfNegative(limit);
             return null;
         }
 

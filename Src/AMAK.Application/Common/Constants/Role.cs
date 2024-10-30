@@ -1,8 +1,8 @@
 
 namespace AMAK.Application.Common.Constants {
     public static class Role {
-        public const string MANAGER = "MANAGER";
-        public const string ADMIN = "ADMIN";
-        public const string CUSTOMER = "CUSTOMER";
+        public const string Manager = "MANAGER";
+        public const string Admin = "ADMIN";
+        public const string Customer = "CUSTOMER";
     }
 }

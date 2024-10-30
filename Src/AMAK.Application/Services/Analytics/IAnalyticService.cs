@@ -2,7 +2,6 @@ using AMAK.Application.Common.Helpers;
 using AMAK.Application.Common.Query;
 using AMAK.Application.Services.Analytics.Dtos;
 using AMAK.Application.Services.Me.Dtos;
-using Google.Apis.Gmail.v1.Data;
 
 namespace AMAK.Application.Services.Analytics {
     public interface IAnalyticService {

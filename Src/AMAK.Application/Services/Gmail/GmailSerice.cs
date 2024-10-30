@@ -6,7 +6,7 @@ using Google.Apis.Gmail.v1;
 using Google.Apis.Gmail.v1.Data;
 using Google.Apis.Services;
 using System.Net;
-using System.Text.RegularExpressions;
+using static System.Text.RegularExpressions.Regex;
 
 namespace AMAK.Application.Services.Gmail {
     public class GmailStoreService : IGmailStoreService {
@@ -83,12 +83,12 @@ namespace AMAK.Application.Services.Gmail {
         }
 
         private static string ParseEmailAddress(string fromHeader) {
-            var match = Regex.Match(fromHeader, @"<(.*?)>");
+            var match = Match(fromHeader, @"<(.*?)>");
             return match.Success ? match.Groups[1].Value : string.Empty;
         }
 
         private static string ParseEmailName(string fromHeader) {
-            var match = Regex.Match(fromHeader, @"^(.*?)(?=<)");
+            var match = Match(fromHeader, @"^(.*?)(?=<)");
             return match.Success ? match.Groups[1].Value.Trim() : string.Empty;
         }
 
@@ -96,10 +96,7 @@ namespace AMAK.Application.Services.Gmail {
             if (string.IsNullOrEmpty(dateHeader))
                 return DateTime.MinValue;
 
-            if (DateTime.TryParse(dateHeader, out var date))
-                return date;
-
-            return DateTime.MinValue;
+            return DateTime.TryParse(dateHeader, out var date) ? date : DateTime.MinValue;
         }
     }
 }

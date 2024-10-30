@@ -29,7 +29,7 @@ namespace AMAK.Application.Providers.Gemini {
 
         }
 
-        public async Task<AIResponse> GenerateRevenueAnalytic(AIRequest<BarChartResponse> request) {
+        public async Task<AiResponse> GenerateRevenueAnalytic(AiRequest<BarChartResponse> request) {
             var jsonData = JsonSerializer.Serialize(request.Prompt);
 
             var prompt = await _promptRepository.GetAll()
@@ -49,7 +49,7 @@ namespace AMAK.Application.Providers.Gemini {
             return ConvertGeminiResponse(message);
         }
 
-        public async Task<AIResponse> GenerateReviewAnalytic(AIRequest<List<ReviewResponse>> request) {
+        public async Task<AiResponse> GenerateReviewAnalytic(AiRequest<List<ReviewResponse>> request) {
             var jsonData = JsonSerializer.Serialize(request.Prompt);
 
             var prompt = await _promptRepository.GetAll()
@@ -69,7 +69,7 @@ namespace AMAK.Application.Providers.Gemini {
             return ConvertGeminiResponse(message);
         }
 
-        public async Task<AIResponse> GenerateStatisticsAnalytic(AIRequest<AnalyticStatisticsResponse> request) {
+        public async Task<AiResponse> GenerateStatisticsAnalytic(AiRequest<AnalyticStatisticsResponse> request) {
             var jsonData = JsonSerializer.Serialize(request.Prompt);
 
             var prompt = await _promptRepository.GetAll()
@@ -114,15 +114,16 @@ namespace AMAK.Application.Providers.Gemini {
             return request;
         }
 
-        public static AIResponse ConvertGeminiResponse(string message) {
-            try {
+        private static AiResponse ConvertGeminiResponse(string message) {
+            try
+            {
                 GeminiResponse geminiResponse = JsonSerializer.Deserialize<GeminiResponse>(message, new JsonSerializerOptions() {
-                    PropertyNameCaseInsensitive = true,
-                })
-                ?? throw new BadRequestException("Convert Data Error!");
+                                                    PropertyNameCaseInsensitive = true,
+                                                })
+                                                ?? throw new BadRequestException("Convert Data Error!");
 
-                if (geminiResponse != null && geminiResponse.Candidates != null) {
-                    var result = new AIResponse() {
+                {
+                    var result = new AiResponse() {
                         IsSuccess = true,
                         Code = 200,
                         Message = geminiResponse.Candidates[0].Content.Parts[0].Text,
@@ -130,8 +131,6 @@ namespace AMAK.Application.Providers.Gemini {
 
                     return result;
 
-                } else {
-                    throw new BadRequestException("Deserialization failed.");
                 }
             } catch (JsonException ex) {
                 throw new BadRequestException($"Deserialization error: {ex.Message}");

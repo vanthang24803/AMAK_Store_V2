@@ -1,5 +1,5 @@
 namespace AMAK.Application.Services.Chat.Dtos {
-    public record MessageRequest(
+    public abstract record MessageRequest(
         string Content,
         string FromUserId,
         string ToUserId

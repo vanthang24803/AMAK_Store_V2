@@ -19,21 +19,21 @@ namespace AMAK.Application.Services.Me {
 
         private readonly IMapper _mapper;
         private readonly UserManager<ApplicationUser> _userManager;
-        private readonly ICloudinaryService _CloudinaryService;
+        private readonly ICloudinaryService _cloudinaryService;
         private readonly IRepository<Domain.Models.Address> _addressRepository;
         private readonly IRepository<Domain.Models.Order> _orderRepository;
-        private readonly Dictionary<(double, double?), string> rank;
+        private readonly Dictionary<(double, double?), string> _rank;
         private readonly ICacheService _cacheService;
 
 
-        public MeService(IMapper mapper, UserManager<ApplicationUser> userManager, ICloudinaryService CloudinaryService, IRepository<Domain.Models.Address> addressRepository, IRepository<Domain.Models.Order> orderRepository, ICacheService cacheService) {
+        public MeService(IMapper mapper, UserManager<ApplicationUser> userManager, ICloudinaryService cloudinaryService, IRepository<Domain.Models.Address> addressRepository, IRepository<Domain.Models.Order> orderRepository, ICacheService cacheService) {
             _mapper = mapper;
             _userManager = userManager;
-            _CloudinaryService = CloudinaryService;
+            _cloudinaryService = cloudinaryService;
             _addressRepository = addressRepository;
             _orderRepository = orderRepository;
 
-            rank = new Dictionary<(double, double?), string>()
+            _rank = new Dictionary<(double, double?), string>()
             {
                 { (0 , 100000), "Bronze" },
                 { (100000, 500000),"Silver" },
@@ -153,7 +153,7 @@ namespace AMAK.Application.Services.Me {
 
             var roles = await _userManager.GetRolesAsync(existingUser);
 
-            var upload = await _CloudinaryService.UploadPhotoAsync(file);
+            var upload = await _cloudinaryService.UploadPhotoAsync(file);
 
             if (upload.Error != null) {
                 throw new BadRequestException(message: upload.Error.Message);
@@ -174,10 +174,10 @@ namespace AMAK.Application.Services.Me {
         }
 
         private string GetRank(double totalPrice) {
-            var rankThreshold = rank.Keys.LastOrDefault(k => k.Item1 <= totalPrice && (k.Item2 == null || k.Item2 >= totalPrice));
+            var rankThreshold = _rank.Keys.LastOrDefault(k => k.Item1 <= totalPrice && (k.Item2 == null || k.Item2 >= totalPrice));
 
             if (!rankThreshold.Equals(default)) {
-                return rank[rankThreshold];
+                return _rank[rankThreshold];
             } else {
                 return string.Empty;
             }

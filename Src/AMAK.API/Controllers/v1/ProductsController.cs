@@ -19,7 +19,7 @@ using AMAK.Application.Services.Product.Commands.Thumbnail;
 
 namespace AMAK.API.Controllers.v1 {
     [ApiVersion(1)]
-    [Authorize(Roles = $"{Role.ADMIN}, {Role.MANAGER}")]
+    [Authorize(Roles = $"{Role.Admin}, {Role.Manager}")]
 
     public class ProductsController : BaseController {
         private readonly IMediator _mediator;
@@ -124,7 +124,7 @@ namespace AMAK.API.Controllers.v1 {
 
         [HttpDelete]
         [Route("{id}")]
-        [Authorize(Roles = $"{Role.ADMIN}")]
+        [Authorize(Roles = $"{Role.Admin}")]
         public async Task<IActionResult> Delete(Guid id) {
             return Ok(await _mediator.Send(new DeleteProductCommand(id)));
         }

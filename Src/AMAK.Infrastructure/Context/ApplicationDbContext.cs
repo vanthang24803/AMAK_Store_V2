@@ -4,30 +4,29 @@ using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace AMAK.Infrastructure.Context {
-    public class ApplicationDbContext : IdentityDbContext<ApplicationUser> {
-        public ApplicationDbContext(DbContextOptions options) : base(options) {
-        }
-
-        public DbSet<Address> Addresses { get; set; }
-        public DbSet<AccountConfig> AccountConfigs { get; set; }
-        public DbSet<Billboard> Billboards { get; set; }
-        public DbSet<Blog> Blogs { get; set; }
-        public DbSet<Product> Products { get; set; }
-        public DbSet<Category> Categories { get; set; }
-        public DbSet<Chat> Chats { get; set; }
-        public DbSet<Cart> Carts { get; set; }
-        public DbSet<Configuration> Configurations { get; set; }
-        public DbSet<CartDetail> CartDetails { get; set; }
-        public DbSet<Option> Options { get; set; }
-        public DbSet<Order> Orders { get; set; }
-        public DbSet<OrderStatus> OrderStatus { get; set; }
-        public DbSet<MessageUser> MessageUsers { get; set; }
-        public DbSet<Notification> Notifications { get; set; }
-        public DbSet<Photo> Photos { get; set; }
-        public DbSet<Prompt> Prompts { get; set; }
-        public DbSet<EmailTemplate> Templates { get; set; }
-        public DbSet<ReviewPhoto> ReviewPhotos { get; set; }
-        public DbSet<Voucher> Vouchers { get; set; }
+    public class ApplicationDbContext(DbContextOptions options)
+        : IdentityDbContext<ApplicationUser>(options)
+    {
+        public DbSet<Address> Addresses { get; init; }
+        public DbSet<AccountConfig> AccountConfigs { get; init; }
+        public DbSet<Billboard> Billboards { get; init; }
+        public DbSet<Blog> Blogs { get; init; }
+        public DbSet<Product> Products { get; init; }
+        public DbSet<Category> Categories { get; init; }
+        public DbSet<Chat> Chats { get; init; }
+        public DbSet<Cart> Carts { get; init; }
+        public DbSet<Configuration> Configurations { get; init; }
+        public DbSet<CartDetail> CartDetails { get; init; }
+        public DbSet<Option> Options { get; init; }
+        public DbSet<Order> Orders { get; init; }
+        public DbSet<OrderStatus> OrderStatus { get; init; }
+        public DbSet<MessageUser> MessageUsers { get; init; }
+        public DbSet<Notification> Notifications { get; init; }
+        public DbSet<Photo> Photos { get; init; }
+        public DbSet<Prompt> Prompts { get; init; }
+        public DbSet<EmailTemplate> Templates { get; init; }
+        public DbSet<ReviewPhoto> ReviewPhotos { get; init; }
+        public DbSet<Voucher> Vouchers { get; init; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder) {
 
@@ -40,8 +39,6 @@ namespace AMAK.Infrastructure.Context {
                 entity.Property(x => x.Email).HasMaxLength(128);
                 entity.HasIndex(x => x.Email).IsUnique();
             });
-
-
 
             modelBuilder.Entity<Configuration>(e => {
                 e.Property(x => x.Key).HasMaxLength(128);
@@ -87,7 +84,7 @@ namespace AMAK.Infrastructure.Context {
             modelBuilder.Entity<Blog>(
                 e => {
                     e.ToTable("Blogs");
-                    e.Property(e => e.Title).HasMaxLength(255);
+                    e.Property(x => x.Title).HasMaxLength(255);
                 }
             );
 
@@ -213,50 +210,49 @@ namespace AMAK.Infrastructure.Context {
             modelBuilder.Entity<Configuration>().HasData(
                 new Configuration() {
                     Id = Guid.NewGuid(),
-                    Key = Application.Constants.Configuration.GOOGLE
+                    Key = Application.Constants.Configuration.Google
                 },
                 new Configuration() {
                     Id = Guid.NewGuid(),
-                    Key = Application.Constants.Configuration.CLOUDINARY
+                    Key = Application.Constants.Configuration.Cloudinary
                 },
                 new Configuration() {
                     Id = Guid.NewGuid(),
-                    Key = Application.Constants.Configuration.EMAIL
+                    Key = Application.Constants.Configuration.Email
                 },
                 new Configuration() {
                     Id = Guid.NewGuid(),
-                    Key = Application.Constants.Configuration.MOMO
+                    Key = Application.Constants.Configuration.Momo
                 },
                 new Configuration() {
                     Id = Guid.NewGuid(),
-                    Key = Application.Constants.LLM.GEMINI
+                    Key = Application.Constants.Llm.Gemini
                 },
                 new Configuration() {
                     Id = Guid.NewGuid(),
-                    Key = Application.Constants.LLM.CHATGPT4
+                    Key = Application.Constants.Llm.Chatgpt4
                 },
                  new Configuration() {
                      Id = Guid.NewGuid(),
-                     Key = Application.Constants.LLM.CHATGPT4o
+                     Key = Application.Constants.Llm.Chatgpt4O
                  }
             );
-
 
             modelBuilder.Entity<Prompt>().HasData(
                 new Prompt() {
                     Id = Guid.NewGuid(),
                     Type = EPrompt.ANALYTIC_REVENUE,
-                    Context = Application.Constants.Prompt.ANALYTIC_REVENUE
+                    Context = Application.Constants.Prompt.AnalyticRevenue
                 },
                   new Prompt() {
                       Id = Guid.NewGuid(),
                       Type = EPrompt.ANALYTIC_REVIEW,
-                      Context = Application.Constants.Prompt.ANALYTIC_REVIEW,
+                      Context = Application.Constants.Prompt.AnalyticReview,
                   },
                   new Prompt() {
                       Id = Guid.NewGuid(),
                       Type = EPrompt.ANALYTIC_STATISTIC,
-                      Context = Application.Constants.Prompt.ANALYTIC_STATISTIC
+                      Context = Application.Constants.Prompt.AnalyticStatistic
                   }
             );
         }

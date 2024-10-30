@@ -56,7 +56,7 @@ namespace AMAK.Application.Services.Blog {
                 .FirstOrDefaultAsync(x => x.Id == blogId)
                 ?? throw new NotFoundException("Blog not found!");
 
-            if (!(author.Id == existingBlog.AuthorId)) throw new ForbiddenException();
+            if (author.Id != existingBlog.AuthorId) throw new ForbiddenException();
 
             _blogRepository.Remove(existingBlog);
 

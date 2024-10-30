@@ -39,16 +39,14 @@ namespace AMAK.Application.Services.Notification {
 
                 await _notificationRepository.SaveChangesAsync();
 
-                foreach (var user in users) {
-                    var newMessageUser = new MessageUser() {
-                        IsOpened = false,
-                        NonfictionId = newNotification.Id,
-                        IsSeen = false,
-                        UserId = user.Id,
-                    };
-
+                foreach (var newMessageUser in users.Select(user => new MessageUser() {
+                             IsOpened = false,
+                             NonfictionId = newNotification.Id,
+                             IsSeen = false,
+                             UserId = user.Id,
+                         }))
+                {
                     _messageUserRepository.Add(newMessageUser);
-
                 }
                 await _messageUserRepository.SaveChangesAsync();
             }

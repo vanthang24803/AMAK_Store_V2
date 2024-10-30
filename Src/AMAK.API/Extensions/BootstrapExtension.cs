@@ -1,4 +1,3 @@
-using AMAK.API.Common.Extensions;
 using AMAK.API.Configurations;
 using AMAK.Application.Configs;
 using Serilog;
@@ -14,7 +13,7 @@ namespace AMAK.API.Extensions {
             services.AddEnvConfig();
 
             // TODO: Cors
-            services.AddCorsConfig(builder.Configuration);
+            services.AddCorsConfig();
 
             // TODO: Controller
             services.AddControllers();
@@ -39,13 +38,13 @@ namespace AMAK.API.Extensions {
             services.AddApplication();
 
             // TODO: API Version
-            services.AddAPIVersion();
+            services.AddApiVersion();
 
             // TODO: Providers
             services.AddProviders(builder.Configuration);
 
             // TODO: CQRS
-            services.AddCQRS();
+            services.AddCqrs();
 
             // TODO: Redis
             services.AddRedisConfig(builder.Configuration);
@@ -57,7 +56,7 @@ namespace AMAK.API.Extensions {
             builder.Host.AddLoggerConfig();
 
             // TODO: WS
-            services.AddWSConfig();
+            services.AddWsConfig();
 
             return services;
         }
@@ -68,7 +67,7 @@ namespace AMAK.API.Extensions {
             app.MapControllers();
             app.UseSwagger();
             app.UseSwaggerUI();
-            app.UseWS();
+            app.UseWs();
             app.UseCustomCors();
             app.UseSerilogRequestLogging();
             app.UseHttpsRedirection();
