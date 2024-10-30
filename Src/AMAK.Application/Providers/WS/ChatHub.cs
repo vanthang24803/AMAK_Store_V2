@@ -74,6 +74,6 @@ namespace AMAK.Application.Providers.WS {
         }
         public override async Task OnDisconnectedAsync(Exception? exception) {
             await base.OnDisconnectedAsync(exception);
-            }
         }
+    }
 }

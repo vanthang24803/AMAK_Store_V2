@@ -42,5 +42,21 @@ namespace AMAK.API.Controllers.v1 {
             return Ok(await _geminiService.GenerateStatisticsAnalytic(request));
 
         }
+
+        [HttpPost]
+        [Authorize]
+        [Route("Chat")]
+
+        public async Task<IActionResult> AskWithAI([FromBody] GeminiChatRequest request) {
+            return Ok(await _geminiService.AskWithAI(request, User));
+        }
+
+        [HttpGet]
+        [Authorize]
+        [Route("Chat")]
+
+        public async Task<IActionResult> GetChatWithAI() {
+            return Ok(await _geminiService.GetChatWithAI(User));
+        }
     }
 }

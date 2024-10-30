@@ -3,7 +3,8 @@ using AMAK.Domain.Models;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
-namespace AMAK.Infrastructure.Context {
+namespace AMAK.Infrastructure.Context
+{
     public class ApplicationDbContext(DbContextOptions options)
         : IdentityDbContext<ApplicationUser>(options)
     {
@@ -12,6 +13,7 @@ namespace AMAK.Infrastructure.Context {
         public DbSet<Billboard> Billboards { get; init; }
         public DbSet<Blog> Blogs { get; init; }
         public DbSet<Product> Products { get; init; }
+        public DbSet<Conversation> Conversations { get; init; }
         public DbSet<Category> Categories { get; init; }
         public DbSet<Chat> Chats { get; init; }
         public DbSet<Cart> Carts { get; init; }
@@ -28,11 +30,13 @@ namespace AMAK.Infrastructure.Context {
         public DbSet<ReviewPhoto> ReviewPhotos { get; init; }
         public DbSet<Voucher> Vouchers { get; init; }
 
-        protected override void OnModelCreating(ModelBuilder modelBuilder) {
 
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
             base.OnModelCreating(modelBuilder);
 
-            modelBuilder.Entity<ApplicationUser>(entity => {
+            modelBuilder.Entity<ApplicationUser>(entity =>
+            {
                 entity.Property(x => x.FirstName).HasMaxLength(128);
                 entity.Property(x => x.LastName).HasMaxLength(128);
                 entity.Property(x => x.PhoneNumber).HasMaxLength(12);
@@ -40,23 +44,32 @@ namespace AMAK.Infrastructure.Context {
                 entity.HasIndex(x => x.Email).IsUnique();
             });
 
-            modelBuilder.Entity<Configuration>(e => {
+            modelBuilder.Entity<Configuration>(e =>
+            {
                 e.Property(x => x.Key).HasMaxLength(128);
                 e.Property(x => x.Value).HasColumnType("jsonb");
             });
 
-            modelBuilder.Entity<Option>(entity => {
+            modelBuilder.Entity<Conversation>(e =>
+            {
+                e.Property(x => x.IsBotReply).HasDefaultValue(false);
+            });
+
+            modelBuilder.Entity<Option>(entity =>
+            {
                 entity.ToTable("Options");
                 entity.Property(x => x.Name).HasMaxLength(256);
                 entity.Property(x => x.IsActive).HasDefaultValue(true);
             });
 
-            modelBuilder.Entity<Product>(e => {
+            modelBuilder.Entity<Product>(e =>
+            {
                 e.HasIndex(x => x.Name).IsUnique();
                 e.Property(x => x.Name).HasMaxLength(256);
             });
 
-            modelBuilder.Entity<Order>(e => {
+            modelBuilder.Entity<Order>(e =>
+            {
                 e.ToTable("Orders");
                 e.Property(x => x.Email).HasMaxLength(128);
                 e.Property(x => x.Customer).HasMaxLength(128);
@@ -65,7 +78,8 @@ namespace AMAK.Infrastructure.Context {
                 e.Property(x => x.Shipping).HasDefaultValue(true);
             });
 
-            modelBuilder.Entity<AccountConfig>(e => {
+            modelBuilder.Entity<AccountConfig>(e =>
+            {
                 e.Property(x => x.IsBan).HasDefaultValue(false);
                 e.Property(x => x.IsActiveNotification).HasDefaultValue(false);
                 e.Property(x => x.Language).HasDefaultValue(ELanguage.VI);
@@ -82,7 +96,8 @@ namespace AMAK.Infrastructure.Context {
 
 
             modelBuilder.Entity<Blog>(
-                e => {
+                e =>
+                {
                     e.ToTable("Blogs");
                     e.Property(x => x.Title).HasMaxLength(255);
                 }
@@ -92,168 +107,176 @@ namespace AMAK.Infrastructure.Context {
             // TODO: One-to-One
 
             modelBuilder.Entity<ApplicationUser>()
-                       .HasOne(u => u.Cart)
-                       .WithOne(c => c.User)
-                       .HasForeignKey<Cart>(c => c.UserId);
+                .HasOne(u => u.Cart)
+                .WithOne(c => c.User)
+                .HasForeignKey<Cart>(c => c.UserId);
 
             modelBuilder.Entity<ApplicationUser>()
-                       .HasOne(u => u.Config)
-                       .WithOne(c => c.User)
-                       .HasForeignKey<AccountConfig>(c => c.UserId);
+                .HasOne(u => u.Config)
+                .WithOne(c => c.User)
+                .HasForeignKey<AccountConfig>(c => c.UserId);
 
 
             // TODO: May-to-Many
             modelBuilder.Entity<Product>()
-                        .HasMany(e => e.Categories)
-                        .WithMany(e => e.Products)
-                        .UsingEntity<ProductCategory>();
+                .HasMany(e => e.Categories)
+                .WithMany(e => e.Products)
+                .UsingEntity<ProductCategory>();
 
             modelBuilder.Entity<Notification>()
-                        .HasMany(e => e.Users)
-                        .WithMany(e => e.Notifications)
-                        .UsingEntity<MessageUser>(
-                            j => j
-                                .HasOne<ApplicationUser>()
-                                .WithMany()
-                                .HasForeignKey(mu => mu.UserId),
-                            j => j
-                                .HasOne<Notification>()
-                                .WithMany()
-                                .HasForeignKey(mu => mu.NonfictionId),
-                            j => {
-                                j.HasKey(mu => new { mu.UserId, mu.NonfictionId });
-                            }
-                        );
+                .HasMany(e => e.Users)
+                .WithMany(e => e.Notifications)
+                .UsingEntity<MessageUser>(
+                    j => j
+                        .HasOne<ApplicationUser>()
+                        .WithMany()
+                        .HasForeignKey(mu => mu.UserId),
+                    j => j
+                        .HasOne<Notification>()
+                        .WithMany()
+                        .HasForeignKey(mu => mu.NonfictionId),
+                    j => { j.HasKey(mu => new { mu.UserId, mu.NonfictionId }); }
+                );
 
             modelBuilder.Entity<Option>()
-                        .HasMany(e => e.Orders)
-                        .WithMany(e => e.Options)
-                        .UsingEntity<OrderDetail>();
+                .HasMany(e => e.Orders)
+                .WithMany(e => e.Options)
+                .UsingEntity<OrderDetail>();
 
-            // TODO: One-to-Many 
+            // TODO: One-to-Many
             modelBuilder.Entity<Address>()
-                        .HasOne(u => u.User)
-                        .WithMany(a => a.Addresses)
-                        .HasForeignKey(u => u.UserId)
-                        .IsRequired();
+                .HasOne(u => u.User)
+                .WithMany(a => a.Addresses)
+                .HasForeignKey(u => u.UserId)
+                .IsRequired();
 
             modelBuilder.Entity<Blog>()
-                        .HasOne(u => u.Author)
-                        .WithMany(b => b.Blogs)
-                        .HasForeignKey(u => u.AuthorId)
-                        .IsRequired();
+                .HasOne(u => u.Author)
+                .WithMany(b => b.Blogs)
+                .HasForeignKey(u => u.AuthorId)
+                .IsRequired();
 
             modelBuilder.Entity<Order>()
-                        .HasMany(o => o.Status)
-                        .WithOne(os => os.Order)
-                        .HasForeignKey(os => os.OrderId)
-                        .OnDelete(DeleteBehavior.Cascade);
+                .HasMany(o => o.Status)
+                .WithOne(os => os.Order)
+                .HasForeignKey(os => os.OrderId)
+                .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<CartDetail>()
-                        .HasOne(c => c.Cart)
-                        .WithMany(x => x.Details)
-                        .HasForeignKey(c => c.CartId)
-                        .IsRequired()
-                        .OnDelete(DeleteBehavior.Cascade);
+                .HasOne(c => c.Cart)
+                .WithMany(x => x.Details)
+                .HasForeignKey(c => c.CartId)
+                .IsRequired()
+                .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<CartDetail>()
-                        .HasOne(cd => cd.Option)
-                        .WithMany(o => o.Carts)
-                        .HasForeignKey(cd => cd.OptionId)
-                        .OnDelete(DeleteBehavior.Cascade);
+                .HasOne(cd => cd.Option)
+                .WithMany(o => o.Carts)
+                .HasForeignKey(cd => cd.OptionId)
+                .OnDelete(DeleteBehavior.Cascade);
 
 
             modelBuilder.Entity<Review>()
-                        .HasOne(u => u.User)
-                        .WithMany(a => a.Reviews)
-                        .HasForeignKey(u => u.UserId)
-                        .IsRequired();
+                .HasOne(u => u.User)
+                .WithMany(a => a.Reviews)
+                .HasForeignKey(u => u.UserId)
+                .IsRequired();
 
             modelBuilder.Entity<Order>()
-                        .HasOne(u => u.User)
-                        .WithMany(a => a.Orders)
-                        .HasForeignKey(u => u.UserId)
-                        .IsRequired();
+                .HasOne(u => u.User)
+                .WithMany(a => a.Orders)
+                .HasForeignKey(u => u.UserId)
+                .IsRequired();
 
 
             modelBuilder.Entity<Photo>()
-                        .HasOne(p => p.Product)
-                        .WithMany(p => p.Photos)
-                        .HasForeignKey(p => p.ProductId)
-                        .IsRequired()
-                        .OnDelete(DeleteBehavior.Cascade);
+                .HasOne(p => p.Product)
+                .WithMany(p => p.Photos)
+                .HasForeignKey(p => p.ProductId)
+                .IsRequired()
+                .OnDelete(DeleteBehavior.Cascade);
 
 
             modelBuilder.Entity<Option>()
-                        .HasOne(p => p.Product)
-                        .WithMany(p => p.Options)
-                        .HasForeignKey(p => p.ProductId)
-                        .IsRequired()
-                        .OnDelete(DeleteBehavior.Cascade);
+                .HasOne(p => p.Product)
+                .WithMany(p => p.Options)
+                .HasForeignKey(p => p.ProductId)
+                .IsRequired()
+                .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<Review>()
-                        .HasOne(p => p.Product)
-                        .WithMany(p => p.Reviews)
-                        .HasForeignKey(p => p.ProductId)
-                        .IsRequired()
-                        .OnDelete(DeleteBehavior.Cascade);
+                .HasOne(p => p.Product)
+                .WithMany(p => p.Reviews)
+                .HasForeignKey(p => p.ProductId)
+                .IsRequired()
+                .OnDelete(DeleteBehavior.Cascade);
 
 
             modelBuilder.Entity<ReviewPhoto>()
-                        .HasOne(rp => rp.Review)
-                        .WithMany(r => r.Photos)
-                        .HasForeignKey(rp => rp.ReviewId)
-                        .OnDelete(DeleteBehavior.Cascade);
+                .HasOne(rp => rp.Review)
+                .WithMany(r => r.Photos)
+                .HasForeignKey(rp => rp.ReviewId)
+                .OnDelete(DeleteBehavior.Cascade);
 
             // TODO: Seed Data
 
             modelBuilder.Entity<Configuration>().HasData(
-                new Configuration() {
+                new Configuration()
+                {
                     Id = Guid.NewGuid(),
                     Key = Application.Constants.Configuration.Google
                 },
-                new Configuration() {
+                new Configuration()
+                {
                     Id = Guid.NewGuid(),
                     Key = Application.Constants.Configuration.Cloudinary
                 },
-                new Configuration() {
+                new Configuration()
+                {
                     Id = Guid.NewGuid(),
                     Key = Application.Constants.Configuration.Email
                 },
-                new Configuration() {
+                new Configuration()
+                {
                     Id = Guid.NewGuid(),
                     Key = Application.Constants.Configuration.Momo
                 },
-                new Configuration() {
+                new Configuration()
+                {
                     Id = Guid.NewGuid(),
                     Key = Application.Constants.Llm.Gemini
                 },
-                new Configuration() {
+                new Configuration()
+                {
                     Id = Guid.NewGuid(),
                     Key = Application.Constants.Llm.Chatgpt4
                 },
-                 new Configuration() {
-                     Id = Guid.NewGuid(),
-                     Key = Application.Constants.Llm.Chatgpt4O
-                 }
+                new Configuration()
+                {
+                    Id = Guid.NewGuid(),
+                    Key = Application.Constants.Llm.Chatgpt4O
+                }
             );
 
             modelBuilder.Entity<Prompt>().HasData(
-                new Prompt() {
+                new Prompt()
+                {
                     Id = Guid.NewGuid(),
                     Type = EPrompt.ANALYTIC_REVENUE,
                     Context = Application.Constants.Prompt.AnalyticRevenue
                 },
-                  new Prompt() {
-                      Id = Guid.NewGuid(),
-                      Type = EPrompt.ANALYTIC_REVIEW,
-                      Context = Application.Constants.Prompt.AnalyticReview,
-                  },
-                  new Prompt() {
-                      Id = Guid.NewGuid(),
-                      Type = EPrompt.ANALYTIC_STATISTIC,
-                      Context = Application.Constants.Prompt.AnalyticStatistic
-                  }
+                new Prompt()
+                {
+                    Id = Guid.NewGuid(),
+                    Type = EPrompt.ANALYTIC_REVIEW,
+                    Context = Application.Constants.Prompt.AnalyticReview,
+                },
+                new Prompt()
+                {
+                    Id = Guid.NewGuid(),
+                    Type = EPrompt.ANALYTIC_STATISTIC,
+                    Context = Application.Constants.Prompt.AnalyticStatistic
+                }
             );
         }
     }

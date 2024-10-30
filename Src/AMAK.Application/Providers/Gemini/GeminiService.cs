@@ -1,23 +1,32 @@
 using System.Net.Http.Json;
+using System.Security.Claims;
 using System.Text.Json;
 using AMAK.Application.Common.Exceptions;
+using AMAK.Application.Common.Helpers;
 using AMAK.Application.Interfaces;
 using AMAK.Application.Providers.Gemini.Dtos;
 using AMAK.Application.Services.Analytics.Dtos;
 using AMAK.Application.Services.Review.Dtos;
+using AMAK.Domain.Models;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 namespace AMAK.Application.Providers.Gemini {
     public class GeminiService : IGeminiService {
         private readonly string _gemini;
         private readonly HttpClient _httpClient;
-        private readonly IRepository<Domain.Models.Prompt> _promptRepository;
+        private readonly IRepository<Prompt> _promptRepository;
+        private readonly UserManager<ApplicationUser> _userManager;
+        private readonly IRepository<Conversation> _conversationRepository;
 
-        public GeminiService(HttpClient httpClient, IRepository<Domain.Models.Prompt> promptRepository, Configuration.IConfigurationProvider configurationProvider) {
+
+        public GeminiService(HttpClient httpClient, IRepository<Prompt> promptRepository, Configuration.IConfigurationProvider configurationProvider, UserManager<ApplicationUser> userManager, IRepository<Conversation> conversationRepository) {
             _httpClient = httpClient;
             _promptRepository = promptRepository;
             _gemini = InitializeGemini(configurationProvider).GetAwaiter().GetResult();
+            _userManager = userManager;
+            _conversationRepository = conversationRepository;
         }
 
         private static async Task<string> InitializeGemini(Configuration.IConfigurationProvider configurationProvider) {
@@ -89,6 +98,59 @@ namespace AMAK.Application.Providers.Gemini {
             return ConvertGeminiResponse(message);
         }
 
+        public async Task<AiResponse> AskWithAI(GeminiChatRequest request, ClaimsPrincipal claims) {
+            var existingUser = await _userManager.GetUserAsync(claims)
+                 ?? throw new NotFoundException("Account not found!");
+
+            var prompt = Constants.Prompt.Chat.Replace("{DATA}", JsonSerializer.Serialize(request.Message));
+
+            HttpResponseMessage response = await _httpClient.PostAsJsonAsync(_gemini, ConvertGeminiRequest(prompt));
+
+            if (!response.IsSuccessStatusCode) throw new BadRequestException("AI wrong!");
+
+            var message = await response.Content.ReadAsStringAsync() ?? throw new BadHttpRequestException("AI doesn't response");
+
+            var result = ConvertGeminiResponse(message);
+
+            var newUserMessage = new Conversation() {
+                Id = Guid.NewGuid(),
+                Message = request.Message,
+                IsBotReply = false,
+                UserId = existingUser.Id
+            };
+
+            var newBotReplyMessage = new Conversation() {
+                Id = Guid.NewGuid(),
+                Message = result.Message,
+                IsBotReply = true,
+                UserId = existingUser.Id
+            };
+
+            _conversationRepository.AddRange([newUserMessage, newBotReplyMessage]);
+
+            await _conversationRepository.SaveChangesAsync();
+
+            return result;
+        }
+
+        public async Task<Response<List<GeminiChatResponse>>> GetChatWithAI(ClaimsPrincipal claimsPrincipal) {
+
+            var existingUser = await _userManager.GetUserAsync(claimsPrincipal)
+            ?? throw new NotFoundException("Account not found!");
+
+            var conversations = await _conversationRepository.GetAll()
+            .Where(x => x.UserId == existingUser.Id)
+            .Select(c => new GeminiChatResponse() {
+                Id = c.Id,
+                IsBotReply = c.IsBotReply,
+                Message = c.Message,
+                CreateAt = c.CreateAt
+            })
+            .ToListAsync();
+
+            return new Response<List<GeminiChatResponse>>(System.Net.HttpStatusCode.OK, conversations);
+        }
+
         private static GeminiRequest.Root ConvertGeminiRequest(string prompt) {
             var request = new GeminiRequest.Root {
                 Contents =
@@ -115,11 +177,10 @@ namespace AMAK.Application.Providers.Gemini {
         }
 
         private static AiResponse ConvertGeminiResponse(string message) {
-            try
-            {
+            try {
                 GeminiResponse geminiResponse = JsonSerializer.Deserialize<GeminiResponse>(message, new JsonSerializerOptions() {
-                                                    PropertyNameCaseInsensitive = true,
-                                                })
+                    PropertyNameCaseInsensitive = true,
+                })
                                                 ?? throw new BadRequestException("Convert Data Error!");
 
                 {
@@ -136,5 +197,7 @@ namespace AMAK.Application.Providers.Gemini {
                 throw new BadRequestException($"Deserialization error: {ex.Message}");
             }
         }
+
+
     }
 }
