@@ -18,7 +18,7 @@ namespace AMAK.API.Controllers.v1 {
 
         [HttpPost]
         [Route("Global")]
-        [Authorize(Roles = $"{Role.ADMIN}, {Role.MANAGER}")]
+        [Authorize(Roles = $"{Role.Admin}, {Role.Manager}")]
 
         public async Task<IActionResult> CreateGlobal([FromBody] CreateGlobalNotificationRequest request) {
             return StatusCode(StatusCodes.Status201Created, await _notificationService.CreateGlobalNotification(request));

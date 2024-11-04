@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace AMAK.API.Controllers.v1 {
     [ApiVersion(1)]
-    [Authorize(Roles = $"{Role.ADMIN}")]
+    [Authorize(Roles = $"{Role.Admin}")]
     public class CloudinaryController : BaseController {
 
         private readonly ICloudinaryService _cloudinaryService;

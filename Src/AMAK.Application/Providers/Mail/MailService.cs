@@ -2,6 +2,7 @@ using System.Text;
 using AMAK.Application.Common.Exceptions;
 using AMAK.Application.Interfaces;
 using AMAK.Application.Providers.Configuration;
+using AMAK.Application.Providers.Mail.Dtos;
 using AMAK.Domain.Models;
 using Microsoft.EntityFrameworkCore;
 using MimeKit;

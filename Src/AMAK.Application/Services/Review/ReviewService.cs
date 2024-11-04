@@ -14,15 +14,17 @@ using AMAK.Application.Services.Photo.Dtos;
 using AutoMapper;
 using AMAK.Application.Providers.Cache;
 
-namespace AMAK.Application.Services.Review {
-    public class ReviewService : IReviewService {
+namespace AMAK.Application.Services.Review
+{
+    public class ReviewService : IReviewService
+    {
         private readonly IRepository<Domain.Models.Review> _reviewRepository;
         private readonly IRepository<Domain.Models.Product> _productRepository;
         private readonly IRepository<Domain.Models.Order> _orderRepository;
         private readonly IRepository<OrderDetail> _orderDetailRepository;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IRepository<ReviewPhoto> _reviewPhotoRepository;
-        private readonly ICloudinaryService _CloudinaryService;
+        private readonly ICloudinaryService _cloudinaryService;
         private readonly ICacheService _cacheService;
         private readonly IMapper _mapper;
 
@@ -31,29 +33,35 @@ namespace AMAK.Application.Services.Review {
             IRepository<Domain.Models.Product> productRepository,
             UserManager<ApplicationUser> userManager,
             IRepository<ReviewPhoto> reviewPhotoRepository,
-            ICloudinaryService CloudinaryService,
+            ICloudinaryService cloudinaryService,
             IRepository<Domain.Models.Order> orderRepository,
             IRepository<OrderDetail> orderDetailRepository,
             IMapper mapper,
             ICacheService cacheService
-        ) {
+        )
+        {
             _reviewRepository = reviewRepository;
             _productRepository = productRepository;
             _userManager = userManager;
             _reviewPhotoRepository = reviewPhotoRepository;
-            _CloudinaryService = CloudinaryService;
+            _cloudinaryService = cloudinaryService;
             _orderRepository = orderRepository;
             _orderDetailRepository = orderDetailRepository;
             _mapper = mapper;
             _cacheService = cacheService;
         }
 
-        public async Task<Response<string>> CreateAsync(ClaimsPrincipal claims, CreateReviewRequest request, List<IFormFile> files) {
-            var existingAccount = await _userManager.GetUserAsync(claims) ?? throw new NotFoundException("Account not found!");
+        public async Task<Response<string>> CreateAsync(ClaimsPrincipal claims,
+            CreateReviewRequest request, List<IFormFile> files)
+        {
+            var existingAccount = await _userManager.GetUserAsync(claims) ??
+                                  throw new NotFoundException("Account not found!");
 
             var existingOrder = await _orderRepository.GetAll()
-                .FirstOrDefaultAsync(x => x.Id == request.OrderId && !x.IsDeleted && !x.IsReviewed && x.UserId == existingAccount.Id)
-                ?? throw new NotFoundException("Order not found!");
+                                    .FirstOrDefaultAsync(x =>
+                                        x.Id == request.OrderId && !x.IsDeleted && !x.IsReviewed &&
+                                        x.UserId == existingAccount.Id)
+                                ?? throw new NotFoundException("Order not found!");
 
             var listProductIds = await _orderDetailRepository.GetAll()
                 .Where(x => x.OrderId == existingOrder.Id)
@@ -69,13 +77,17 @@ namespace AMAK.Application.Services.Review {
 
             await _reviewRepository.BeginTransactionAsync();
 
-            try {
-                foreach (var productId in listProductIds) {
-                    if (!existingProducts.TryGetValue(productId, out var existingProduct)) {
+            try
+            {
+                foreach (var productId in listProductIds)
+                {
+                    if (!existingProducts.TryGetValue(productId, out var existingProduct))
+                    {
                         throw new NotFoundException("Product not found!");
                     }
 
-                    var newReview = new Domain.Models.Review {
+                    var newReview = new Domain.Models.Review
+                    {
                         Id = Guid.NewGuid(),
                         Star = request.Star,
                         Content = request.Content,
@@ -85,13 +97,16 @@ namespace AMAK.Application.Services.Review {
 
                     reviews.Add(newReview);
 
-                    foreach (var file in files) {
-                        var upload = await _CloudinaryService.UploadPhotoAsync(file);
-                        if (upload.Error != null) {
+                    foreach (var file in files)
+                    {
+                        var upload = await _cloudinaryService.UploadPhotoAsync(file);
+                        if (upload.Error != null)
+                        {
                             throw new BadRequestException(upload.Error.Message);
                         }
 
-                        var newPhoto = new ReviewPhoto {
+                        var newPhoto = new ReviewPhoto
+                        {
                             Id = Guid.NewGuid(),
                             Url = upload.SecureUrl.AbsoluteUri,
                             PublicId = upload.PublicId,
@@ -111,7 +126,9 @@ namespace AMAK.Application.Services.Review {
                 await _orderRepository.SaveChangesAsync();
 
                 await _reviewRepository.CommitTransactionAsync();
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 await _reviewRepository.RollbackTransactionAsync();
                 throw new BadRequestException("Failed to create review: " + ex.Message);
             }
@@ -119,13 +136,18 @@ namespace AMAK.Application.Services.Review {
             return new Response<string>(HttpStatusCode.Created, "Review created!");
         }
 
-        public async Task<ListReviewResponse<List<ReviewResponse>>> GetAllAsync(Guid productId, ReviewQuery query) {
-            var cacheKey = $"Review_Product_{productId}_{query.Limit}_{query.Page}_{query.Status}_{query.Star}";
+        public async Task<ListReviewResponse<List<ReviewResponse>>> GetAllAsync(Guid productId,
+            ReviewQuery query)
+        {
+            var cacheKey =
+                $"Review_Product_{productId}_{query.Limit}_{query.Page}_{query.Status}_{query.Star}";
 
-            var cachedData = await _cacheService.GetData<ListReviewResponse<List<ReviewResponse>>>(cacheKey);
+            var cachedData =
+                await _cacheService.GetData<ListReviewResponse<List<ReviewResponse>>>(cacheKey);
             if (cachedData != null) return cachedData;
 
-            var existingProduct = await _productRepository.GetById(productId) ?? throw new NotFoundException("Product not found!");
+            var existingProduct = await _productRepository.GetById(productId) ??
+                                  throw new NotFoundException("Product not found!");
 
             var allReviews = await _reviewRepository.GetAll()
                 .Include(x => x.Photos)
@@ -139,12 +161,17 @@ namespace AMAK.Application.Services.Review {
             return result;
         }
 
-        public async Task<ListReviewResponse<List<ReviewResponse>>> GetAsync(ClaimsPrincipal claims, ReviewQuery query) {
-            var existingAccount = await _userManager.GetUserAsync(claims) ?? throw new NotFoundException("Account not found!");
+        public async Task<ListReviewResponse<List<ReviewResponse>>> GetAsync(ClaimsPrincipal claims,
+            ReviewQuery query)
+        {
+            var existingAccount = await _userManager.GetUserAsync(claims) ??
+                                  throw new NotFoundException("Account not found!");
 
-            var cacheKey = $"Review_Account_{existingAccount.Id}_{query.Limit}_{query.Page}_{query.Status}_{query.Star}";
+            var cacheKey =
+                $"Review_Account_{existingAccount.Id}_{query.Limit}_{query.Page}_{query.Status}_{query.Star}";
 
-            var cachedData = await _cacheService.GetData<ListReviewResponse<List<ReviewResponse>>>(cacheKey);
+            var cachedData =
+                await _cacheService.GetData<ListReviewResponse<List<ReviewResponse>>>(cacheKey);
             if (cachedData != null) return cachedData;
 
             var allReviews = await _reviewRepository.GetAll()
@@ -159,17 +186,20 @@ namespace AMAK.Application.Services.Review {
             return result;
         }
 
-        public async Task<Response<ReviewResponse>> GetOneAsync(Guid id) {
+        public async Task<Response<ReviewResponse>> GetOneAsync(Guid id)
+        {
             var cacheKey = $"Review_Id_{id}";
 
-            var cachedData = await _cacheService.GetData<Response<ReviewResponse>>(cacheKey);
+            await _cacheService.GetData<Response<ReviewResponse>>(cacheKey);
 
             var existingReview = await _reviewRepository.GetAll()
-                                                        .Include(x => x.Photos)
-                                                        .Include(x => x.User)
-                                                        .FirstOrDefaultAsync(x => !x.IsDeleted && x.Id == id) ?? throw new NotFoundException("Review not found!");
+                                     .Include(x => x.Photos)
+                                     .Include(x => x.User)
+                                     .FirstOrDefaultAsync(x => !x.IsDeleted && x.Id == id) ??
+                                 throw new NotFoundException("Review not found!");
 
-            var result = new ReviewResponse {
+            var result = new ReviewResponse
+            {
                 Id = existingReview.Id,
                 Star = existingReview.Star,
                 Content = existingReview.Content,
@@ -187,8 +217,10 @@ namespace AMAK.Application.Services.Review {
             return new Response<ReviewResponse>(HttpStatusCode.OK, result);
         }
 
-        public async Task<Response<string>> RemoveAsync(Guid id) {
-            var existingReview = await _reviewRepository.GetById(id) ?? throw new NotFoundException("Review not found!");
+        public async Task<Response<string>> RemoveAsync(Guid id)
+        {
+            var existingReview = await _reviewRepository.GetById(id) ??
+                                 throw new NotFoundException("Review not found!");
 
             existingReview.IsDeleted = true;
 
@@ -199,21 +231,24 @@ namespace AMAK.Application.Services.Review {
             return new Response<string>(HttpStatusCode.OK, "Review hidden successfully!");
         }
 
-        private ListReviewResponse<List<ReviewResponse>> Paginate(List<Domain.Models.Review> allReviews, ReviewQuery query) {
-
-            if (!string.IsNullOrEmpty(query.Status)) {
-                if (query.Status == "Lasted") {
-
-                    allReviews = [.. allReviews.OrderByDescending(r => r.CreateAt)];
-                }
-
-                if (query.Status == "Image") {
-                    allReviews = allReviews.Where(n => n.Photos.Count != 0).ToList();
-                }
+        private ListReviewResponse<List<ReviewResponse>> Paginate(
+            List<Domain.Models.Review> allReviews, ReviewQuery query)
+        {
+            if (!string.IsNullOrEmpty(query.Status))
+            {
+                allReviews = query.Status switch
+                {
+                    "Lasted" => [.. allReviews.OrderByDescending(r => r.CreateAt)],
+                    "Image" => allReviews.Where(n => n.Photos.Count != 0).ToList(),
+                    _ => allReviews
+                };
             }
 
-            if (!string.IsNullOrEmpty(query.Star) && int.TryParse(query.Star, out int starValue)) {
-                allReviews = allReviews.Where(n => n.Star == starValue).ToList();
+            const double tolerance = 0.0001;
+            if (!string.IsNullOrEmpty(query.Star) && int.TryParse(query.Star, out int starValue))
+            {
+                allReviews = allReviews.Where(n => Math.Abs(n.Star - starValue) < tolerance)
+                    .ToList();
             }
 
             var totalItems = allReviews.Count;
@@ -223,7 +258,8 @@ namespace AMAK.Application.Services.Review {
             var paginatedReviews = allReviews
                 .Skip(skip)
                 .Take(query.Limit)
-                .Select(review => new ReviewResponse {
+                .Select(review => new ReviewResponse
+                {
                     Id = review.Id,
                     Star = review.Star,
                     Content = review.Content,
@@ -239,12 +275,14 @@ namespace AMAK.Application.Services.Review {
 
             float averageStar = 0;
 
-            if (allReviews.Count > 0) {
+            if (allReviews.Count > 0)
+            {
                 averageStar = allReviews.Average(r => r.Star);
             }
 
 
-            return new ListReviewResponse<List<ReviewResponse>> {
+            return new ListReviewResponse<List<ReviewResponse>>
+            {
                 AverageStar = averageStar,
                 CurrentPage = query.Page,
                 TotalPage = totalPage,

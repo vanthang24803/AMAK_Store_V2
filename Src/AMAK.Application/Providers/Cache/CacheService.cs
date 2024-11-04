@@ -2,24 +2,15 @@ using Microsoft.Extensions.Caching.Distributed;
 using Newtonsoft.Json;
 
 namespace AMAK.Application.Providers.Cache {
-    public class CacheService : ICacheService {
-
-        private readonly IDistributedCache _distributedCache;
-
-        public CacheService(IDistributedCache distributedCache) {
-            _distributedCache = distributedCache;
-        }
-
+    public class CacheService(IDistributedCache distributedCache) : ICacheService
+    {
         public async Task<T?> GetData<T>(string key) {
-            var cachedData = await _distributedCache.GetStringAsync(key);
-            if (string.IsNullOrEmpty(cachedData)) {
-                return default;
-            }
-            return JsonConvert.DeserializeObject<T>(cachedData);
+            var cachedData = await distributedCache.GetStringAsync(key);
+            return string.IsNullOrEmpty(cachedData) ? default : JsonConvert.DeserializeObject<T>(cachedData);
         }
 
         public async Task<bool> RemoveData(string key) {
-            await _distributedCache.RemoveAsync(key);
+            await distributedCache.RemoveAsync(key);
             return true;
         }
 
@@ -28,7 +19,7 @@ namespace AMAK.Application.Providers.Cache {
                 AbsoluteExpiration = time
             };
             var serializedData = JsonConvert.SerializeObject(value);
-            await _distributedCache.SetStringAsync(key, serializedData, options);
+            await distributedCache.SetStringAsync(key, serializedData, options);
             return true;
         }
     }

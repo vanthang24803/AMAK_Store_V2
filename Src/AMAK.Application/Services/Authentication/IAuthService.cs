@@ -16,7 +16,6 @@ namespace AMAK.Application.Services.Authentication {
         Task<Response<ProfileResponse>> UpgradeToManager(UpgradeRole upgrade);
         Task<Response<ProfileResponse>> UpgradeToAdmin(UpgradeRole upgrade);
         Task<Response<string>> DowngradeRoleManager(UpgradeRole upgradeRole);
-
         Task<Response<TokenResponse>> SignInWithGoogle(SocialLoginRequest request);
         Task<Response<AdminResponse>> CreateBotChatApp(CreateBotRequest request);
         Task<Response<List<AdminResponse>>> GetAllAdminMemberAsync();

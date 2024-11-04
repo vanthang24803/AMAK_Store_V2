@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace AMAK.API.Controllers.v1 {
     [ApiVersion(1)]
-    [Authorize(Roles = $"{Role.ADMIN}, {Role.MANAGER}")]
+    [Authorize(Roles = $"{Role.Admin}, {Role.Manager}")]
     public class GeminiController : BaseController {
         private readonly IGeminiService _geminiService;
 
@@ -21,7 +21,7 @@ namespace AMAK.API.Controllers.v1 {
         [HttpPost]
         [Route("Revenue")]
 
-        public async Task<IActionResult> GenerateRevenueAI([FromBody] AIRequest<BarChartResponse> request) {
+        public async Task<IActionResult> GenerateRevenueAI([FromBody] AiRequest<BarChartResponse> request) {
             return Ok(await _geminiService.GenerateRevenueAnalytic(request));
         }
 
@@ -30,7 +30,7 @@ namespace AMAK.API.Controllers.v1 {
         [Route("Review")]
         [AllowAnonymous]
 
-        public async Task<IActionResult> GetActionReviewAI([FromBody] AIRequest<List<ReviewResponse>> request) {
+        public async Task<IActionResult> GetActionReviewAI([FromBody] AiRequest<List<ReviewResponse>> request) {
             return Ok(await _geminiService.GenerateReviewAnalytic(request));
 
         }
@@ -38,9 +38,25 @@ namespace AMAK.API.Controllers.v1 {
         [HttpPost]
         [Route("Statistic")]
 
-        public async Task<IActionResult> GetActionStatisticAI([FromBody] AIRequest<AnalyticStatisticsResponse> request) {
+        public async Task<IActionResult> GetActionStatisticAI([FromBody] AiRequest<AnalyticStatisticsResponse> request) {
             return Ok(await _geminiService.GenerateStatisticsAnalytic(request));
 
+        }
+
+        [HttpPost]
+        [Authorize]
+        [Route("Chat")]
+
+        public async Task<IActionResult> AskWithAI([FromBody] GeminiChatRequest request) {
+            return Ok(await _geminiService.AskWithAI(request, User));
+        }
+
+        [HttpGet]
+        [Authorize]
+        [Route("Chat")]
+
+        public async Task<IActionResult> GetChatWithAI() {
+            return Ok(await _geminiService.GetChatWithAI(User));
         }
     }
 }

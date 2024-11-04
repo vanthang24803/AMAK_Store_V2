@@ -4,9 +4,9 @@ using Serilog.Formatting.Json;
 
 namespace AMAK.API.Configurations {
     public static class LoggerConfig {
-        public static IHostBuilder AddLoggerConfig(this IHostBuilder builder) {
+        public static void AddLoggerConfig(this IHostBuilder builder) {
 
-            builder.UseSerilog((context, config) => {
+            builder.UseSerilog((_, config) => {
                 config.MinimumLevel.Information()
                       .MinimumLevel.Override("System", LogEventLevel.Warning)
                       .WriteTo.Console()
@@ -19,8 +19,6 @@ namespace AMAK.API.Configurations {
                           restrictedToMinimumLevel: LogEventLevel.Warning)
                       .MinimumLevel.Override("Microsoft", LogEventLevel.Information);
             });
-
-            return builder;
         }
     }
 }

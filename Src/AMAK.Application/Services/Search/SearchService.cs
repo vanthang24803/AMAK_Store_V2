@@ -20,7 +20,6 @@ namespace AMAK.Application.Services.Search {
             _orderRepository = orderRepository;
         }
 
-
         public async Task<Response<SearchResponse>> Search(SearchQuery searchQuery) {
             var searchTerm = searchQuery.Name != null ? $"%{searchQuery.Name}%" : "%";
 

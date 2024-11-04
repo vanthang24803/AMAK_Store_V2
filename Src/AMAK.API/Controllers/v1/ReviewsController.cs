@@ -34,7 +34,7 @@ namespace AMAK.API.Controllers.v1 {
 
         [HttpDelete]
         [Route("{id:guid}")]
-        [Authorize(Roles = $"{Role.ADMIN}, {Role.MANAGER}")]
+        [Authorize(Roles = $"{Role.Admin}, {Role.Manager}")]
 
         public async Task<IActionResult> Remove([FromRoute] Guid id) {
             return Ok(await _reviewService.RemoveAsync(id));

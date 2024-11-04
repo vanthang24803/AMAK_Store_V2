@@ -1,11 +1,11 @@
 namespace AMAK.API.Configurations {
     public static class CorsConfig {
-        public static IServiceCollection AddCorsConfig(this IServiceCollection services, IConfiguration configuration) {
+        public static void AddCorsConfig(this IServiceCollection services) {
 
-            var Default = "_myAllowSpecificOrigins";
+            const string cors = "_myAllowSpecificOrigins";
 
             services.AddCors(options => {
-                options.AddPolicy(name: Default, builder => {
+                options.AddPolicy(name: cors, builder => {
                     builder.WithOrigins(
                         "https://amak-client.vercel.app",
                         "http://localhost:3000",
@@ -16,14 +16,10 @@ namespace AMAK.API.Configurations {
                     .AllowCredentials();
                 });
             });
-
-            return services;
         }
 
-        public static WebApplication UseCustomCors(this WebApplication app) {
+        public static void UseCustomCors(this WebApplication app) {
             app.UseCors("_myAllowSpecificOrigins");
-            return app;
         }
-
     }
 }

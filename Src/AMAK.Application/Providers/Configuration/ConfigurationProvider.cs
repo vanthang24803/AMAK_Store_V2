@@ -20,56 +20,56 @@ namespace AMAK.Application.Providers.Configuration {
         }
 
         public async Task<Response<CloudinarySettings>> GetCloudinarySettingAsync() =>
-            await GetSettingsAsync<CloudinarySettings>("Config_Cloudinary", Constants.Configuration.CLOUDINARY);
+            await GetSettingsAsync<CloudinarySettings>("Config_Cloudinary", Constants.Configuration.Cloudinary);
 
         public async Task<Response<MailSettings>> GetEmailSettingAsync() =>
-            await GetSettingsAsync<MailSettings>("Config_Mail", Constants.Configuration.EMAIL);
+            await GetSettingsAsync<MailSettings>("Config_Mail", Constants.Configuration.Email);
 
         public async Task<Response<GoogleSettings>> GetGoogleSettingAsync() =>
-            await GetSettingsAsync<GoogleSettings>("Config_Google", Constants.Configuration.GOOGLE);
+            await GetSettingsAsync<GoogleSettings>("Config_Google", Constants.Configuration.Google);
 
         public async Task<Response<MomoSettings>> GetMomoSettingAsync() =>
-            await GetSettingsAsync<MomoSettings>("Config_Momo", Constants.Configuration.MOMO);
+            await GetSettingsAsync<MomoSettings>("Config_Momo", Constants.Configuration.Momo);
 
         public async Task<Response<GeminiSettings>> GetGeminiConfigAsync() =>
-            await GetSettingsAsync<GeminiSettings>("Config_Gemini", Constants.LLM.GEMINI);
+            await GetSettingsAsync<GeminiSettings>("Config_Gemini", Constants.Llm.Gemini);
 
         public async Task<Response<Config>> GetAllConfig() {
             var config = new Config {
-                Cloudinary = (await GetAndDecodeSettingsAsync<CloudinarySettings>(Constants.Configuration.CLOUDINARY)).Result,
-                Mail = (await GetAndDecodeSettingsAsync<MailSettings>(Constants.Configuration.EMAIL)).Result,
-                Google = (await GetAndDecodeSettingsAsync<GoogleSettings>(Constants.Configuration.GOOGLE)).Result,
-                Momo = (await GetAndDecodeSettingsAsync<MomoSettings>(Constants.Configuration.MOMO)).Result,
-                GeminiSettings = (await GetAndDecodeSettingsAsync<GeminiSettings>(Constants.LLM.GEMINI)).Result
+                Cloudinary = (await GetAndDecodeSettingsAsync<CloudinarySettings>(Constants.Configuration.Cloudinary)).Result,
+                Mail = (await GetAndDecodeSettingsAsync<MailSettings>(Constants.Configuration.Email)).Result,
+                Google = (await GetAndDecodeSettingsAsync<GoogleSettings>(Constants.Configuration.Google)).Result,
+                Momo = (await GetAndDecodeSettingsAsync<MomoSettings>(Constants.Configuration.Momo)).Result,
+                GeminiSettings = (await GetAndDecodeSettingsAsync<GeminiSettings>(Constants.Llm.Gemini)).Result
             };
 
             return new Response<Config>(HttpStatusCode.OK, config);
         }
 
         public async Task<Response<string>> UpdateAllConfig(Config settings) {
-            await UpdateSettingsAsync(settings.Cloudinary, "Config_Cloudinary", Constants.Configuration.CLOUDINARY);
-            await UpdateSettingsAsync(settings.Mail, "Config_Mail", Constants.Configuration.EMAIL);
-            await UpdateSettingsAsync(settings.Google, "Config_Google", Constants.Configuration.GOOGLE);
-            await UpdateSettingsAsync(settings.Momo, "Config_Momo", Constants.Configuration.MOMO);
-            await UpdateSettingsAsync(settings.GeminiSettings, "Config_Gemini", Constants.LLM.GEMINI);
+            await UpdateSettingsAsync(settings.Cloudinary, "Config_Cloudinary", Constants.Configuration.Cloudinary);
+            await UpdateSettingsAsync(settings.Mail, "Config_Mail", Constants.Configuration.Email);
+            await UpdateSettingsAsync(settings.Google, "Config_Google", Constants.Configuration.Google);
+            await UpdateSettingsAsync(settings.Momo, "Config_Momo", Constants.Configuration.Momo);
+            await UpdateSettingsAsync(settings.GeminiSettings, "Config_Gemini", Constants.Llm.Gemini);
 
             return new Response<string>(HttpStatusCode.OK, "All configurations updated successfully.");
         }
 
         public async Task<Response<string>> UpdateCloudinarySettingAsync(CloudinarySettings settings) =>
-            await UpdateSettingsAsync(settings, "Config_Cloudinary", Constants.Configuration.CLOUDINARY);
+            await UpdateSettingsAsync(settings, "Config_Cloudinary", Constants.Configuration.Cloudinary);
 
         public async Task<Response<string>> UpdateEmailSettingAsync(MailSettings settings) =>
-            await UpdateSettingsAsync(settings, "Config_Mail", Constants.Configuration.EMAIL);
+            await UpdateSettingsAsync(settings, "Config_Mail", Constants.Configuration.Email);
 
         public async Task<Response<string>> UpdateGoogleSettingAsync(GoogleSettings settings) =>
-            await UpdateSettingsAsync(settings, "Config_Google", Constants.Configuration.GOOGLE);
+            await UpdateSettingsAsync(settings, "Config_Google", Constants.Configuration.Google);
 
         public async Task<Response<string>> UpdateMomoSettingAsync(MomoSettings settings) =>
-            await UpdateSettingsAsync(settings, "Config_Momo", Constants.Configuration.MOMO);
+            await UpdateSettingsAsync(settings, "Config_Momo", Constants.Configuration.Momo);
 
         public async Task<Response<string>> UpdateGeminiConfig(GeminiSettings settings) =>
-             await UpdateSettingsAsync(settings, "Config_Gemini", Constants.LLM.GEMINI);
+             await UpdateSettingsAsync(settings, "Config_Gemini", Constants.Llm.Gemini);
 
 
         public async Task<Response<TSettings>> GetSettingsAsync<TSettings>(string cacheKey, string configKey) where TSettings : class {

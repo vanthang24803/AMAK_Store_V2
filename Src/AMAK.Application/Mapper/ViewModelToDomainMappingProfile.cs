@@ -43,7 +43,6 @@ namespace AMAK.Application.Mapper {
                 .ForMember(dest => dest.IsExpire, opt => opt.MapFrom(src => src.EndDate > DateTime.UtcNow))
                 .ForMember(dest => dest.Day, opt => opt.MapFrom(src => (src.EndDate - src.StartDate).Days));
 
-
             CreateMap<OptionProductUpdateRequest, Option>().ForMember(dest => dest.UpdateAt, opt => opt.MapFrom(src => DateTime.UtcNow));
         }
     }

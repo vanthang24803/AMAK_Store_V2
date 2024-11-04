@@ -28,26 +28,26 @@ namespace AMAK.API.Controllers.v1 {
 
         [HttpGet]
         [Route("Account/{id}")]
-        [Authorize(Roles = $"{Role.MANAGER}, {Role.ADMIN}")]
+        [Authorize(Roles = $"{Role.Manager}, {Role.Admin}")]
         public async Task<IActionResult> GetAddresses([FromRoute] string id, [FromQuery] BaseQuery query) {
             return Ok(await _addressService.GetAddressesUserAsync(id, query));
         }
 
         [HttpGet]
-        [Route("{id}")]
+        [Route("{id:guid}")]
         public async Task<IActionResult> GetDetail([FromRoute] Guid id) {
             return Ok(await _addressService.GetAddressDetailAsync(id));
         }
 
 
         [HttpPut]
-        [Route("{id}")]
+        [Route("{id:guid}")]
         public async Task<IActionResult> Update([FromRoute] Guid id, [FromBody] AddressRequest request) {
             return Ok(await _addressService.UpdateAddressAsync(User, id, request));
         }
 
         [HttpDelete]
-        [Route("{id}")]
+        [Route("{id:guid}")]
         public async Task<IActionResult> Remove([FromRoute] Guid id) {
             return Ok(await _addressService.RemoveAddressAsync(User, id));
         }

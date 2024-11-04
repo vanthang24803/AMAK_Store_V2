@@ -1,6 +1,6 @@
 
 namespace AMAK.Application.Mapper {
-    public class MapperConfig {
+    public abstract class MapperConfig {
         public static Type[] RegisterMappings() {
             return
             [

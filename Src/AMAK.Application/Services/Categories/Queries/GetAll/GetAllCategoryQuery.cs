@@ -6,6 +6,5 @@ namespace AMAK.Application.Services.Categories.Queries.GetAll
 {
     public class GetAllCategoryQuery : IRequest<Response<List<CategoryResponse>>>
     {
-        
     }
 }

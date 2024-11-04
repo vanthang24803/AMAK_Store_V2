@@ -25,22 +25,21 @@ namespace AMAK.Application.Services.Analytics {
 
         private readonly UserManager<ApplicationUser> _userManager;
 
-        private readonly IRepository<Domain.Models.Category> _categoryRepository;
+        private readonly IRepository<Category> _categoryRepository;
 
         private readonly IRepository<Domain.Models.Product> _productRepository;
 
-        private readonly IRepository<Domain.Models.Option> _optionRepository;
+        private readonly IRepository<Option> _optionRepository;
 
         private readonly ICacheService _cacheService;
 
         private readonly IMapper _mapper;
 
-        private readonly Dictionary<string, EOrderStatus> status;
+        private readonly Dictionary<string, EOrderStatus> _status;
 
         private readonly IRepository<Domain.Models.Address> _addressRepository;
 
-
-        private static readonly Dictionary<(double, double?), string> rank = new()
+        private static readonly Dictionary<(double, double?), string> Rank = new()
          {
                 { (0 , 100000), "Bronze" },
                 { (100000, 500000),"Silver" },
@@ -54,7 +53,7 @@ namespace AMAK.Application.Services.Analytics {
             _cacheService = cacheService;
             _orderRepository = orderRepository;
             _orderDetailRepository = orderDetailRepository;
-            status = new Dictionary<string, EOrderStatus>
+            _status = new Dictionary<string, EOrderStatus>
             {
                 { "Pending" , EOrderStatus.PENDING },
                 { "Create" , EOrderStatus.CREATE },
@@ -286,7 +285,7 @@ namespace AMAK.Application.Services.Analytics {
 
         public async Task<Response<AnalyticCountResponse>> GetCountResponseAsync() {
 
-            var customers = await _userManager.GetUsersInRoleAsync(Role.CUSTOMER);
+            var customers = await _userManager.GetUsersInRoleAsync(Role.Customer);
 
             var orders = await _orderRepository.GetAll()
                 .Include(s => s.Status)
@@ -320,7 +319,7 @@ namespace AMAK.Application.Services.Analytics {
 
 
             EOrderStatus? filterStatus = null;
-            if (!string.IsNullOrWhiteSpace(query.Status) && status.TryGetValue(query.Status, out EOrderStatus value)) {
+            if (!string.IsNullOrWhiteSpace(query.Status) && _status.TryGetValue(query.Status, out EOrderStatus value)) {
                 filterStatus = value;
             }
 
@@ -432,8 +431,8 @@ namespace AMAK.Application.Services.Analytics {
 
                 var roles = await _userManager.GetRolesAsync(user);
 
-                var isAdmin = roles.Contains(Role.ADMIN);
-                var isManager = roles.Contains(Role.MANAGER);
+                var isAdmin = roles.Contains(Role.Admin);
+                var isManager = roles.Contains(Role.Manager);
 
                 var analyticsUserResponse = new AnalyticsUserResponse {
                     Id = Guid.Parse(user.Id),
@@ -469,7 +468,7 @@ namespace AMAK.Application.Services.Analytics {
             var currentMonth = new DateTime(currentDate.Year, currentDate.Month, 1, 0, 0, 0, DateTimeKind.Utc);
             var previousMonth = currentMonth.AddMonths(-1);
 
-            var orders = await _orderRepository.GetAll().ToListAsync();
+            await _orderRepository.GetAll().ToListAsync();
             var options = await _optionRepository.GetAll().Where(x => !x.IsDeleted).ToListAsync();
 
             var ordersWithLatestStatus = await _orderRepository.GetAll()
@@ -483,10 +482,12 @@ namespace AMAK.Application.Services.Analytics {
                 .ToListAsync();
 
 
-            var currentMonthOrderCount = ordersWithLatestStatus.Count(o => o.LatestStatus != null
-                    && o.LatestStatus.Status == EOrderStatus.SUCCESS
-                    && o.Order.CreateAt >= currentMonth
-                    && o.Order.CreateAt < currentMonth.AddMonths(1)
+            var currentMonthOrderCount = ordersWithLatestStatus.Count(o => o.LatestStatus is
+                {
+                    Status: EOrderStatus.SUCCESS
+                }
+                && o.Order.CreateAt >= currentMonth
+                && o.Order.CreateAt < currentMonth.AddMonths(1)
             );
 
             var previousMonthOrderCount = ordersWithLatestStatus.Count(o => o.LatestStatus != null
@@ -496,39 +497,30 @@ namespace AMAK.Application.Services.Analytics {
             );
 
             var currentMonthSaleCount = ordersWithLatestStatus
-                .Where(o => o.LatestStatus != null && o.LatestStatus.Status == EOrderStatus.SUCCESS
-                    && o.Order.CreateAt >= currentMonth
-                    && o.Order.CreateAt < currentMonth.AddMonths(1))
+                .Where(o => o.LatestStatus is { Status: EOrderStatus.SUCCESS }
+                            && o.Order.CreateAt >= currentMonth
+                            && o.Order.CreateAt < currentMonth.AddMonths(1))
                 .Sum(o => o.Order.Quantity);
 
             var previousMonthSaleCount = ordersWithLatestStatus
-                .Where(o => o.LatestStatus != null && o.LatestStatus.Status == EOrderStatus.SUCCESS
-                && o.Order.CreateAt >= previousMonth && o.Order.CreateAt < currentMonth)
+                .Where(o => o.LatestStatus is { Status: EOrderStatus.SUCCESS }
+                            && o.Order.CreateAt >= previousMonth && o.Order.CreateAt < currentMonth)
                 .Sum(o => o.Order.Quantity);
 
             var currentMonthRevenueCount = ordersWithLatestStatus
-                .Where(o => o.LatestStatus != null && o.LatestStatus.Status == EOrderStatus.SUCCESS
-                && o.Order.CreateAt >= currentMonth && o.Order.CreateAt < currentMonth.AddMonths(1))
+                .Where(o => o.LatestStatus is { Status: EOrderStatus.SUCCESS }
+                            && o.Order.CreateAt >= currentMonth && o.Order.CreateAt < currentMonth.AddMonths(1))
                 .Sum(o => o.Order.TotalPrice);
 
             var previousMonthRevenueCount = ordersWithLatestStatus
-                .Where(o => o.LatestStatus != null && o.LatestStatus.Status == EOrderStatus.SUCCESS
-                 && o.Order.CreateAt >= previousMonth && o.Order.CreateAt < currentMonth)
+                .Where(o => o.LatestStatus is { Status: EOrderStatus.SUCCESS }
+                            && o.Order.CreateAt >= previousMonth && o.Order.CreateAt < currentMonth)
                 .Sum(o => o.Order.TotalPrice);
 
             var currentMonthProductCount = options.Where(o => o.CreateAt >= currentMonth && o.CreateAt < currentMonth.AddMonths(1) && !o.IsDeleted)
                                                   .Sum(o => o.Quantity);
             var previousMonthProductCount = options.Where(o => o.CreateAt >= previousMonth && o.CreateAt < currentMonth && !o.IsDeleted)
                                                    .Sum(o => o.Quantity);
-
-            static double CalculateGrowthPercentage(double current, double previous) {
-                if (previous > 0) {
-                    return (current - previous) / previous * 100;
-                } else if (current > 0) {
-                    return 100;
-                }
-                return 0;
-            }
 
             var growthPercentageOrder = CalculateGrowthPercentage(currentMonthOrderCount, previousMonthOrderCount);
             var growthPercentageSale = CalculateGrowthPercentage(currentMonthSaleCount, previousMonthSaleCount);
@@ -563,6 +555,15 @@ namespace AMAK.Application.Services.Analytics {
             await _cacheService.SetData(cacheKey, result, DateTimeOffset.UtcNow.AddMinutes(10));
 
             return result;
+
+            static double CalculateGrowthPercentage(double current, double previous) {
+                if (previous > 0) {
+                    return (current - previous) / previous * 100;
+                } else if (current > 0) {
+                    return 100;
+                }
+                return 0;
+            }
         }
 
         public async Task<Response<AnalyticTopProductResponse>> GetAnalyticTopProductsAsync() {
@@ -667,10 +668,10 @@ namespace AMAK.Application.Services.Analytics {
         }
 
         private static string GetRank(double totalPrice) {
-            var rankThreshold = rank.Keys.LastOrDefault(k => k.Item1 <= totalPrice && (k.Item2 == null || k.Item2 >= totalPrice));
+            var rankThreshold = Rank.Keys.LastOrDefault(k => k.Item1 <= totalPrice && (k.Item2 == null || k.Item2 >= totalPrice));
 
             if (!rankThreshold.Equals(default)) {
-                return rank[rankThreshold];
+                return Rank[rankThreshold];
             } else {
                 return string.Empty;
             }
@@ -709,7 +710,7 @@ namespace AMAK.Application.Services.Analytics {
 
 
             var successfulOrders = ordersWithLatestStatus
-                .Where(o => o.LatestStatus != null && o.LatestStatus.Status == EOrderStatus.SUCCESS)
+                .Where(o => o.LatestStatus is { Status: EOrderStatus.SUCCESS })
                 .Select(o => o.Order)
                 .ToList();
 

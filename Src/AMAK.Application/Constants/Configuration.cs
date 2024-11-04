@@ -1,8 +1,8 @@
 namespace AMAK.Application.Constants {
-    public class Configuration {
-        public const string GOOGLE = "Google";
-        public const string CLOUDINARY = "Cloudinary";
-        public const string EMAIL = "Email";
-        public const string MOMO = "Momo";
+    public abstract class Configuration {
+        public const string Google = "Google";
+        public const string Cloudinary = "Cloudinary";
+        public const string Email = "Email";
+        public const string Momo = "Momo";
     }
 }

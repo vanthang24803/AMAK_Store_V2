@@ -7,8 +7,8 @@ namespace AMAK.Application.Providers.Google {
     public class GoogleService : IGoogleService {
         private readonly GoogleSettings _googleConfig;
         private readonly string[] scopes = [
-            Constants.Google.GOOGLE_MAIL_READONLY,
-            Constants.Google.GOOGLE_MAIL_USER_INFO
+            Constants.Google.GoogleMailReadonly,
+            Constants.Google.GoogleMailUserInfo
         ];
 
         public GoogleService(IConfigurationProvider configurationProvider) {

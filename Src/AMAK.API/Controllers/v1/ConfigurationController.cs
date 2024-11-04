@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace AMAK.API.Controllers.v1 {
     [ApiVersion(1)]
-    [Authorize(Roles = $"{Role.ADMIN}")]
+    [Authorize(Roles = $"{Role.Admin}")]
     public class ConfigurationController : BaseController {
 
         private readonly Application.Providers.Configuration.IConfigurationProvider _configurationProvider;

@@ -93,7 +93,7 @@ namespace AMAK.API.Controllers.v1 {
 
         [HttpPost]
         [Route("Bot")]
-        [Authorize(Roles = $"{Role.ADMIN}")]
+        [Authorize(Roles = $"{Role.Admin}")]
         [AllowAnonymous]
 
         public async Task<IActionResult> CreateBotAsync([FromBody] CreateBotRequest request) {
@@ -102,21 +102,21 @@ namespace AMAK.API.Controllers.v1 {
 
         [HttpPost]
         [Route("Upgrade/Manager")]
-        [Authorize(Roles = $"{Role.ADMIN}")]
+        [Authorize(Roles = $"{Role.Admin}")]
         public async Task<IActionResult> UpgradeManager([FromBody] UpgradeRole upgradeRole) {
             return Ok(await _authService.UpgradeToManager(upgradeRole));
         }
 
         [HttpPost]
         [Route("Downgrade/Manager")]
-        [Authorize(Roles = $"{Role.ADMIN}")]
+        [Authorize(Roles = $"{Role.Admin}")]
         public async Task<IActionResult> DowngradeManager([FromBody] UpgradeRole upgradeRole) {
             return Ok(await _authService.DowngradeRoleManager(upgradeRole));
         }
 
         [HttpPost]
         [Route("Upgrade/Admin")]
-        [Authorize(Roles = $"{Role.ADMIN}")]
+        [Authorize(Roles = $"{Role.Admin}")]
         public async Task<IActionResult> UpgradeAdmin([FromBody] UpgradeRole upgradeRole) {
             return Ok(await _authService.UpgradeToAdmin(upgradeRole));
         }

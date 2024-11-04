@@ -13,18 +13,18 @@ namespace AMAK.Application.Services.Billboard {
     public class BillboardService : IBillboardService {
         private readonly IRepository<Domain.Models.Billboard> _billboardRepository;
 
-        private readonly ICloudinaryService _CloudinaryService;
+        private readonly ICloudinaryService _cloudinaryService;
 
         private readonly IMapper _mapper;
 
-        public BillboardService(IRepository<Domain.Models.Billboard> billboardRepository, ICloudinaryService CloudinaryService, IMapper mapper) {
+        public BillboardService(IRepository<Domain.Models.Billboard> billboardRepository, ICloudinaryService cloudinaryService, IMapper mapper) {
             _billboardRepository = billboardRepository;
-            _CloudinaryService = CloudinaryService;
+            _cloudinaryService = cloudinaryService;
             _mapper = mapper;
         }
 
         public async Task<Response<BillboardResponse>> CreateAsync(IFormFile file, CreateBillboardRequest request) {
-            var upload = await _CloudinaryService.UploadPhotoAsync(file);
+            var upload = await _cloudinaryService.UploadPhotoAsync(file);
 
             if (upload.Error != null) {
                 throw new BadRequestException(message: upload.Error.Message);
@@ -47,7 +47,7 @@ namespace AMAK.Application.Services.Billboard {
         public async Task<Response<string>> DeleteAsync(Guid id) {
             var existingBillboard = await _billboardRepository.GetById(id) ?? throw new NotFoundException("Billboard not found");
 
-            var deleted = await _CloudinaryService.DeletePhotoAsync(existingBillboard.PublicId!);
+            var deleted = await _cloudinaryService.DeletePhotoAsync(existingBillboard.PublicId!);
 
             if (deleted.Error != null) {
                 throw new BadRequestException(deleted.Error.Message);

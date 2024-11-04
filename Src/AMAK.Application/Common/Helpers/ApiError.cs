@@ -10,8 +10,5 @@ namespace AMAK.Application.Common.Helpers {
 
         [JsonProperty("timestamp")]
         public DateTime Timestamp = DateTime.Now;
-
-        public ApiError() {
-        }
     }
 }

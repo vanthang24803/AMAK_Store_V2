@@ -11,7 +11,7 @@ namespace AMAK.Application.Providers.Momo {
 
         private readonly MomoSettings _momoSettings;
 
-        private static readonly HttpClient _httpClient = new();
+        private static readonly HttpClient HttpClient = new();
 
         public MomoService(IConfigurationProvider configurationProvider) {
             _momoSettings = InitializeConfig(configurationProvider).GetAwaiter().GetResult();
@@ -58,7 +58,7 @@ namespace AMAK.Application.Providers.Momo {
             request.signature = GetSignature(rawSignature, _momoSettings.SecretKey);
 
             StringContent httpContent = new(JsonSerializer.Serialize(request), Encoding.UTF8, "application/json");
-            var quickPayResponse = await _httpClient.PostAsync(_momoSettings.PaymentUrl, httpContent);
+            var quickPayResponse = await HttpClient.PostAsync(_momoSettings.PaymentUrl, httpContent);
             var contents = quickPayResponse.Content.ReadAsStringAsync().Result;
             return contents;
         }
@@ -66,8 +66,8 @@ namespace AMAK.Application.Providers.Momo {
         private static string GetSignature(string text, string key) {
             ASCIIEncoding encoding = new();
 
-            byte[] textBytes = encoding.GetBytes(text);
-            byte[] keyBytes = encoding.GetBytes(key);
+            var textBytes = encoding.GetBytes(text);
+            var keyBytes = encoding.GetBytes(key);
 
             byte[] hashBytes;
 

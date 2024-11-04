@@ -2,7 +2,7 @@ using Asp.Versioning;
 
 namespace AMAK.API.Extensions {
     public static class VersionExtension {
-        public static IServiceCollection AddAPIVersion(this IServiceCollection services) {
+        public static void AddApiVersion(this IServiceCollection services) {
 
             services.AddApiVersioning(options => {
                 options.AssumeDefaultVersionWhenUnspecified = true;
@@ -15,8 +15,6 @@ namespace AMAK.API.Extensions {
                 opts.GroupNameFormat = "'v'V";
                 opts.SubstituteApiVersionInUrl = true;
             });
-
-            return services;
         }
     }
 }

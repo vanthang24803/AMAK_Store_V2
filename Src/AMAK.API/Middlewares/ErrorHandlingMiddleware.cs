@@ -4,16 +4,11 @@ using AMAK.Application.Common.Helpers;
 using Newtonsoft.Json;
 
 namespace AMAK.API.Middlewares {
-    public class ErrorHandlingMiddleware {
-        private readonly RequestDelegate _next;
-
-        public ErrorHandlingMiddleware(RequestDelegate next) {
-            _next = next;
-        }
-
+    public class ErrorHandlingMiddleware(RequestDelegate next)
+    {
         public async Task Invoke(HttpContext context) {
             try {
-                await _next(context);
+                await next(context);
             } catch (BadRequestException ex) {
                 await HandleExceptionAsync(context, ex, HttpStatusCode.BadRequest);
             } catch (UnauthorizedException ex) {

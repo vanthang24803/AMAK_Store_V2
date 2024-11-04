@@ -1,10 +1,8 @@
-namespace AMAK.Application.Providers.Mail {
+namespace AMAK.Application.Providers.Mail.Dtos {
     public class MailRequest {
-        public string ToEmail { get; set; } = null!;
-
-        public string Subject { get; set; } = null!;
-
-        public string Message { get; set; } = null!;
+        public string ToEmail { get; init; } = null!;
+        public string Subject { get; init; } = null!;
+        public string Message { get; init; } = null!;
 
     }
 }

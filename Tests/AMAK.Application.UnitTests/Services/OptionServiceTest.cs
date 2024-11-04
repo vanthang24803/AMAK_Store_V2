@@ -12,21 +12,20 @@ namespace AMAK.Application.UnitTests.Services {
         private readonly Mock<IRepository<Domain.Models.Option>> _optionRepository;
         private readonly Mock<IRepository<Domain.Models.Product>> _productRepository;
 
-        private readonly Mock<ICacheService> _cacheService;
         private readonly OptionService _optionService;
         private readonly Mock<IMapper> _mockMapper;
 
         public OptionServiceTest() {
             _optionRepository = new Mock<IRepository<Domain.Models.Option>>();
             _productRepository = new Mock<IRepository<Domain.Models.Product>>();
-            _cacheService = new Mock<ICacheService>();
+            Mock<ICacheService> cacheService = new();
             _mockMapper = new Mock<IMapper>();
 
             _optionService = new OptionService(
                 _optionRepository.Object,
                 _productRepository.Object,
                 _mockMapper.Object,
-                _cacheService.Object
+                cacheService.Object
             );
         }
 
