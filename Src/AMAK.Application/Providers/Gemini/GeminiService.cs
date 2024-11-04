@@ -98,7 +98,7 @@ namespace AMAK.Application.Providers.Gemini {
             return ConvertGeminiResponse(message);
         }
 
-        public async Task<AiResponse> AskWithAI(GeminiChatRequest request, ClaimsPrincipal claims) {
+        public async Task<List<GeminiChatResponse>> AskWithAI(GeminiChatRequest request, ClaimsPrincipal claims) {
             var existingUser = await _userManager.GetUserAsync(claims)
                  ?? throw new NotFoundException("Account not found!");
 
@@ -130,7 +130,21 @@ namespace AMAK.Application.Providers.Gemini {
 
             await _conversationRepository.SaveChangesAsync();
 
-            return result;
+
+            return [
+                new  GeminiChatResponse() {
+                    Id = newUserMessage.Id,
+                    IsBotReply= false,
+                    Message= newUserMessage.Message,
+                    CreateAt = newUserMessage.CreateAt,
+                },
+                new GeminiChatResponse(){
+                    Id = newBotReplyMessage.Id,
+                    Message = newBotReplyMessage.Message,
+                    IsBotReply = true,
+                    CreateAt = newBotReplyMessage.CreateAt,
+                }
+            ];
         }
 
         public async Task<Response<List<GeminiChatResponse>>> GetChatWithAI(ClaimsPrincipal claimsPrincipal) {
@@ -146,6 +160,7 @@ namespace AMAK.Application.Providers.Gemini {
                 Message = c.Message,
                 CreateAt = c.CreateAt
             })
+            .OrderBy(x => x.CreateAt)
             .ToListAsync();
 
             return new Response<List<GeminiChatResponse>>(System.Net.HttpStatusCode.OK, conversations);

@@ -9,7 +9,7 @@ namespace AMAK.Application.Providers.Gemini {
         Task<AiResponse> GenerateRevenueAnalytic(AiRequest<BarChartResponse> request);
         Task<AiResponse> GenerateReviewAnalytic(AiRequest<List<ReviewResponse>> request);
         Task<AiResponse> GenerateStatisticsAnalytic(AiRequest<AnalyticStatisticsResponse> request);
-        Task<AiResponse> AskWithAI(GeminiChatRequest request, ClaimsPrincipal claims);
+        Task<List<GeminiChatResponse>> AskWithAI(GeminiChatRequest request, ClaimsPrincipal claims);
         Task<Response<List<GeminiChatResponse>>> GetChatWithAI(ClaimsPrincipal claimsPrincipal);
     }
 }
