@@ -6,7 +6,6 @@ namespace AMAK.Domain.Models {
         public string? FirstName { get; set; }
         public string? LastName { get; set; }
         public string? NumberPhone { get; set; }
-
         public bool IsActive { get; set; }
         public string? UserId { get; set; }
 
