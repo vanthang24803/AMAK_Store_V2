@@ -73,6 +73,12 @@ namespace AMAK.API.Extensions {
             app.UseHttpsRedirection();
             app.UseAuthentication();
             app.UseAuthorization();
+
+            app.MapGet("/", (HttpContext httpContext) => {
+                httpContext.Response.Redirect("/swagger", permanent: false);
+                return Results.Empty;
+            });
+
             app.Run();
 
             return app;
