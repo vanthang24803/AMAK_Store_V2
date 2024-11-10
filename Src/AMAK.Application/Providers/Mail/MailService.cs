@@ -10,24 +10,27 @@ using MimeKit;
 
 namespace AMAK.Application.Providers.Mail {
     public class MailService : IMailService {
-
-        private readonly IRepository<EmailTemplate> _emailTemplatesRepository;
-
         private readonly IConfigurationProvider _configurationProvider;
+        private readonly IRepository<EmailTemplate> _emailTemplatesRepository;
+        private readonly Microsoft.Extensions.Configuration.IConfiguration _configuration;
 
-        public MailService(IRepository<EmailTemplate> emailTemplatesRepository, IConfigurationProvider configurationProvider) {
+        private string WebClient;
+
+        public MailService(IRepository<EmailTemplate> emailTemplatesRepository, IConfigurationProvider configurationProvider, Microsoft.Extensions.Configuration.IConfiguration configuration) {
+            _configuration = configuration;
+            WebClient = configuration["Client:Web"]!;
             _emailTemplatesRepository = emailTemplatesRepository;
             _configurationProvider = configurationProvider;
         }
 
-        public async void SendEmailConfirmationAccount(string email, string fullName, string userId, string token) {
+        public async Task SendEmailConfirmationAccount(string email, string fullName, string userId, string token) {
             var existingTemplate = await _emailTemplatesRepository.GetAll()
                 .FirstOrDefaultAsync(x => x.Name == Domain.Enums.ETemplate.VERIFY_ACCOUNT)
                 ?? throw new NotFoundException("Verify Email Template Not Found!");
 
             string htmlContent = existingTemplate.Template;
 
-            string verifyLink = $"http://localhost:3000/verify-account?userId={userId}&token=${token}";
+            string verifyLink = $"{WebClient}/verify-account?userId={userId}&token=${token}";
 
             htmlContent = htmlContent.Replace("{USERNAME}", fullName);
             htmlContent = htmlContent.Replace("{VERIFICATION_LINK}", verifyLink);
@@ -47,7 +50,7 @@ namespace AMAK.Application.Providers.Mail {
             }
         }
 
-        public async void SendMailResetPassword(string email, string fullName, string userId, string token) {
+        public async Task SendMailResetPassword(string email, string fullName, string userId, string token) {
 
             var existingTemplate = await _emailTemplatesRepository.GetAll()
               .FirstOrDefaultAsync(x => x.Name == Domain.Enums.ETemplate.FORGOT_PASSWORD)
@@ -55,7 +58,7 @@ namespace AMAK.Application.Providers.Mail {
 
             string htmlContent = existingTemplate.Template;
 
-            string verifyLink = $"http://localhost:3000/verify-account?userId={userId}&token=${token}";
+            string verifyLink = $"{WebClient}/verify-account?userId={userId}&token=${token}";
 
             htmlContent = htmlContent.Replace("{USERNAME}", fullName);
             htmlContent = htmlContent.Replace("{LINK}", verifyLink);
