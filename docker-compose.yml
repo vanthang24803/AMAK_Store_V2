@@ -9,6 +9,7 @@ services:
       - ASPNETCORE_URLS=http://*:8080
     depends_on:
       - redis
+      - rabbitmq
     networks:
       - amak
 
@@ -21,6 +22,18 @@ services:
       - "6379:6379"
     networks:
       - amak
+
+  rabbitmq:
+    image: rabbitmq:latest
+    container_name: amak_prod_rabbitmq
+    ports:
+      - "15672:15672"
+      - "5672:5672"
+    networks:
+      - amak
+    environment:
+      - RABBITMQ_DEFAULT_USER=guest
+      - RABBITMQ_DEFAULT_PASS=guest
 
 networks:
   amak:

@@ -2,6 +2,7 @@ using AMAK.Application.Common.Exceptions;
 using AMAK.Application.Common.Helpers;
 using AMAK.Application.Interfaces;
 using AMAK.Application.Providers.Mail;
+using AMAK.Application.Providers.Mail.Dtos;
 using AMAK.Application.Services.Notification;
 using AMAK.Application.Services.Notification.Dtos;
 using AMAK.Domain.Enums;
@@ -12,14 +13,10 @@ using System.Net;
 
 namespace AMAK.Application.Services.Payment.Commands.Momo {
     public class HandlerMomoRequestCommandHandler : IRequestHandler<HandlerMomoRequestCommand, Response<string>> {
-
         private readonly IRepository<Domain.Models.Order> _orderRepository;
-
         private readonly IRepository<OrderDetail> _orderDetailRepository;
         private readonly IRepository<Option> _optionRepository;
-
         private readonly INotificationService _notificationService;
-
         private readonly IMailService _mailService;
 
 
@@ -73,7 +70,7 @@ namespace AMAK.Application.Services.Payment.Commands.Momo {
                     };
 
                     await _notificationService.CreateNotification(confirmNotification);
-                    await _mailService.SendOrderMail(existingOrder.Email, "Xác nhận đơn hàng", existingOrder, orderDetails);
+                    await _mailService.SendOrderMail(CreateMailTemplate(existingOrder.Email, "Xác nhận đơn hàng", existingOrder, orderDetails));
                     break;
 
                 default:
@@ -82,6 +79,15 @@ namespace AMAK.Application.Services.Payment.Commands.Momo {
 
             return new Response<string>(HttpStatusCode.OK, "Handler Order Successfully!");
 
+        }
+
+        private static OrderMailEvent CreateMailTemplate(string email, string subject, Domain.Models.Order order, List<OrderDetail> orderDetails) {
+            return new OrderMailEvent() {
+                To = email,
+                Subject = subject,
+                Order = order,
+                OrderResponses = orderDetails
+            };
         }
     }
 }

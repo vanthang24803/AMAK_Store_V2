@@ -1,5 +1,6 @@
 using AMAK.API.Configurations;
 using AMAK.Application.Configs;
+using AMAK.Application.Providers.RabbitMq;
 using Serilog;
 
 namespace AMAK.API.Extensions {
@@ -58,6 +59,11 @@ namespace AMAK.API.Extensions {
             // TODO: WS
             services.AddWsConfig();
 
+            // TODO: Queue
+            services.AddScoped<IRabbitProducer, RabbitProducer>();
+            services.AddHostedService<RabbitConsumer>();
+
+
             return services;
         }
 
@@ -73,6 +79,12 @@ namespace AMAK.API.Extensions {
             app.UseHttpsRedirection();
             app.UseAuthentication();
             app.UseAuthorization();
+
+            app.MapGet("/", (HttpContext httpContext) => {
+                httpContext.Response.Redirect("/swagger", permanent: false);
+                return Results.Empty;
+            });
+
             app.Run();
 
             return app;

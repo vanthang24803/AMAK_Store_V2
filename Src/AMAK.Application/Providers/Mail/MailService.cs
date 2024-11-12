@@ -12,32 +12,29 @@ namespace AMAK.Application.Providers.Mail {
     public class MailService : IMailService {
         private readonly IConfigurationProvider _configurationProvider;
         private readonly IRepository<EmailTemplate> _emailTemplatesRepository;
-        private readonly Microsoft.Extensions.Configuration.IConfiguration _configuration;
-
-        private string WebClient;
+        private readonly string WebClient;
 
         public MailService(IRepository<EmailTemplate> emailTemplatesRepository, IConfigurationProvider configurationProvider, Microsoft.Extensions.Configuration.IConfiguration configuration) {
-            _configuration = configuration;
             WebClient = configuration["Client:Web"]!;
             _emailTemplatesRepository = emailTemplatesRepository;
             _configurationProvider = configurationProvider;
         }
 
-        public async Task SendEmailConfirmationAccount(string email, string fullName, string userId, string token) {
+        public async Task SendEmailConfirmationAccount(MailWithTokenEvent mail) {
             var existingTemplate = await _emailTemplatesRepository.GetAll()
                 .FirstOrDefaultAsync(x => x.Name == Domain.Enums.ETemplate.VERIFY_ACCOUNT)
                 ?? throw new NotFoundException("Verify Email Template Not Found!");
 
             string htmlContent = existingTemplate.Template;
 
-            string verifyLink = $"{WebClient}/verify-account?userId={userId}&token=${token}";
+            string verifyLink = $"{WebClient}/verify-account?userId={mail.UserId}&token=${mail.Token}";
 
-            htmlContent = htmlContent.Replace("{USERNAME}", fullName);
+            htmlContent = htmlContent.Replace("{USERNAME}", mail.FullName);
             htmlContent = htmlContent.Replace("{VERIFICATION_LINK}", verifyLink);
 
             try {
                 MailRequest mailRequest = new() {
-                    ToEmail = email,
+                    ToEmail = mail.Email,
                     Subject = "Xác nhận tài khoản",
                     Message = htmlContent,
 
@@ -50,7 +47,7 @@ namespace AMAK.Application.Providers.Mail {
             }
         }
 
-        public async Task SendMailResetPassword(string email, string fullName, string userId, string token) {
+        public async Task SendMailResetPassword(MailWithTokenEvent mail) {
 
             var existingTemplate = await _emailTemplatesRepository.GetAll()
               .FirstOrDefaultAsync(x => x.Name == Domain.Enums.ETemplate.FORGOT_PASSWORD)
@@ -58,14 +55,14 @@ namespace AMAK.Application.Providers.Mail {
 
             string htmlContent = existingTemplate.Template;
 
-            string verifyLink = $"{WebClient}/verify-account?userId={userId}&token=${token}";
+            string verifyLink = $"{WebClient}/verify-account?userId={mail.UserId}&token=${mail.Token}";
 
-            htmlContent = htmlContent.Replace("{USERNAME}", fullName);
+            htmlContent = htmlContent.Replace("{USERNAME}", mail.FullName);
             htmlContent = htmlContent.Replace("{LINK}", verifyLink);
 
             try {
                 MailRequest mailRequest = new() {
-                    ToEmail = email,
+                    ToEmail = mail.Email,
                     Subject = "Đổi mật khẩu",
                     Message = htmlContent
 
@@ -99,12 +96,12 @@ namespace AMAK.Application.Providers.Mail {
             await smtp.DisconnectAsync(true);
         }
 
-        public async Task SendOrderMail(string to, string subject, Order order, List<OrderDetail> orderResponses) {
+        public async Task SendOrderMail(OrderMailEvent request) {
             try {
                 MailRequest mailRequest = new() {
-                    ToEmail = to,
-                    Subject = subject,
-                    Message = await OrderMail(order, orderResponses)
+                    ToEmail = request.To,
+                    Subject = request.Subject,
+                    Message = await OrderMail(request.Order, request.OrderResponses)
                 };
 
                 await SendMailAsync(mailRequest);

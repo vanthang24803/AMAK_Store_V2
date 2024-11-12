@@ -3,7 +3,6 @@ using AMAK.Application.Common.Exceptions;
 using AMAK.Application.Common.Helpers;
 using AMAK.Application.Interfaces;
 using AMAK.Application.Services.Authentication.Dtos;
-using AMAK.Application.Providers.Mail;
 using AMAK.Domain.Models;
 using AutoMapper;
 using Microsoft.AspNetCore.Identity;
@@ -12,25 +11,27 @@ using System.Net;
 using System.Security.Claims;
 using AMAK.Application.Services.Me.Dtos;
 using AMAK.Application.Providers.Cache;
+using AMAK.Application.Providers.Mail.Dtos;
+using AMAK.Application.Providers.RabbitMq;
+using AMAK.Application.Providers.RabbitMq.Common;
 
 
 namespace AMAK.Application.Services.Authentication {
     public class AuthService : IAuthService {
-
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly RoleManager<IdentityRole> _roleManager;
-        private readonly IMailService _mailService;
         private readonly ITokenService _tokenService;
         private readonly ICacheService _cacheService;
         private readonly IMapper _mapper;
+        private readonly IRabbitProducer _rabbitProducer;
 
-        public AuthService(UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager, IMailService mailService, IMapper mapper, ITokenService tokenService, ICacheService cacheService) {
+        public AuthService(UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager, IMapper mapper, ITokenService tokenService, ICacheService cacheService, IRabbitProducer rabbitProducer) {
             _userManager = userManager;
             _roleManager = roleManager;
-            _mailService = mailService;
             _tokenService = tokenService;
             _cacheService = cacheService;
             _mapper = mapper;
+            _rabbitProducer = rabbitProducer;
         }
 
         public async Task<Response<RegisterResponse>> RegisterAsync(RegisterRequest request) {
@@ -63,9 +64,14 @@ namespace AMAK.Application.Services.Authentication {
 
             var token = await _userManager.GenerateEmailConfirmationTokenAsync(newUser);
 
+            var newMailTemplate = new MailWithTokenEvent() {
+                UserId = newUser.Id,
+                Email = newUser.Email ?? newUser.UserName,
+                FullName = $"{newUser.FirstName} {newUser.LastName}",
+                Token = token
+            };
 
-            await _mailService.SendEmailConfirmationAccount(newUser.UserName, $"{newUser.FirstName} {newUser.LastName}", newUser.Id, token);
-
+            _rabbitProducer.SendMessage(RabbitQueue.MailQueue, newMailTemplate);
 
             var response = _mapper.Map<RegisterResponse>(newUser);
 
@@ -231,9 +237,14 @@ namespace AMAK.Application.Services.Authentication {
 
             var token = await _userManager.GeneratePasswordResetTokenAsync(existingUser);
 
+            var newMailTemplate = new MailWithTokenEvent() {
+                Email = request.Email,
+                FullName = $"{existingUser.FirstName} {existingUser.LastName}",
+                UserId = existingUser.Id,
+                Token = token,
+            };
 
-            await _mailService.SendMailResetPassword(request.Email, $"{existingUser.FirstName} {existingUser.LastName}", existingUser.Id, token);
-
+            _rabbitProducer.SendMessage(RabbitQueue.MailQueue, newMailTemplate);
 
             return new Response<string>(HttpStatusCode.OK, "Send mail reset password successfully!");
         }
