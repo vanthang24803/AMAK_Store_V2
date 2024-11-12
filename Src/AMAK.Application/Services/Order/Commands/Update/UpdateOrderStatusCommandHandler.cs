@@ -2,6 +2,7 @@ using AMAK.Application.Common.Exceptions;
 using AMAK.Application.Common.Helpers;
 using AMAK.Application.Interfaces;
 using AMAK.Application.Providers.Mail;
+using AMAK.Application.Providers.Mail.Dtos;
 using AMAK.Application.Services.Notification;
 using AMAK.Application.Services.Notification.Dtos;
 using AMAK.Domain.Enums;
@@ -13,14 +14,11 @@ namespace AMAK.Application.Services.Order.Commands.Update {
     public class UpdateOrderStatusCommandHandler : IRequestHandler<UpdateOrderStatusCommand, Response<string>> {
 
         private readonly IRepository<Domain.Models.Order> _orderRepository;
-
         private readonly IMailService _mailService;
-
         private readonly INotificationService _notificationService;
-
         private readonly IRepository<Domain.Models.OrderDetail> _orderDetailRepository;
-
         private readonly IRepository<Domain.Models.OrderStatus> _orderStatusRepository;
+
 
         public UpdateOrderStatusCommandHandler(IRepository<Domain.Models.Order> orderRepository, INotificationService notificationService, IMailService mailService, IRepository<Domain.Models.OrderDetail> orderDetailRepository, IRepository<Domain.Models.OrderStatus> orderStatusRepository) {
             _orderRepository = orderRepository;
@@ -53,28 +51,28 @@ namespace AMAK.Application.Services.Order.Commands.Update {
                         existingOrder = await HandlerStatus(existingOrder, request.Data.Status);
 
                         await CreateAndSendNotification(existingOrder, "Đơn hàng đã được xác nhận!");
-                        await _mailService.SendOrderMail(existingOrder.Email, "Đơn hàng đã được khởi tạo!", existingOrder, orderDetails);
+                        await _mailService.SendOrderMail(CreateMailTemplate(existingOrder.Email, "Đơn hàng đã được khởi tạo!", existingOrder, orderDetails));
                         break;
 
                     case EOrderStatus.CANCEL:
                         ValidateCurrentStatus(latestStatus.Status, EOrderStatus.PENDING, "CANCEL");
                         existingOrder = await HandlerStatus(existingOrder, request.Data.Status);
                         await CreateAndSendNotification(existingOrder, "Đơn hàng đã hủy thành công!");
-                        await _mailService.SendOrderMail(existingOrder.Email, "Bạn đã hủy đơn hàng thành công!", existingOrder, orderDetails);
+                        await _mailService.SendOrderMail(CreateMailTemplate(existingOrder.Email, "Bạn đã hủy đơn hàng thành công!", existingOrder, orderDetails));
                         break;
 
                     case EOrderStatus.SHIPPING:
                         ValidateCurrentStatus(latestStatus.Status, EOrderStatus.CREATE, "SHIPPING");
                         existingOrder = await HandlerStatus(existingOrder, request.Data.Status);
                         await CreateAndSendNotification(existingOrder, "Đơn hàng đang được vận chuyển!");
-                        await _mailService.SendOrderMail(existingOrder.Email, "Đơn hàng của bạn đang được vận chuyển!", existingOrder, orderDetails);
+                        await _mailService.SendOrderMail(CreateMailTemplate(existingOrder.Email, "Đơn hàng của bạn đang được vận chuyển!", existingOrder, orderDetails));
                         break;
 
                     case EOrderStatus.SUCCESS:
                         ValidateCurrentStatus(latestStatus.Status, EOrderStatus.SHIPPING, "SUCCESS");
                         existingOrder = await HandlerStatus(existingOrder, request.Data.Status);
                         await CreateAndSendNotification(existingOrder, "Đơn hàng đã giao tới bạn thành công!");
-                        await _mailService.SendOrderMail(existingOrder.Email, "Đơn hàng đã giao tới bạn thành công!", existingOrder, orderDetails);
+                        await _mailService.SendOrderMail(CreateMailTemplate(existingOrder.Email, "Đơn hàng đã giao tới bạn thành công!", existingOrder, orderDetails));
                         break;
 
                     default:
@@ -131,6 +129,16 @@ namespace AMAK.Application.Services.Order.Commands.Update {
             };
 
             await _notificationService.CreateNotification(notification);
+        }
+
+        private static OrderMailEvent CreateMailTemplate(string email, string subject, Domain.Models.Order order, List<Domain.Models.OrderDetail> orderDetails) {
+
+            return new OrderMailEvent() {
+                To = email,
+                Subject = subject,
+                Order = order,
+                OrderResponses = orderDetails
+            };
         }
     }
 }

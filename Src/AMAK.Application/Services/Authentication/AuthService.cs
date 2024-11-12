@@ -12,6 +12,7 @@ using System.Net;
 using System.Security.Claims;
 using AMAK.Application.Services.Me.Dtos;
 using AMAK.Application.Providers.Cache;
+using AMAK.Application.Providers.Mail.Dtos;
 
 
 namespace AMAK.Application.Services.Authentication {
@@ -63,8 +64,14 @@ namespace AMAK.Application.Services.Authentication {
 
             var token = await _userManager.GenerateEmailConfirmationTokenAsync(newUser);
 
+            var newMailTemplate = new MailWithTokenEvent() {
+                UserId = newUser.Id,
+                Email = newUser.Email ?? newUser.UserName,
+                FullName = $"{newUser.FirstName} {newUser.LastName}",
+                Token = token
+            };
 
-            await _mailService.SendEmailConfirmationAccount(newUser.UserName, $"{newUser.FirstName} {newUser.LastName}", newUser.Id, token);
+            await _mailService.SendEmailConfirmationAccount(newMailTemplate);
 
 
             var response = _mapper.Map<RegisterResponse>(newUser);
@@ -231,8 +238,14 @@ namespace AMAK.Application.Services.Authentication {
 
             var token = await _userManager.GeneratePasswordResetTokenAsync(existingUser);
 
+            var newMailTemplate = new MailWithTokenEvent() {
+                Email = request.Email,
+                FullName = $"{existingUser.FirstName} {existingUser.LastName}",
+                UserId = existingUser.Id,
+                Token = token,
+            };
 
-            await _mailService.SendMailResetPassword(request.Email, $"{existingUser.FirstName} {existingUser.LastName}", existingUser.Id, token);
+            await _mailService.SendMailResetPassword(newMailTemplate);
 
 
             return new Response<string>(HttpStatusCode.OK, "Send mail reset password successfully!");
