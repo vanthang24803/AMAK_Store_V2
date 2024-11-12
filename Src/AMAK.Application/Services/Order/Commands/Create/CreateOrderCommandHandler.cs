@@ -4,6 +4,8 @@ using AMAK.Application.Common.Helpers;
 using AMAK.Application.Interfaces;
 using AMAK.Application.Providers.Mail;
 using AMAK.Application.Providers.Mail.Dtos;
+using AMAK.Application.Providers.RabbitMq;
+using AMAK.Application.Providers.RabbitMq.Common;
 using AMAK.Application.Services.Notification;
 using AMAK.Application.Services.Notification.Dtos;
 using AMAK.Domain.Enums;
@@ -25,8 +27,10 @@ namespace AMAK.Application.Services.Order.Commands.Create {
         private readonly IRepository<Domain.Models.Product> _productRepository;
         private readonly INotificationService _notificationService;
 
+        private readonly IRabbitProducer _rabbitProducer;
 
-        public CreateOrderCommandHandler(IMailService mailService, UserManager<ApplicationUser> userManager, IRepository<Domain.Models.Order> orderRepository, IRepository<Voucher> voucherRepository, IRepository<Option> optionRepository, IRepository<OrderDetail> orderDetailRepository, IRepository<Domain.Models.Product> productRepository, INotificationService notificationService) {
+
+        public CreateOrderCommandHandler(IMailService mailService, UserManager<ApplicationUser> userManager, IRepository<Domain.Models.Order> orderRepository, IRepository<Voucher> voucherRepository, IRepository<Option> optionRepository, IRepository<OrderDetail> orderDetailRepository, IRepository<Domain.Models.Product> productRepository, INotificationService notificationService, IRabbitProducer rabbitProducer) {
             _mailService = mailService;
             _userManager = userManager;
             _orderRepository = orderRepository;
@@ -35,6 +39,7 @@ namespace AMAK.Application.Services.Order.Commands.Create {
             _orderDetailRepository = orderDetailRepository;
             _productRepository = productRepository;
             _notificationService = notificationService;
+            _rabbitProducer = rabbitProducer;
         }
 
         public async Task<Response<string>> Handle(CreateOrderCommand request, CancellationToken cancellationToken) {
@@ -136,10 +141,8 @@ namespace AMAK.Application.Services.Order.Commands.Create {
                     OrderResponses = orderDetails
                 };
 
-                // TODO: Call Kafka
-                var mailMessage = JsonConvert.SerializeObject(newOrderMailTemplate, new JsonSerializerSettings {
-                    ReferenceLoopHandling = ReferenceLoopHandling.Ignore
-                });
+                // TODO: Call RabbitMQ
+                _rabbitProducer.SendMessage<OrderMailEvent>(RabbitQueue.OrderQueue, newOrderMailTemplate);
 
                 await _mailService.SendOrderMail(newOrderMailTemplate);
 

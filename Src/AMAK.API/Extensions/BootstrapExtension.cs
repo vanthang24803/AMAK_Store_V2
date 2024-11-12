@@ -1,5 +1,6 @@
 using AMAK.API.Configurations;
 using AMAK.Application.Configs;
+using AMAK.Application.Providers.RabbitMq;
 using Serilog;
 
 namespace AMAK.API.Extensions {
@@ -57,6 +58,11 @@ namespace AMAK.API.Extensions {
 
             // TODO: WS
             services.AddWsConfig();
+
+            // TODO: Queue
+            services.AddScoped<IRabbitProducer, RabbitProducer>();
+            services.AddHostedService<RabbitConsumer>();
+
 
             return services;
         }
