@@ -108,18 +108,17 @@ namespace AMAK.Application.Providers.Cloudinary {
 
             var result = await _cloudinary.ListResourcesAsync(listParams);
 
-            var imageUrls = result.Resources.Select(resource => new CloudinaryResponse()
-                {
-                    PublicId = resource.PublicId,
-                    Format = resource.Format,
-                    Url = resource.Url,
-                    SecureUrl = resource.SecureUrl,
-                    Bytes = resource.Bytes,
-                    Width = resource.Width,
-                    Height = resource.Height,
-                    ResourceType = resource.ResourceType,
-                    CreatedAt = resource.CreatedAt,
-                })
+            var imageUrls = result.Resources.Select(resource => new CloudinaryResponse() {
+                PublicId = resource.PublicId,
+                Format = resource.Format,
+                Url = resource.Url,
+                SecureUrl = resource.SecureUrl,
+                Bytes = resource.Bytes,
+                Width = resource.Width,
+                Height = resource.Height,
+                ResourceType = resource.ResourceType,
+                CreatedAt = resource.CreatedAt,
+            })
                 .ToList();
 
             int totalItems = result.Resources.Length;
@@ -164,12 +163,10 @@ namespace AMAK.Application.Providers.Cloudinary {
             return true;
         }
 
-        private static string? GetNextCursor(int limit)
-        {
+        private static string? GetNextCursor(int limit) {
             ArgumentOutOfRangeException.ThrowIfNegative(limit);
             return null;
         }
-
 
     }
 }

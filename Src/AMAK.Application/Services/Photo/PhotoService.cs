@@ -3,10 +3,13 @@ using AMAK.Application.Common.Helpers;
 using AMAK.Application.Interfaces;
 using AMAK.Application.Providers.Cache;
 using AMAK.Application.Providers.Cloudinary;
+using AMAK.Application.Providers.RabbitMq;
+using AMAK.Application.Providers.RabbitMq.Common;
 using AMAK.Application.Services.Photo.Dtos;
 using AutoMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using System.Net;
 
 namespace AMAK.Application.Services.Photo {
@@ -16,48 +19,41 @@ namespace AMAK.Application.Services.Photo {
         private readonly IRepository<Domain.Models.Photo> _photoRepository;
         private readonly IRepository<Domain.Models.Product> _productRepository;
         private readonly ICloudinaryService _CloudinaryService;
+        private readonly IRabbitProducer _rabbitProducer;
         private readonly ICacheService _cacheService;
+        private readonly ILogger _logger;
 
-
-        public PhotoService(IMapper mapper, IRepository<Domain.Models.Photo> photoRepository, IRepository<Domain.Models.Product> productRepository, ICloudinaryService CloudinaryService, ICacheService cacheService) {
+        public PhotoService(IMapper mapper, IRepository<Domain.Models.Photo> photoRepository, IRepository<Domain.Models.Product> productRepository, ICloudinaryService CloudinaryService, ICacheService cacheService, ILogger<PhotoService> logger, IRabbitProducer rabbitProducer) {
             _mapper = mapper;
             _photoRepository = photoRepository;
             _productRepository = productRepository;
             _CloudinaryService = CloudinaryService;
             _cacheService = cacheService;
+            _logger = logger;
+            _rabbitProducer = rabbitProducer;
         }
 
-        public async Task<Response<List<PhotoResponse>>> CreateAsync(Guid productId, List<IFormFile> files) {
+        public async Task<Response<string>> CreateAsync(Guid productId, List<IFormFile> files) {
             var cacheKey = $"GetDetailProduct_{productId}";
 
             var existingProduct = await _productRepository.GetById(productId) ?? throw new NotFoundException("Product not found!");
 
-            var photos = new List<Domain.Models.Photo>();
+            var convertBase64 = new List<string>();
 
             foreach (var file in files) {
-                var upload = await _CloudinaryService.UploadPhotoAsync(file);
+                var fileConvert = Util.ConvertImageToBase64(file);
 
-                if (upload.Error != null) {
-                    throw new BadRequestException(message: upload.Error.Message);
-                }
-
-                var newPhoto = new Domain.Models.Photo() {
-                    Id = Guid.NewGuid(),
-                    Url = upload.SecureUrl.AbsoluteUri,
-                    PublicId = upload.PublicId,
-                    ProductId = existingProduct.Id,
-                };
-
-                photos.Add(newPhoto);
+                convertBase64.Add(fileConvert);
             }
 
-            _photoRepository.AddRange(photos);
-
-            await _photoRepository.SaveChangesAsync();
+            _rabbitProducer.SendMessage(RabbitQueue.Upload, new RabbitUpload() {
+                ProductId = existingProduct.Id,
+                Files = convertBase64
+            });
 
             await _cacheService.RemoveData(cacheKey);
 
-            return new Response<List<PhotoResponse>>(HttpStatusCode.Created, _mapper.Map<List<PhotoResponse>>(photos));
+            return new Response<string>(HttpStatusCode.Created, "Upload photo successfully!");
         }
 
         public async Task<Response<string>> DeleteAsync(Guid productId, Guid id) {

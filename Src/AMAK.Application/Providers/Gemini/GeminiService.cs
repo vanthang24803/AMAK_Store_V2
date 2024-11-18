@@ -30,8 +30,8 @@ namespace AMAK.Application.Providers.Gemini {
         }
 
         private static async Task<string> InitializeGemini(Configuration.IConfigurationProvider configurationProvider) {
-            var cloudinarySettingsResponse = await configurationProvider.GetGeminiConfigAsync();
-            var settings = cloudinarySettingsResponse.Result;
+            var geminiSettingResponse = await configurationProvider.GetGeminiConfigAsync();
+            var settings = geminiSettingResponse.Result;
 
             var gemini = $"https://generativelanguage.googleapis.com/v1beta/models/{settings.Model}:generateContent?key={settings.ApiKey}";
             return gemini;

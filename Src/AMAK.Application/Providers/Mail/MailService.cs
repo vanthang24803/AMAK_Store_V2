@@ -55,7 +55,7 @@ namespace AMAK.Application.Providers.Mail {
 
             string htmlContent = existingTemplate.Template;
 
-            string verifyLink = $"{WebClient}/verify-account?userId={mail.UserId}&token=${mail.Token}";
+            string verifyLink = $"{WebClient}/reset-password?userId={mail.UserId}&token=${mail.Token}";
 
             htmlContent = htmlContent.Replace("{USERNAME}", mail.FullName);
             htmlContent = htmlContent.Replace("{LINK}", verifyLink);
