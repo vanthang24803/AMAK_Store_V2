@@ -11,9 +11,11 @@ using AMAK.Domain.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace AMAK.Application.Providers.Gemini {
     public class GeminiService : IGeminiService {
+        private readonly ILogger _logger;
         private readonly string _gemini;
         private readonly HttpClient _httpClient;
         private readonly IRepository<Prompt> _promptRepository;
@@ -21,11 +23,12 @@ namespace AMAK.Application.Providers.Gemini {
         private readonly IRepository<Conversation> _conversationRepository;
 
 
-        public GeminiService(HttpClient httpClient, IRepository<Prompt> promptRepository, Configuration.IConfigurationProvider configurationProvider, UserManager<ApplicationUser> userManager, IRepository<Conversation> conversationRepository) {
+        public GeminiService(HttpClient httpClient, IRepository<Prompt> promptRepository, Configuration.IConfigurationProvider configurationProvider, UserManager<ApplicationUser> userManager, IRepository<Conversation> conversationRepository, ILogger<GeminiService> logger) {
             _httpClient = httpClient;
             _promptRepository = promptRepository;
             _gemini = InitializeGemini(configurationProvider).GetAwaiter().GetResult();
             _userManager = userManager;
+            _logger = logger;
             _conversationRepository = conversationRepository;
         }
 
@@ -51,8 +54,11 @@ namespace AMAK.Application.Providers.Gemini {
 
             HttpResponseMessage response = await _httpClient.PostAsJsonAsync(_gemini, ConvertGeminiRequest(context));
 
-            if (!response.IsSuccessStatusCode) throw new BadRequestException("AI wrong!");
-
+            if (!response.IsSuccessStatusCode) {
+                var errorContent = await response.Content.ReadAsStringAsync();
+                _logger.LogError("Bug AI is {}", errorContent);
+                throw new BadRequestException("AI wrong!");
+            }
             var message = await response.Content.ReadAsStringAsync() ?? throw new BadHttpRequestException("AI doesn't response");
 
             return ConvertGeminiResponse(message);
@@ -89,9 +95,15 @@ namespace AMAK.Application.Providers.Gemini {
 
             context = context.Replace("DATA", jsonData);
 
+
             HttpResponseMessage response = await _httpClient.PostAsJsonAsync(_gemini, ConvertGeminiRequest(context));
 
-            if (!response.IsSuccessStatusCode) throw new BadRequestException("AI wrong!");
+            if (!response.IsSuccessStatusCode) {
+                var errorContent = await response.Content.ReadAsStringAsync();
+                _logger.LogError("Bug AI is {}", errorContent);
+                throw new BadRequestException(errorContent);
+            }
+
 
             var message = await response.Content.ReadAsStringAsync() ?? throw new BadHttpRequestException("AI doesn't response");
 
@@ -106,7 +118,11 @@ namespace AMAK.Application.Providers.Gemini {
 
             HttpResponseMessage response = await _httpClient.PostAsJsonAsync(_gemini, ConvertGeminiRequest(prompt));
 
-            if (!response.IsSuccessStatusCode) throw new BadRequestException("AI wrong!");
+            if (!response.IsSuccessStatusCode) {
+                var errorContent = await response.Content.ReadAsStringAsync();
+                _logger.LogError("Bug AI is {}", errorContent);
+                throw new BadRequestException("AI wrong!");
+            }
 
             var message = await response.Content.ReadAsStringAsync() ?? throw new BadHttpRequestException("AI doesn't response");
 
@@ -181,7 +197,7 @@ namespace AMAK.Application.Providers.Gemini {
                 ],
                 GenerationConfig = new GeminiRequest.GenerationConfig {
                     Temperature = 1,
-                    TopK = 64,
+                    TopK = 40, //! Old: 65
                     TopP = 0.95,
                     MaxOutputTokens = 8192,
                     ResponseMimeType = "text/plain"
