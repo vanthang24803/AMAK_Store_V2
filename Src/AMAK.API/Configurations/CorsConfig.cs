@@ -9,7 +9,8 @@ namespace AMAK.API.Configurations {
                     builder.WithOrigins(
                         "https://amak-client.vercel.app",
                         "http://localhost:3000",
-                        "https://amak-client-poryzoztz-vanthang24803s-projects.vercel.app"
+                        "https://amak-client-poryzoztz-vanthang24803s-projects.vercel.app",
+                        "https://zc2l5h18-3000.asse.devtunnels.ms"
                     )
                     .AllowAnyHeader()
                     .AllowAnyMethod()

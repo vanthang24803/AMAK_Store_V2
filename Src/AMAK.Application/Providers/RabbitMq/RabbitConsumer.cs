@@ -13,6 +13,8 @@ using AMAK.Application.Providers.Cloudinary;
 using AMAK.Application.Interfaces;
 using Microsoft.Extensions.Logging;
 using AMAK.Application.Common.Helpers;
+using AMAK.Application.Services.Notification;
+using AMAK.Application.Services.Notification.Dtos;
 
 namespace AMAK.Application.Providers.RabbitMq {
     public class RabbitConsumer : IHostedService {
@@ -64,6 +66,23 @@ namespace AMAK.Application.Providers.RabbitMq {
         }
 
         private async Task ProcessNotificationQueue(string message) {
+            try {
+                using var scope = _serviceProvider.CreateScope();
+
+                var notificationService = scope.ServiceProvider.GetRequiredService<INotificationService>();
+
+                _logger.LogWarning(message);
+
+                var json = JsonConvert.DeserializeObject<CreateNotificationForAccountRequest>(message)
+                    ?? throw new BadRequestException("Message missing!");
+
+                await notificationService.CreateNotification(json);
+
+            } catch (Exception ex) {
+                _logger.LogError("Error in  {}", ex.Message);
+                throw new BadRequestException(ex.Message);
+            }
+
             _logger.LogInformation("Received Notification Message: {Message}", message);
         }
 

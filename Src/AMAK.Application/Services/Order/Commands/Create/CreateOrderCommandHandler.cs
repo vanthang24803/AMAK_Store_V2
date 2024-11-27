@@ -6,7 +6,6 @@ using AMAK.Application.Providers.Mail;
 using AMAK.Application.Providers.Mail.Dtos;
 using AMAK.Application.Providers.RabbitMq;
 using AMAK.Application.Providers.RabbitMq.Common;
-using AMAK.Application.Services.Notification;
 using AMAK.Application.Services.Notification.Dtos;
 using AMAK.Domain.Enums;
 using AMAK.Domain.Models;
@@ -25,12 +24,10 @@ namespace AMAK.Application.Services.Order.Commands.Create {
         private readonly IRepository<Option> _optionRepository;
         private readonly IRepository<OrderDetail> _orderDetailRepository;
         private readonly IRepository<Domain.Models.Product> _productRepository;
-        private readonly INotificationService _notificationService;
-
         private readonly IRabbitProducer _rabbitProducer;
 
 
-        public CreateOrderCommandHandler(IMailService mailService, UserManager<ApplicationUser> userManager, IRepository<Domain.Models.Order> orderRepository, IRepository<Voucher> voucherRepository, IRepository<Option> optionRepository, IRepository<OrderDetail> orderDetailRepository, IRepository<Domain.Models.Product> productRepository, INotificationService notificationService, IRabbitProducer rabbitProducer) {
+        public CreateOrderCommandHandler(IMailService mailService, UserManager<ApplicationUser> userManager, IRepository<Domain.Models.Order> orderRepository, IRepository<Voucher> voucherRepository, IRepository<Option> optionRepository, IRepository<OrderDetail> orderDetailRepository, IRepository<Domain.Models.Product> productRepository, IRabbitProducer rabbitProducer) {
             _mailService = mailService;
             _userManager = userManager;
             _orderRepository = orderRepository;
@@ -38,7 +35,6 @@ namespace AMAK.Application.Services.Order.Commands.Create {
             _optionRepository = optionRepository;
             _orderDetailRepository = orderDetailRepository;
             _productRepository = productRepository;
-            _notificationService = notificationService;
             _rabbitProducer = rabbitProducer;
         }
 
@@ -132,7 +128,6 @@ namespace AMAK.Application.Services.Order.Commands.Create {
                     UserId = existingAccount.Id
                 };
 
-                await _notificationService.CreateNotification(confirmNotification);
 
                 var newOrderMailTemplate = new OrderMailEvent() {
                     To = data.Email,
@@ -142,7 +137,8 @@ namespace AMAK.Application.Services.Order.Commands.Create {
                 };
 
                 // TODO: Call RabbitMQ
-                _rabbitProducer.SendMessage<OrderMailEvent>(RabbitQueue.OrderQueue, newOrderMailTemplate);
+                _rabbitProducer.SendMessage(RabbitQueue.Notification, confirmNotification);
+                _rabbitProducer.SendMessage(RabbitQueue.OrderQueue, newOrderMailTemplate);
 
                 await _mailService.SendOrderMail(newOrderMailTemplate);
 
