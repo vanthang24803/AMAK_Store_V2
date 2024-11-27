@@ -7,17 +7,22 @@ using AMAK.Application.Providers.Configuration;
 using CloudinaryDotNet;
 using CloudinaryDotNet.Actions;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Formats.Webp;
 
 namespace AMAK.Application.Providers.Cloudinary {
     public class CloudinaryService : ICloudinaryService {
 
+        private readonly ILogger _logger;
         private readonly CloudinaryDotNet.Cloudinary _cloudinary;
-
         private readonly ICacheService _cacheService;
-        public CloudinaryService(IConfigurationProvider configurationProvider, ICacheService cacheService) {
-            _cloudinary = InitializeCloudinary(configurationProvider).GetAwaiter().GetResult();
+        public CloudinaryService(IConfigurationProvider configurationProvider, ICacheService cacheService, ILogger<CloudinaryService> logger) {
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _cacheService = cacheService;
+            _cloudinary = InitializeCloudinary(configurationProvider).GetAwaiter().GetResult();
         }
+
 
         private static async Task<CloudinaryDotNet.Cloudinary> InitializeCloudinary(IConfigurationProvider configurationProvider) {
             var cloudinarySettingsResponse = await configurationProvider.GetCloudinarySettingAsync();
@@ -72,9 +77,11 @@ namespace AMAK.Application.Providers.Cloudinary {
                     throw new BadRequestException($"Invalid file: {file.Name}");
                 }
 
-                await using var stream = file.OpenReadStream();
+                var webpFile = this.ConvertExtensionWebpFile(file);
+
+                await using var stream = webpFile.OpenReadStream();
                 var uploadParams = new ImageUploadParams {
-                    File = new FileDescription(file.Name, stream)
+                    File = new FileDescription(webpFile.Name, stream)
                 };
 
                 var uploadResult = await _cloudinary.UploadAsync(uploadParams);
@@ -138,6 +145,29 @@ namespace AMAK.Application.Providers.Cloudinary {
             await _cacheService.SetData(cacheKey, response, DateTimeOffset.UtcNow.AddMinutes(10));
 
             return response;
+        }
+
+
+        private IFormFile ConvertExtensionWebpFile(IFormFile file) {
+            try {
+                using var memoryStream = new MemoryStream();
+                file.CopyTo(memoryStream);
+
+                memoryStream.Seek(0, SeekOrigin.Begin);
+
+                using var image = Image.Load(memoryStream);
+                using var outputStream = new MemoryStream();
+                image.Save(outputStream, new WebpEncoder());
+
+                var webpFile = new FormFile(new MemoryStream(outputStream.ToArray()), 0, outputStream.Length, file.Name, $"{Path.GetFileNameWithoutExtension(file.FileName)}.webp") {
+                    ContentType = "image/webp"
+                };
+
+                return webpFile;
+            } catch (Exception e) {
+                _logger.LogError("Convert file err {}", e.Message);
+                throw new BadRequestException(e.Message);
+            }
         }
 
 

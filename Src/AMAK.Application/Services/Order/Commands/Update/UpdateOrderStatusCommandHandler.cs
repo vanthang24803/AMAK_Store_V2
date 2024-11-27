@@ -14,19 +14,16 @@ using System.Net;
 
 namespace AMAK.Application.Services.Order.Commands.Update {
     public class UpdateOrderStatusCommandHandler : IRequestHandler<UpdateOrderStatusCommand, Response<string>> {
-
         private readonly IRepository<Domain.Models.Order> _orderRepository;
-        private readonly IMailService _mailService;
         private readonly INotificationService _notificationService;
         private readonly IRepository<Domain.Models.OrderDetail> _orderDetailRepository;
         private readonly IRepository<Domain.Models.OrderStatus> _orderStatusRepository;
         private readonly IRabbitProducer _rabbitProducer;
 
 
-        public UpdateOrderStatusCommandHandler(IRepository<Domain.Models.Order> orderRepository, INotificationService notificationService, IMailService mailService, IRepository<Domain.Models.OrderDetail> orderDetailRepository, IRepository<Domain.Models.OrderStatus> orderStatusRepository, IRabbitProducer rabbitProducer) {
+        public UpdateOrderStatusCommandHandler(IRepository<Domain.Models.Order> orderRepository, INotificationService notificationService, IRepository<Domain.Models.OrderDetail> orderDetailRepository, IRepository<Domain.Models.OrderStatus> orderStatusRepository, IRabbitProducer rabbitProducer) {
             _orderRepository = orderRepository;
             _notificationService = notificationService;
-            _mailService = mailService;
             _orderDetailRepository = orderDetailRepository;
             _orderStatusRepository = orderStatusRepository;
             _rabbitProducer = rabbitProducer;
@@ -54,28 +51,28 @@ namespace AMAK.Application.Services.Order.Commands.Update {
 
                         existingOrder = await HandlerStatus(existingOrder, request.Data.Status);
 
-                        await CreateAndSendNotification(existingOrder, "Đơn hàng đã được xác nhận!");
+                        CreateAndSendNotification(existingOrder, "Đơn hàng đã được xác nhận!");
                         _rabbitProducer.SendMessage(RabbitQueue.OrderQueue, CreateMailTemplate(existingOrder.Email, "Đơn hàng đã được khởi tạo!", existingOrder, orderDetails));
                         break;
 
                     case EOrderStatus.CANCEL:
                         ValidateCurrentStatus(latestStatus.Status, EOrderStatus.PENDING, "CANCEL");
                         existingOrder = await HandlerStatus(existingOrder, request.Data.Status);
-                        await CreateAndSendNotification(existingOrder, "Đơn hàng đã hủy thành công!");
+                        CreateAndSendNotification(existingOrder, "Đơn hàng đã hủy thành công!");
                         _rabbitProducer.SendMessage(RabbitQueue.OrderQueue, CreateMailTemplate(existingOrder.Email, "Bạn đã hủy đơn hàng thành công!", existingOrder, orderDetails));
                         break;
 
                     case EOrderStatus.SHIPPING:
                         ValidateCurrentStatus(latestStatus.Status, EOrderStatus.CREATE, "SHIPPING");
                         existingOrder = await HandlerStatus(existingOrder, request.Data.Status);
-                        await CreateAndSendNotification(existingOrder, "Đơn hàng đang được vận chuyển!");
+                        CreateAndSendNotification(existingOrder, "Đơn hàng đang được vận chuyển!");
                         _rabbitProducer.SendMessage(RabbitQueue.OrderQueue, CreateMailTemplate(existingOrder.Email, "Đơn hàng của bạn đang được vận chuyển!", existingOrder, orderDetails));
                         break;
 
                     case EOrderStatus.SUCCESS:
                         ValidateCurrentStatus(latestStatus.Status, EOrderStatus.SHIPPING, "SUCCESS");
                         existingOrder = await HandlerStatus(existingOrder, request.Data.Status);
-                        await CreateAndSendNotification(existingOrder, "Đơn hàng đã giao tới bạn thành công!");
+                        CreateAndSendNotification(existingOrder, "Đơn hàng đã giao tới bạn thành công!");
                         _rabbitProducer.SendMessage(RabbitQueue.OrderQueue, CreateMailTemplate(existingOrder.Email, "Đơn hàng đã giao tới bạn thành công!", existingOrder, orderDetails));
                         break;
 
@@ -124,7 +121,7 @@ namespace AMAK.Application.Services.Order.Commands.Update {
             return existingOrder;
         }
 
-        private async Task CreateAndSendNotification(Domain.Models.Order order, string message) {
+        private void CreateAndSendNotification(Domain.Models.Order order, string message) {
             var notification = new CreateNotificationForAccountRequest() {
                 Content = $"<p>{message} <b style=\"color: #16a34a;\">{order.Id}</b></p>",
                 Url = $"/orders/{order.Id}",
@@ -132,7 +129,7 @@ namespace AMAK.Application.Services.Order.Commands.Update {
                 UserId = order.UserId!
             };
 
-            await _notificationService.CreateNotification(notification);
+            _rabbitProducer.SendMessage(RabbitQueue.Notification, notification);
         }
 
         private static OrderMailEvent CreateMailTemplate(string email, string subject, Domain.Models.Order order, List<Domain.Models.OrderDetail> orderDetails) {
