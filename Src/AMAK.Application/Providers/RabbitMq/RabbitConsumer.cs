@@ -13,7 +13,6 @@ using AMAK.Application.Providers.Cloudinary;
 using AMAK.Application.Interfaces;
 using Microsoft.Extensions.Logging;
 using AMAK.Application.Common.Helpers;
-using Microsoft.AspNetCore.Http;
 
 namespace AMAK.Application.Providers.RabbitMq {
     public class RabbitConsumer : IHostedService {
@@ -23,12 +22,10 @@ namespace AMAK.Application.Providers.RabbitMq {
         private IModel? _channel;
         private readonly string RabbitHost;
 
-
         public RabbitConsumer(IServiceProvider serviceProvider, Microsoft.Extensions.Configuration.IConfiguration configuration, ILogger<RabbitConsumer> logger) {
             RabbitHost = configuration["RabbitConfig:HostName"]!;
             _serviceProvider = serviceProvider;
             _logger = logger;
-
         }
 
         public Task StartAsync(CancellationToken cancellationToken) {
@@ -36,104 +33,101 @@ namespace AMAK.Application.Providers.RabbitMq {
             _connection = factory.CreateConnection();
             _channel = _connection.CreateModel();
 
-            DeclareAndConsumeQueue(RabbitQueue.OrderQueue);
-            DeclareAndConsumeQueue(RabbitQueue.MailQueue);
-            UploadQueueHandle(RabbitQueue.Upload);
+            ConsumeQueue(RabbitQueue.OrderQueue, ProcessOrderQueue);
+            ConsumeQueue(RabbitQueue.MailQueue, ProcessMailQueue);
+            ConsumeQueue(RabbitQueue.Upload, ProcessUploadQueue);
+            ConsumeQueue(RabbitQueue.Notification, ProcessNotificationQueue);
 
             return Task.CompletedTask;
         }
 
-        private void UploadQueueHandle(string queue) {
+        private void ConsumeQueue(string queue, Func<string, Task> processMessage) {
             _channel?.QueueDeclare(queue, durable: true, exclusive: false, autoDelete: false, arguments: null);
 
             var consumer = new EventingBasicConsumer(_channel);
             consumer.Received += async (model, ea) => {
                 var body = ea.Body.ToArray();
                 var message = Encoding.UTF8.GetString(body);
-
                 try {
-                    using var scope = _serviceProvider.CreateScope();
-
-                    var cloudinaryService = scope.ServiceProvider.GetRequiredService<ICloudinaryService>();
-
-                    var photoRepository = scope.ServiceProvider.GetRequiredService<IRepository<Domain.Models.Photo>>();
-
-                    var json = JsonConvert.DeserializeObject<RabbitUpload>(message) ?? throw new BadRequestException("Message missing!");
-
-                    var fileConverts = new List<IFormFile>();
-
-                    var photos = new List<Domain.Models.Photo>();
-
-
-                    foreach (var file in json.Files) {
-                        var photo = Util.ConvertBase64ToImage(file);
-
-                        var upload = await cloudinaryService.UploadPhotoAsync(photo);
-
-                        if (upload.Error != null) {
-                            throw new BadRequestException(message: upload.Error.Message);
-                        }
-
-                        var newPhoto = new Domain.Models.Photo() {
-                            Id = Guid.NewGuid(),
-                            Url = upload.SecureUrl.AbsoluteUri,
-                            PublicId = upload.PublicId,
-                            ProductId = json.ProductId,
-                        };
-
-                        photos.Add(newPhoto);
-                    }
-
-                    photoRepository.AddRange(photos);
-
-                    await photoRepository.SaveChangesAsync();
-
-                } catch (JsonException ex) {
-                    throw new BadRequestException($"Error deserializing message: {ex.Message}");
+                    await processMessage(message);
+                } catch (Exception ex) {
+                    LogAndThrowException(queue, ex);
                 }
             };
 
-            _channel.BasicConsume(queue: queue, autoAck: true, consumer: consumer);
+            _channel?.BasicConsume(queue: queue, autoAck: true, consumer: consumer);
         }
 
+        private void LogAndThrowException(string queue, Exception ex) {
+            _logger.LogError("Error processing queue {Queue}: {ErrorMessage}", queue, ex.Message);
+            throw new BadRequestException($"Error processing queue {queue}: {ex.Message}", ex);
+        }
 
-        private void DeclareAndConsumeQueue(string queue) {
-            _channel?.QueueDeclare(queue, durable: true, exclusive: false, autoDelete: false, arguments: null);
+        private async Task ProcessNotificationQueue(string message) {
+            _logger.LogInformation("Received Notification Message: {Message}", message);
+        }
 
-            var consumer = new EventingBasicConsumer(_channel);
-            consumer.Received += async (model, ea) => {
-                var body = ea.Body.ToArray();
-                var message = Encoding.UTF8.GetString(body);
+        private async Task ProcessUploadQueue(string message) {
+            try {
+                using var scope = _serviceProvider.CreateScope();
+                var cloudinaryService = scope.ServiceProvider.GetRequiredService<ICloudinaryService>();
+                var photoRepository = scope.ServiceProvider.GetRequiredService<IRepository<Domain.Models.Photo>>();
 
-                try {
-                    using var scope = _serviceProvider.CreateScope();
-                    var mailService = scope.ServiceProvider.GetRequiredService<IMailService>();
+                var json = JsonConvert.DeserializeObject<RabbitUpload>(message) ?? throw new BadRequestException("Message missing!");
+                var photos = new List<Domain.Models.Photo>();
 
-                    switch (queue) {
-                        case RabbitQueue.OrderQueue:
-                            var order = JsonConvert.DeserializeObject<OrderMailEvent>(message);
-                            if (order != null) {
-                                await mailService.SendOrderMail(order);
-                            }
-                            break;
+                foreach (var file in json.Files) {
+                    var photo = Util.ConvertBase64ToImage(file);
 
-                        case RabbitQueue.MailQueue:
-                            var mailMessage = JsonConvert.DeserializeObject<MailWithTokenEvent>(message);
-                            if (mailMessage != null) {
-                                await ProcessMailMessage(mailService, mailMessage);
-                            }
-                            break;
+                    var upload = await cloudinaryService.UploadPhotoAsync(photo);
 
-                        default:
-                            break;
+                    if (upload.Error != null) {
+                        throw new BadRequestException(upload.Error.Message);
                     }
 
-                } catch (JsonException ex) {
-                    throw new BadRequestException($"Error deserializing message: {ex.Message}");
-                }
-            };
+                    var newPhoto = new Domain.Models.Photo() {
+                        Id = Guid.NewGuid(),
+                        Url = upload.SecureUrl.AbsoluteUri,
+                        PublicId = upload.PublicId,
+                        ProductId = json.ProductId,
+                    };
 
-            _channel.BasicConsume(queue: queue, autoAck: true, consumer: consumer);
+                    photos.Add(newPhoto);
+                }
+
+                photoRepository.AddRange(photos);
+                await photoRepository.SaveChangesAsync();
+            } catch (Exception ex) {
+                LogAndThrowException("Upload Queue", ex);
+            }
+        }
+
+        private async Task ProcessOrderQueue(string message) {
+            try {
+                using var scope = _serviceProvider.CreateScope();
+                var mailService = scope.ServiceProvider.GetRequiredService<IMailService>();
+                var order = JsonConvert.DeserializeObject<OrderMailEvent>(message);
+
+                if (order != null) {
+                    await mailService.SendOrderMail(order);
+                }
+            } catch (Exception ex) {
+                LogAndThrowException("Order Queue", ex);
+            }
+        }
+
+        private async Task ProcessMailQueue(string message) {
+            try {
+                using var scope = _serviceProvider.CreateScope();
+                var mailService = scope.ServiceProvider.GetRequiredService<IMailService>();
+                var mailMessage = JsonConvert.DeserializeObject<MailWithTokenEvent>(message);
+
+                if (mailMessage != null) {
+                    await ProcessMailMessage(mailService, mailMessage);
+                }
+            } catch (Exception ex) {
+                LogAndThrowException("Mail Queue", ex);
+            }
         }
 
         private static async Task ProcessMailMessage(IMailService mailService, MailWithTokenEvent mailMessage) {
@@ -150,5 +144,4 @@ namespace AMAK.Application.Providers.RabbitMq {
             return Task.CompletedTask;
         }
     }
-
 }
