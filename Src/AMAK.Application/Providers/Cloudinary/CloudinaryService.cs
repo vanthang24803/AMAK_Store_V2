@@ -175,21 +175,6 @@ namespace AMAK.Application.Providers.Cloudinary {
             if (file.Length <= 0) {
                 throw new BadRequestException("File is required!");
             }
-
-            List<string> validExtensions = [".png", ".jpg", ".webp", ".svg"];
-
-            var extension = Path.GetExtension(file.FileName);
-
-            if (!validExtensions.Contains(extension)) {
-                throw new BadRequestException("File type is not valid! || .png , .jpg , .webp , .svg");
-            }
-
-            var size = file.Length;
-
-            if (size > 5 * 1024 * 1024) {
-                throw new BadRequestException("Max file size can be 5mb!");
-            }
-
             return true;
         }
 
