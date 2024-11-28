@@ -2,6 +2,7 @@ using AMAK.Application.Common.Constants;
 using AMAK.Application.Common.Query;
 using AMAK.Application.Providers.Cloudinary;
 using AMAK.Application.Providers.Cloudinary.Dtos;
+using AMAK.Application.Validations;
 using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -29,6 +30,7 @@ namespace AMAK.API.Controllers.v1 {
         }
 
         [HttpPost]
+        [FileValidate]
         public async Task<IActionResult> SaveManyImages(List<IFormFile> files) {
             return Ok(await _cloudinaryService.UploadCloudImages(files));
         }

@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using AMAK.Application.Services.Product.Commands.Import;
 using AMAK.Application.Services.Product.Commands.Thumbnail;
+using AMAK.Application.Validations;
 
 
 namespace AMAK.API.Controllers.v1 {
@@ -44,6 +45,7 @@ namespace AMAK.API.Controllers.v1 {
         [HttpPost]
         [Route("ImportExcel")]
         [AllowAnonymous]
+        [FileValidate]
 
         public async Task<IActionResult> ImportExcel(IFormFile file) {
             return StatusCode(StatusCodes.Status201Created, await _mediator.Send(new ImportExcelToProductCommand(file)));
@@ -93,6 +95,7 @@ namespace AMAK.API.Controllers.v1 {
         }
 
         [HttpPost]
+        [FileValidate]
         public async Task<IActionResult> Create([FromForm] CreateProductRequest request, IFormFile thumbnail) {
             return StatusCode(StatusCodes.Status201Created, await _mediator.Send(new CreateProductCommand(request, thumbnail)));
         }
@@ -118,6 +121,7 @@ namespace AMAK.API.Controllers.v1 {
 
         [HttpPost]
         [Route("{id:guid}/Thumbnail")]
+        [FileValidate]
         public async Task<IActionResult> UpdateThumbnail([FromRoute] Guid id, IFormFile thumbnail) {
             return Ok(await _mediator.Send(new UpdateThumbnailProductCommand(id, thumbnail)));
         }
