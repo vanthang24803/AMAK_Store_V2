@@ -68,7 +68,8 @@ namespace AMAK.Application.Services.Authentication {
                 UserId = newUser.Id,
                 Email = newUser.Email ?? newUser.UserName,
                 FullName = $"{newUser.FirstName} {newUser.LastName}",
-                Token = token
+                Token = token,
+                Type = Constants.EEmailType.CONFIRM_ACCOUNT
             };
 
             _rabbitProducer.SendMessage(RabbitQueue.MailQueue, newMailTemplate);
@@ -242,6 +243,7 @@ namespace AMAK.Application.Services.Authentication {
                 FullName = $"{existingUser.FirstName} {existingUser.LastName}",
                 UserId = existingUser.Id,
                 Token = token,
+                Type = Constants.EEmailType.FORGOT_PASSWORD
             };
 
             _rabbitProducer.SendMessage(RabbitQueue.MailQueue, newMailTemplate);

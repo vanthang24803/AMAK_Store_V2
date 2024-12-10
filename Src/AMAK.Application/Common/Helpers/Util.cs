@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Http;
+using OtpNet;
 
 namespace AMAK.Application.Common.Helpers {
     public static class Util {
@@ -19,5 +20,13 @@ namespace AMAK.Application.Common.Helpers {
             return new FormFile(stream, 0, fileBytes.Length, "file", fileName);
         }
 
+        public static string GenerateOTP(int digits = 6, int step = 30) {
+            byte[] secretKeyBytes = KeyGeneration.GenerateRandomKey(20);
+            var totp = new Totp(secretKeyBytes, step: step, totpSize: digits);
+
+            string otp = totp.ComputeTotp();
+
+            return otp;
+        }
     }
 }

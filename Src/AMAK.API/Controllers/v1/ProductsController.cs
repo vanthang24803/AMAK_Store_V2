@@ -43,9 +43,9 @@ namespace AMAK.API.Controllers.v1 {
         }
 
         [HttpPost]
+        [FileValidate]
         [Route("ImportExcel")]
         [AllowAnonymous]
-        [FileValidate]
 
         public async Task<IActionResult> ImportExcel(IFormFile file) {
             return StatusCode(StatusCodes.Status201Created, await _mediator.Send(new ImportExcelToProductCommand(file)));
@@ -120,8 +120,8 @@ namespace AMAK.API.Controllers.v1 {
         }
 
         [HttpPost]
-        [Route("{id:guid}/Thumbnail")]
         [FileValidate]
+        [Route("{id:guid}/Thumbnail")]
         public async Task<IActionResult> UpdateThumbnail([FromRoute] Guid id, IFormFile thumbnail) {
             return Ok(await _mediator.Send(new UpdateThumbnailProductCommand(id, thumbnail)));
         }

@@ -154,6 +154,8 @@ namespace AMAK.Application.Providers.RabbitMq {
                 await mailService.SendEmailConfirmationAccount(mailMessage);
             } else if (mailMessage.Type == EEmailType.FORGOT_PASSWORD) {
                 await mailService.SendMailResetPassword(mailMessage);
+            } else if (mailMessage.Type == EEmailType.OTP_EMAIL) {
+                await mailService.SendOTPMail(mailMessage);
             }
         }
 

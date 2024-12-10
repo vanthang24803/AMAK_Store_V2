@@ -3,40 +3,36 @@ using AMAK.Domain.Models;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
-namespace AMAK.Infrastructure.Context
-{
+namespace AMAK.Infrastructure.Context {
     public class ApplicationDbContext(DbContextOptions options)
-        : IdentityDbContext<ApplicationUser>(options)
-    {
-        public DbSet<Address> Addresses { get; init; }
-        public DbSet<AccountConfig> AccountConfigs { get; init; }
-        public DbSet<Billboard> Billboards { get; init; }
-        public DbSet<Blog> Blogs { get; init; }
-        public DbSet<Product> Products { get; init; }
-        public DbSet<Conversation> Conversations { get; init; }
-        public DbSet<Category> Categories { get; init; }
-        public DbSet<Chat> Chats { get; init; }
-        public DbSet<Cart> Carts { get; init; }
-        public DbSet<Configuration> Configurations { get; init; }
-        public DbSet<CartDetail> CartDetails { get; init; }
-        public DbSet<Option> Options { get; init; }
-        public DbSet<Order> Orders { get; init; }
-        public DbSet<OrderStatus> OrderStatus { get; init; }
-        public DbSet<MessageUser> MessageUsers { get; init; }
-        public DbSet<Notification> Notifications { get; init; }
-        public DbSet<Photo> Photos { get; init; }
-        public DbSet<Prompt> Prompts { get; init; }
-        public DbSet<EmailTemplate> Templates { get; init; }
-        public DbSet<ReviewPhoto> ReviewPhotos { get; init; }
-        public DbSet<Voucher> Vouchers { get; init; }
+        : IdentityDbContext<ApplicationUser>(options) {
+        public required DbSet<Address> Addresses { get; init; }
+        public required DbSet<AccountConfig> AccountConfigs { get; init; }
+        public required DbSet<Billboard> Billboards { get; init; }
+        public required DbSet<Blog> Blogs { get; init; }
+        public required DbSet<Product> Products { get; init; }
+        public required DbSet<Conversation> Conversations { get; init; }
+        public required DbSet<Category> Categories { get; init; }
+        public required DbSet<Chat> Chats { get; init; }
+        public required DbSet<Cart> Carts { get; init; }
+        public required DbSet<Configuration> Configurations { get; init; }
+        public required DbSet<CartDetail> CartDetails { get; init; }
+        public required DbSet<Option> Options { get; init; }
+        public required DbSet<Order> Orders { get; init; }
+        public required DbSet<OrderStatus> OrderStatus { get; init; }
+        public required DbSet<MessageUser> MessageUsers { get; init; }
+        public required DbSet<Notification> Notifications { get; init; }
+        public required DbSet<Photo> Photos { get; init; }
+        public required DbSet<Prompt> Prompts { get; init; }
+        public required DbSet<EmailTemplate> Templates { get; init; }
+        public required DbSet<ReviewPhoto> ReviewPhotos { get; init; }
+        public required DbSet<Voucher> Vouchers { get; init; }
 
 
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
-        {
+        protected override void OnModelCreating(ModelBuilder modelBuilder) {
             base.OnModelCreating(modelBuilder);
 
-            modelBuilder.Entity<ApplicationUser>(entity =>
-            {
+            modelBuilder.Entity<ApplicationUser>(entity => {
                 entity.Property(x => x.FirstName).HasMaxLength(128);
                 entity.Property(x => x.LastName).HasMaxLength(128);
                 entity.Property(x => x.PhoneNumber).HasMaxLength(12);
@@ -44,32 +40,27 @@ namespace AMAK.Infrastructure.Context
                 entity.HasIndex(x => x.Email).IsUnique();
             });
 
-            modelBuilder.Entity<Configuration>(e =>
-            {
+            modelBuilder.Entity<Configuration>(e => {
                 e.Property(x => x.Key).HasMaxLength(128);
                 e.Property(x => x.Value).HasColumnType("jsonb");
             });
 
-            modelBuilder.Entity<Conversation>(e =>
-            {
+            modelBuilder.Entity<Conversation>(e => {
                 e.Property(x => x.IsBotReply).HasDefaultValue(false);
             });
 
-            modelBuilder.Entity<Option>(entity =>
-            {
+            modelBuilder.Entity<Option>(entity => {
                 entity.ToTable("Options");
                 entity.Property(x => x.Name).HasMaxLength(256);
                 entity.Property(x => x.IsActive).HasDefaultValue(true);
             });
 
-            modelBuilder.Entity<Product>(e =>
-            {
+            modelBuilder.Entity<Product>(e => {
                 e.HasIndex(x => x.Name).IsUnique();
                 e.Property(x => x.Name).HasMaxLength(256);
             });
 
-            modelBuilder.Entity<Order>(e =>
-            {
+            modelBuilder.Entity<Order>(e => {
                 e.ToTable("Orders");
                 e.Property(x => x.Email).HasMaxLength(128);
                 e.Property(x => x.Customer).HasMaxLength(128);
@@ -78,8 +69,7 @@ namespace AMAK.Infrastructure.Context
                 e.Property(x => x.Shipping).HasDefaultValue(true);
             });
 
-            modelBuilder.Entity<AccountConfig>(e =>
-            {
+            modelBuilder.Entity<AccountConfig>(e => {
                 e.Property(x => x.IsBan).HasDefaultValue(false);
                 e.Property(x => x.IsActiveNotification).HasDefaultValue(false);
                 e.Property(x => x.Language).HasDefaultValue(ELanguage.VI);
@@ -96,8 +86,7 @@ namespace AMAK.Infrastructure.Context
 
 
             modelBuilder.Entity<Blog>(
-                e =>
-                {
+                e => {
                     e.ToTable("Blogs");
                     e.Property(x => x.Title).HasMaxLength(255);
                 }
@@ -221,58 +210,48 @@ namespace AMAK.Infrastructure.Context
             // TODO: Seed Data
 
             modelBuilder.Entity<Configuration>().HasData(
-                new Configuration()
-                {
+                new Configuration() {
                     Id = Guid.NewGuid(),
                     Key = Application.Constants.Configuration.Google
                 },
-                new Configuration()
-                {
+                new Configuration() {
                     Id = Guid.NewGuid(),
                     Key = Application.Constants.Configuration.Cloudinary
                 },
-                new Configuration()
-                {
+                new Configuration() {
                     Id = Guid.NewGuid(),
                     Key = Application.Constants.Configuration.Email
                 },
-                new Configuration()
-                {
+                new Configuration() {
                     Id = Guid.NewGuid(),
                     Key = Application.Constants.Configuration.Momo
                 },
-                new Configuration()
-                {
+                new Configuration() {
                     Id = Guid.NewGuid(),
                     Key = Application.Constants.Llm.Gemini
                 },
-                new Configuration()
-                {
+                new Configuration() {
                     Id = Guid.NewGuid(),
                     Key = Application.Constants.Llm.Chatgpt4
                 },
-                new Configuration()
-                {
+                new Configuration() {
                     Id = Guid.NewGuid(),
                     Key = Application.Constants.Llm.Chatgpt4O
                 }
             );
 
             modelBuilder.Entity<Prompt>().HasData(
-                new Prompt()
-                {
+                new Prompt() {
                     Id = Guid.NewGuid(),
                     Type = EPrompt.ANALYTIC_REVENUE,
                     Context = Application.Constants.Prompt.AnalyticRevenue
                 },
-                new Prompt()
-                {
+                new Prompt() {
                     Id = Guid.NewGuid(),
                     Type = EPrompt.ANALYTIC_REVIEW,
                     Context = Application.Constants.Prompt.AnalyticReview,
                 },
-                new Prompt()
-                {
+                new Prompt() {
                     Id = Guid.NewGuid(),
                     Type = EPrompt.ANALYTIC_STATISTIC,
                     Context = Application.Constants.Prompt.AnalyticStatistic
