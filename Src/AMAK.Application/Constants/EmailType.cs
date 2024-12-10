@@ -1,6 +1,7 @@
 namespace AMAK.Application.Constants {
     public enum EEmailType {
         CONFIRM_ACCOUNT,
-        FORGOT_PASSWORD
+        FORGOT_PASSWORD,
+        OTP_EMAIL
     }
 }

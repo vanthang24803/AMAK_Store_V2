@@ -47,6 +47,33 @@ namespace AMAK.Application.Providers.Mail {
             }
         }
 
+
+        public async Task SendOTPMail(MailWithTokenEvent mail) {
+            var existingTemplate = await _emailTemplatesRepository.GetAll()
+              .FirstOrDefaultAsync(x => x.Name == Domain.Enums.ETemplate.OTP_MAIL)
+              ?? throw new NotFoundException("OTP Email Template Not Found!");
+
+            string htmlContent = existingTemplate.Template;
+
+
+            htmlContent = htmlContent.Replace("{USERNAME}", mail.FullName);
+            htmlContent = htmlContent.Replace("{OTP}", mail.Token);
+
+            try {
+                MailRequest mailRequest = new() {
+                    ToEmail = mail.Email,
+                    Subject = "Xác nhận email",
+                    Message = htmlContent,
+
+                };
+
+                await SendMailAsync(mailRequest);
+
+            } catch (Exception ex) {
+                throw new BadRequestException(ex.Message);
+            }
+        }
+
         public async Task SendMailResetPassword(MailWithTokenEvent mail) {
 
             var existingTemplate = await _emailTemplatesRepository.GetAll()
@@ -147,5 +174,6 @@ namespace AMAK.Application.Providers.Mail {
 
             return htmlContent;
         }
+
     }
 }
