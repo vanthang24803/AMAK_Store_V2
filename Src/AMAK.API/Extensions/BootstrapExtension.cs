@@ -1,6 +1,7 @@
 using AMAK.API.Configurations;
 using AMAK.Application.Configs;
 using AMAK.Application.Providers.RabbitMq;
+
 using Serilog;
 
 namespace AMAK.API.Extensions {
@@ -69,21 +70,15 @@ namespace AMAK.API.Extensions {
 
 
         public static WebApplication StartUp(this WebApplication app) {
-            app.AddMiddleware();
+            app.UseHealthCheck();
             app.MapControllers();
-            app.UseSwagger();
-            app.UseSwaggerUI();
+            app.AddMiddleware();
+            app.UseAPIDocs();
             app.UseWs();
             app.UseCustomCors();
             app.UseSerilogRequestLogging();
-            app.UseHttpsRedirection();
             app.UseAuthentication();
             app.UseAuthorization();
-
-            app.MapGet("/", (HttpContext httpContext) => {
-                httpContext.Response.Redirect("/swagger", permanent: false);
-                return Results.Empty;
-            });
 
             app.Run();
 

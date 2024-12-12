@@ -12,14 +12,15 @@
     <PackageReference Include="CloudinaryDotNet" Version="1.26.2" />
     <PackageReference Include="Google.Apis.Drive.v3" Version="1.68.0.3533" />
     <PackageReference Include="Google.Apis.Gmail.v1" Version="1.68.0.3427" />
-    <PackageReference Include="Hangfire.Core" Version="1.8.15" />
     <PackageReference Include="MailKit" Version="4.3.0" />
     <PackageReference Include="MediatR" Version="12.3.0" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.6" />
     <PackageReference Include="Microsoft.AspNetCore.SignalR.Common" Version="8.0.6" />
     <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="8.0.6" />
+    <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks" Version="8.0.11" />
     <PackageReference Include="NEST" Version="7.17.5" />
     <PackageReference Include="Otp.NET" Version="1.4.0" />
+    <PackageReference Include="Quartz" Version="3.13.1" />
     <PackageReference Include="RabbitMQ.Client" Version="6.4.0" />
     <PackageReference Include="Serilog.AspNetCore" Version="8.0.2" />
     <PackageReference Include="SixLabors.ImageSharp" Version="3.1.6" />

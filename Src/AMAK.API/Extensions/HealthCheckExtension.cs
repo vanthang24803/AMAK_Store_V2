@@ -4,7 +4,9 @@ namespace AMAK.API.Extensions {
 
             if (env.IsProduction() || env.IsStaging()) {
                 services.AddHealthChecks()
-                        .AddNpgSql(configuration.GetConnectionString("DefaultConnection")!);
+                    .AddNpgSql(configuration.GetConnectionString("DefaultConnection")!, name: "database")
+                    .AddRabbitMQ(configuration.GetConnectionString("Rabbit")!, name: "rabbitMq", sslOption: null)
+                    .AddRedis(configuration.GetConnectionString("Redis")!, name: "redis");
             }
 
             return services;
