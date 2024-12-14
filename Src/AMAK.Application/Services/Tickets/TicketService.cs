@@ -2,7 +2,6 @@ using AMAK.Application.Common.Exceptions;
 using AMAK.Application.Common.Helpers;
 using AMAK.Application.Common.Query;
 using AMAK.Application.Interfaces;
-using AMAK.Application.Providers.Cache;
 using AMAK.Application.Services.Tickets.Dtos;
 using AMAK.Domain.Models;
 using AutoMapper;
@@ -11,17 +10,29 @@ using System.Net;
 
 namespace AMAK.Application.Services.Tickets {
     public class TicketService : ITicketService {
-
-        private readonly IRepository<Domain.Models.Voucher> _voucherRepository;
-        private readonly ICacheService _cacheService;
-
         private readonly IMapper _mapper;
+        private readonly IRepository<Voucher> _voucherRepository;
 
-        public TicketService(IRepository<Voucher> voucherRepository, ICacheService cacheService, IMapper mapper) {
+        public TicketService(IRepository<Voucher> voucherRepository, IMapper mapper) {
             _voucherRepository = voucherRepository;
-            _cacheService = cacheService;
             _mapper = mapper;
         }
+
+        public async Task CheckTicketJob() {
+            var expiredTickets = await _voucherRepository
+                .GetAll()
+                .Where(x => !x.IsExpire && x.EndAt <= DateTime.UtcNow)
+                .ToListAsync();
+
+            if (expiredTickets.Count > 0) {
+                foreach (var ticket in expiredTickets) {
+                    ticket.IsExpire = true;
+                }
+
+                await _voucherRepository.SaveChangesAsync();
+            }
+        }
+
 
         public async Task<Response<string>> CreateAsync(TicketSchema request) {
             var newTicket = _mapper.Map<Voucher>(request);

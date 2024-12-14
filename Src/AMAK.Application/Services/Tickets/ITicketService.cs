@@ -10,6 +10,7 @@ namespace AMAK.Application.Services.Tickets {
         Task<Response<TicketResponse>> GetDetailAsync(Guid id);
         Task<PaginationResponse<List<TicketResponse>>> GetAllAsync(BaseQuery query);
         Task<Response<TicketResponse>> FindTicketByCodeAsync(FindTicketRequest request);
+        Task CheckTicketJob();
 
     }
 }

@@ -64,6 +64,9 @@ namespace AMAK.API.Extensions {
             services.AddScoped<IRabbitProducer, RabbitProducer>();
             services.AddHostedService<RabbitConsumer>();
 
+            // TODO: Cron Job
+            services.AddTaskScheduling();
+
 
             return services;
         }
