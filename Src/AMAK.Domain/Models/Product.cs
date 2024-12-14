@@ -4,7 +4,7 @@ namespace AMAK.Domain.Models {
 
         public string? Thumbnail { get; set; }
 
-        public string? Brand { get; set;}
+        public string? Brand { get; set; }
 
         public long Sold { get; set; }
 
@@ -18,6 +18,8 @@ namespace AMAK.Domain.Models {
         public ICollection<Review> Reviews { get; set; } = [];
 
         public List<Category> Categories { get; } = [];
+
+        public List<FlashSale> FlashSales { get; set; } = [];
 
     }
 }

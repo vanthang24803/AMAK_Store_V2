@@ -11,6 +11,7 @@ using AMAK.Application.Services.Authentication;
 using AMAK.Application.Services.Billboard;
 using AMAK.Application.Services.Blog;
 using AMAK.Application.Services.Cart;
+using AMAK.Application.Services.FlashSale;
 using AMAK.Application.Services.Gmail;
 using AMAK.Application.Services.Me;
 using AMAK.Application.Services.Notification;
@@ -60,16 +61,16 @@ namespace AMAK.API.Extensions {
             services.AddScoped<ISearchService, SearchService>();
             services.AddScoped<IRevertService, RevertService>();
             services.AddScoped<IBlogService, BlogService>();
+            services.AddScoped<IFlashSaleService, FlashSaleService>();
+
+
+            // TODO: Provider
 
             services.AddHttpClient<IGeminiService, GeminiService>();
-
             services.AddScoped<Application.Providers.Mail.IMailService, Application.Providers.Mail.MailService>();
-
             services.AddScoped<ICloudinaryService, CloudinaryService>();
             services.AddScoped<Application.Providers.Configuration.IConfigurationProvider, Application.Providers.Configuration.ConfigurationProvider>();
-
             services.AddScoped<IGoogleService, GoogleService>();
-
             services.AddSingleton<ITokenService, TokenService>();
             services.AddSingleton<ICacheService, CacheService>();
         }

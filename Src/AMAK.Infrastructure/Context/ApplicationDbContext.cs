@@ -27,6 +27,8 @@ namespace AMAK.Infrastructure.Context {
         public required DbSet<EmailTemplate> Templates { get; init; }
         public required DbSet<ReviewPhoto> ReviewPhotos { get; init; }
         public required DbSet<Voucher> Vouchers { get; init; }
+        public required DbSet<FlashSale> FlashSales { get; init; }
+        public required DbSet<FlashSaleProduct> FlashSaleProducts { get; init; }
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder) {
@@ -111,6 +113,11 @@ namespace AMAK.Infrastructure.Context {
                 .HasMany(e => e.Categories)
                 .WithMany(e => e.Products)
                 .UsingEntity<ProductCategory>();
+
+            modelBuilder.Entity<FlashSale>()
+                .HasMany(e => e.Products)
+                .WithMany(e => e.FlashSales)
+                .UsingEntity<FlashSaleProduct>();
 
             modelBuilder.Entity<Notification>()
                 .HasMany(e => e.Users)
