@@ -79,7 +79,7 @@ namespace AMAK.Application.Services.Cart {
                     OptionName = detail.Option.Name,
                     Quantity = detail.Quantity,
                     Price = detail.Option.Price,
-                    Sale = detail.Option.Sale,
+                    Sale = detail.Option.IsFlashSale ? 50 : detail.Option.Sale,
                 }).OrderBy(c => c.ProductName).ToList())
                 .FirstOrDefaultAsync();
 

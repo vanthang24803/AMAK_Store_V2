@@ -55,6 +55,7 @@ namespace AMAK.Infrastructure.Context {
                 entity.ToTable("Options");
                 entity.Property(x => x.Name).HasMaxLength(256);
                 entity.Property(x => x.IsActive).HasDefaultValue(true);
+                entity.Property(x => x.IsFlashSale).HasDefaultValue(false);
             });
 
             modelBuilder.Entity<Product>(e => {
@@ -115,7 +116,7 @@ namespace AMAK.Infrastructure.Context {
                 .UsingEntity<ProductCategory>();
 
             modelBuilder.Entity<FlashSale>()
-                .HasMany(e => e.Products)
+                .HasMany(e => e.Options)
                 .WithMany(e => e.FlashSales)
                 .UsingEntity<FlashSaleProduct>();
 

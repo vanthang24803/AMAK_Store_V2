@@ -102,12 +102,20 @@ namespace AMAK.Application.Services.Product.Queries.GetAll {
                 .Take(query.Limit)
                 .ToListAsync(cancellationToken);
 
+            var response = products.Select(product => {
+                product.Options.Where(option => option.IsFlashSale)
+                               .ToList()
+                               .ForEach(option => option.Sale = 50);
+                return product;
+            }).ToList();
+
+
             var result = new PaginationResponse<List<ProductResponse>> {
                 CurrentPage = query.Page,
                 TotalPage = totalPages,
                 Items = query.Limit,
                 TotalItems = totalItemsCount,
-                Result = _mapper.Map<List<ProductResponse>>(products)
+                Result = _mapper.Map<List<ProductResponse>>(response)
             };
 
             await _cacheService.SetData(cacheKey, result, DateTimeOffset.UtcNow.AddMinutes(5));

@@ -6,6 +6,6 @@ namespace AMAK.Domain.Models {
         public DateTime StartAt { get; set; }
         public DateTime EndAt { get; set; }
         public EFlashSale Status { get; set; }
-        public List<Product> Products { get; set; } = [];
+        public List<Option> Options { get; set; } = [];
     }
 }
