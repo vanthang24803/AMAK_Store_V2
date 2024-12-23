@@ -15,13 +15,11 @@ namespace AMAK.API.Controllers.v1 {
         }
 
         [HttpPost]
-        [AllowAnonymous]
         public async Task<IActionResult> Save([FromBody] CreateFlashSaleRequest request) {
             return StatusCode(StatusCodes.Status201Created, await _flashSaleService.CreateAsync(request));
         }
 
         [HttpGet]
-        [AllowAnonymous]
         public async Task<IActionResult> FindAll() {
             return Ok(await _flashSaleService.FindAll());
         }
@@ -35,7 +33,6 @@ namespace AMAK.API.Controllers.v1 {
 
         [HttpGet]
         [Route("{id:guid}")]
-        [AllowAnonymous]
         public async Task<IActionResult> FindOne([FromRoute] Guid id) {
             return Ok(await _flashSaleService.FindOne(id));
         }

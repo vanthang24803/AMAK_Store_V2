@@ -72,6 +72,7 @@ namespace AMAK.Application.Services.FlashSale {
         public async Task<Response<List<ListFlashSaleResponse>>> FindAll() {
             var flashSale = await _flashSaleRepository.GetAll()
               .Include(x => x.Options)
+              .OrderByDescending(x => x.StartAt)
               .ToListAsync();
 
             var response = flashSale.Select(sale => new ListFlashSaleResponse() {
@@ -148,6 +149,7 @@ namespace AMAK.Application.Services.FlashSale {
 
             var response = new FlashSaleResponse() {
                 Id = flashSale.Id,
+                Name = flashSale.Name,
                 StartAt = flashSale.StartAt,
                 EndAt = flashSale.EndAt,
                 Status = flashSale.Status,
