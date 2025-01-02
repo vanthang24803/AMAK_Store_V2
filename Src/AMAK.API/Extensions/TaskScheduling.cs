@@ -24,7 +24,7 @@ namespace AMAK.API.Extensions {
                       "0 0 0 * * ?",
                       cronOptions => cronOptions
                           .InTimeZone(TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time"))
-              ));
+                ));
 
                 // options.AddJob<FlashSaleJob>(flashSaleJobKey)
                 // .AddTrigger(trigger => trigger.ForJob(flashSaleJobKey).WithSimpleSchedule(
