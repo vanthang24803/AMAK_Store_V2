@@ -10,7 +10,7 @@ namespace AMAK.API.Configurations {
                     .AddDefaultTokenProviders();
 
             services.Configure<DataProtectionTokenProviderOptions>(options => {
-                options.TokenLifespan = TimeSpan.FromMinutes(10);
+                options.TokenLifespan = TimeSpan.FromHours(1);
             });
 
             return services;

@@ -12,7 +12,6 @@ namespace AMAK.Domain.Models {
         public Cart? Cart { get; set; }
         public AccountConfig? Config { get; set; }
         public ICollection<Blog> Blogs { get; set; } = [];
-
         public ICollection<Conversation> Collections { get; set; } = [];
         public DateTime CreateAt { get; set; } = DateTime.UtcNow;
         public DateTime UpdateAt { get; set; } = DateTime.UtcNow;

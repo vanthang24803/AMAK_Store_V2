@@ -36,11 +36,17 @@ namespace AMAK.Application.Services.Product.Queries.GetDetail {
                                                           .Where(x => !x.IsDeleted)
                                                           .Include(c => c.Categories)
                                                           .Include(o => o.Options)
-                                                                .Where(o => !o.IsDeleted).OrderByDescending(o => o.CreateAt)
+                                                                .Where(o => !o.IsDeleted)
+                                                                .OrderByDescending(o => o.CreateAt)
                                                           .Include(pt => pt.Photos).OrderByDescending(o => o.CreateAt)
                                                           .Include(r => r.Reviews)
                                                           .FirstOrDefaultAsync(p => p.Id == request.Id, cancellationToken)
             ?? throw new NotFoundException("Product not found!");
+
+            existingProduct.Options.Where(option => option.IsFlashSale)
+                               .ToList()
+                               .ForEach(option => option.Sale = 50);
+
 
             var result = new Response<ProductDetailResponse>(HttpStatusCode.OK, _mapper.Map<ProductDetailResponse>(existingProduct));
 

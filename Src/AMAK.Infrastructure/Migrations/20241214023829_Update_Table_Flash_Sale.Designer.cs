@@ -4,6 +4,7 @@ using System.Text.Json;
 using AMAK.Infrastructure.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -12,9 +13,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace AMAK.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20241214023829_Update_Table_Flash_Sale")]
+    partial class Update_Table_Flash_Sale
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -406,66 +409,66 @@ namespace AMAK.Infrastructure.Migrations
                     b.HasData(
                         new
                         {
-                            Id = new Guid("6c5c2c56-f22e-489c-8db7-fddd8a3ab123"),
-                            CreateAt = new DateTime(2024, 12, 14, 7, 25, 24, 31, DateTimeKind.Utc).AddTicks(1694),
+                            Id = new Guid("d2387129-bafc-41b4-a4b7-75425b5b6344"),
+                            CreateAt = new DateTime(2024, 12, 14, 2, 38, 28, 440, DateTimeKind.Utc).AddTicks(3372),
                             DeleteAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             IsDeleted = false,
                             Key = "Google",
-                            UpdateAt = new DateTime(2024, 12, 14, 7, 25, 24, 31, DateTimeKind.Utc).AddTicks(1697)
+                            UpdateAt = new DateTime(2024, 12, 14, 2, 38, 28, 440, DateTimeKind.Utc).AddTicks(3376)
                         },
                         new
                         {
-                            Id = new Guid("237114b2-4c08-45c4-a107-83663dac33e3"),
-                            CreateAt = new DateTime(2024, 12, 14, 7, 25, 24, 31, DateTimeKind.Utc).AddTicks(1733),
+                            Id = new Guid("cd476411-4043-4eba-8739-c02ca0062a67"),
+                            CreateAt = new DateTime(2024, 12, 14, 2, 38, 28, 440, DateTimeKind.Utc).AddTicks(3411),
                             DeleteAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             IsDeleted = false,
                             Key = "Cloudinary",
-                            UpdateAt = new DateTime(2024, 12, 14, 7, 25, 24, 31, DateTimeKind.Utc).AddTicks(1734)
+                            UpdateAt = new DateTime(2024, 12, 14, 2, 38, 28, 440, DateTimeKind.Utc).AddTicks(3411)
                         },
                         new
                         {
-                            Id = new Guid("0e8b7cfb-6477-45e8-9bc4-4b7c2d320f8f"),
-                            CreateAt = new DateTime(2024, 12, 14, 7, 25, 24, 31, DateTimeKind.Utc).AddTicks(1736),
+                            Id = new Guid("d5d57ef8-bd73-4a70-b4ec-38d67254afd7"),
+                            CreateAt = new DateTime(2024, 12, 14, 2, 38, 28, 440, DateTimeKind.Utc).AddTicks(3428),
                             DeleteAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             IsDeleted = false,
                             Key = "Email",
-                            UpdateAt = new DateTime(2024, 12, 14, 7, 25, 24, 31, DateTimeKind.Utc).AddTicks(1736)
+                            UpdateAt = new DateTime(2024, 12, 14, 2, 38, 28, 440, DateTimeKind.Utc).AddTicks(3429)
                         },
                         new
                         {
-                            Id = new Guid("1efbf147-3bb0-43fd-91ba-31ab155734a9"),
-                            CreateAt = new DateTime(2024, 12, 14, 7, 25, 24, 31, DateTimeKind.Utc).AddTicks(1738),
+                            Id = new Guid("87d4457d-2add-4796-9837-ad242719254b"),
+                            CreateAt = new DateTime(2024, 12, 14, 2, 38, 28, 440, DateTimeKind.Utc).AddTicks(3430),
                             DeleteAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             IsDeleted = false,
                             Key = "Momo",
-                            UpdateAt = new DateTime(2024, 12, 14, 7, 25, 24, 31, DateTimeKind.Utc).AddTicks(1738)
+                            UpdateAt = new DateTime(2024, 12, 14, 2, 38, 28, 440, DateTimeKind.Utc).AddTicks(3431)
                         },
                         new
                         {
-                            Id = new Guid("f5936a9e-adb4-4e64-a2de-d673c6136506"),
-                            CreateAt = new DateTime(2024, 12, 14, 7, 25, 24, 31, DateTimeKind.Utc).AddTicks(1739),
+                            Id = new Guid("a43b9c0c-6b86-41a2-a3f2-d4cfd8f123b7"),
+                            CreateAt = new DateTime(2024, 12, 14, 2, 38, 28, 440, DateTimeKind.Utc).AddTicks(3432),
                             DeleteAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             IsDeleted = false,
                             Key = "Gemini",
-                            UpdateAt = new DateTime(2024, 12, 14, 7, 25, 24, 31, DateTimeKind.Utc).AddTicks(1740)
+                            UpdateAt = new DateTime(2024, 12, 14, 2, 38, 28, 440, DateTimeKind.Utc).AddTicks(3433)
                         },
                         new
                         {
-                            Id = new Guid("e6ee4852-5042-476a-926b-478c7fd6de95"),
-                            CreateAt = new DateTime(2024, 12, 14, 7, 25, 24, 31, DateTimeKind.Utc).AddTicks(1741),
+                            Id = new Guid("2e4c7ac4-2dfc-4772-afc6-58772959f440"),
+                            CreateAt = new DateTime(2024, 12, 14, 2, 38, 28, 440, DateTimeKind.Utc).AddTicks(3434),
                             DeleteAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             IsDeleted = false,
                             Key = "ChatGPT4",
-                            UpdateAt = new DateTime(2024, 12, 14, 7, 25, 24, 31, DateTimeKind.Utc).AddTicks(1742)
+                            UpdateAt = new DateTime(2024, 12, 14, 2, 38, 28, 440, DateTimeKind.Utc).AddTicks(3435)
                         },
                         new
                         {
-                            Id = new Guid("0e146713-6306-4496-ab85-5b25d9a3c684"),
-                            CreateAt = new DateTime(2024, 12, 14, 7, 25, 24, 31, DateTimeKind.Utc).AddTicks(1743),
+                            Id = new Guid("8c3008d7-74aa-4290-b842-6e12002dbc52"),
+                            CreateAt = new DateTime(2024, 12, 14, 2, 38, 28, 440, DateTimeKind.Utc).AddTicks(3436),
                             DeleteAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             IsDeleted = false,
                             Key = "ChatGPT4o",
-                            UpdateAt = new DateTime(2024, 12, 14, 7, 25, 24, 31, DateTimeKind.Utc).AddTicks(1743)
+                            UpdateAt = new DateTime(2024, 12, 14, 2, 38, 28, 440, DateTimeKind.Utc).AddTicks(3436)
                         });
                 });
 
@@ -581,15 +584,12 @@ namespace AMAK.Infrastructure.Migrations
                     b.Property<Guid>("FlashSaleId")
                         .HasColumnType("uuid");
 
-                    b.Property<Guid>("OptionId")
-                        .HasColumnType("uuid");
-
                     b.Property<Guid>("ProductId")
                         .HasColumnType("uuid");
 
-                    b.HasKey("FlashSaleId", "OptionId");
+                    b.HasKey("FlashSaleId", "ProductId");
 
-                    b.HasIndex("OptionId");
+                    b.HasIndex("ProductId");
 
                     b.ToTable("FlashSaleProducts");
                 });
@@ -671,11 +671,6 @@ namespace AMAK.Infrastructure.Migrations
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
-
-                    b.Property<bool>("IsFlashSale")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
-                        .HasDefaultValue(false);
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -962,33 +957,33 @@ namespace AMAK.Infrastructure.Migrations
                     b.HasData(
                         new
                         {
-                            Id = new Guid("19e283eb-7258-49f1-b504-d484dee6ff31"),
+                            Id = new Guid("4a7a6bf6-00af-4901-9407-cce1fd23d529"),
                             Context = "                        Bạn là một AI Phân tích dữ liệu \r\n                        - Chỉ trả lời bằng tiếng Việt.\r\n                        - Dựa vào các dữ liệu đã gửi hãy phân tích chi tiết dữ liệu tăng giảm\r\n                        - Đây là dữ liệu tổng doanh thu trong các thời điểm trong năm với year month week đều là tháng hiện tại hãy đưa ra các phân tích theo từng\r\n                        mục thời gian rồi tóm lại tổng quát \r\n                        - Có thể viết thành 1 bài phân tích ngắn không được nói chuyện dở dang khoảng 1000 ký tự\r\n                        Vui lòng phân tích dữ liệu sau: {DATA}.",
-                            CreateAt = new DateTime(2024, 12, 14, 7, 25, 24, 31, DateTimeKind.Utc).AddTicks(1983),
+                            CreateAt = new DateTime(2024, 12, 14, 2, 38, 28, 440, DateTimeKind.Utc).AddTicks(3680),
                             DeleteAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             IsDeleted = false,
                             Type = 0,
-                            UpdateAt = new DateTime(2024, 12, 14, 7, 25, 24, 31, DateTimeKind.Utc).AddTicks(1983)
+                            UpdateAt = new DateTime(2024, 12, 14, 2, 38, 28, 440, DateTimeKind.Utc).AddTicks(3681)
                         },
                         new
                         {
-                            Id = new Guid("08e17071-e08e-4081-ab44-1dd6c1cf8b87"),
+                            Id = new Guid("6eea3936-0579-4c57-bc4e-08574315075c"),
                             Context = "                        Bạn là một AI Phân tích dữ liệu \r\n                        - Chỉ trả lời bằng tiếng Việt.\r\n                        - Dựa vào các dữ liệu đã gửi hãy phân tích và đưa ra đánh giá về các review đơn hàng hãy đưa ra phân tích chung về các review tốt và xấu của sản phẩm và đưa ra số liệu trung bình đây là 1 sản phẩm tốt hay xấu đáng mua hay không ?\r\n                        - Có thể viết thành 1 bài phân tích ngắn không được nói chuyện dở dang khoảng 500 ký tự\r\n                        Vui lòng phân tích dữ liệu sau: {DATA}.",
-                            CreateAt = new DateTime(2024, 12, 14, 7, 25, 24, 31, DateTimeKind.Utc).AddTicks(1987),
+                            CreateAt = new DateTime(2024, 12, 14, 2, 38, 28, 440, DateTimeKind.Utc).AddTicks(3685),
                             DeleteAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             IsDeleted = false,
                             Type = 2,
-                            UpdateAt = new DateTime(2024, 12, 14, 7, 25, 24, 31, DateTimeKind.Utc).AddTicks(1987)
+                            UpdateAt = new DateTime(2024, 12, 14, 2, 38, 28, 440, DateTimeKind.Utc).AddTicks(3685)
                         },
                         new
                         {
-                            Id = new Guid("764f5d82-f6fb-45a3-a530-370c609002cb"),
+                            Id = new Guid("032063c0-bd0b-4ff6-82b1-ce6d98821e53"),
                             Context = "                        Bạn là một AI Phân tích dữ liệu \r\n                        - Chỉ trả lời bằng tiếng Việt.\r\n                        - Dựa vào các dữ liệu đã gửi hãy phân tích chi tiết dữ liệu tăng giảm\r\n                        - Nếu isStock là false thì đó là % giảm so với tháng trước tương ứng với stock ví dụ isStock là false và stock là 20% là giảm 20% so với tháng trước , total là tổng số dữ liệu trong tháng hiện tại hãy đưa ra các nhận xét về việc kinh doanh trong tháng hiện tại \r\n                        - Trả lời không trả về ## đầu dòng\r\n                        - Mỗi ý trả lời xong phải . xuống dòng là có dấu cách đầu dòng và viết hoa chữ cái đầu mỗi dòng\r\n                        - Chỉ trả các phân tích chứ k cần thiết nói ra các trường data bằng tiếng anh\r\n                        - Không nói xen lẫn tiếng anh tiếng việt\r\n                        - Có thể viết thành 1 bài phân tích ngắn không được nói chuyện dở dang khoảng 1000 ký tự\r\n                        Vui lòng phân tích dữ liệu sau: {DATA}.",
-                            CreateAt = new DateTime(2024, 12, 14, 7, 25, 24, 31, DateTimeKind.Utc).AddTicks(1989),
+                            CreateAt = new DateTime(2024, 12, 14, 2, 38, 28, 440, DateTimeKind.Utc).AddTicks(3687),
                             DeleteAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             IsDeleted = false,
                             Type = 1,
-                            UpdateAt = new DateTime(2024, 12, 14, 7, 25, 24, 31, DateTimeKind.Utc).AddTicks(1989)
+                            UpdateAt = new DateTime(2024, 12, 14, 2, 38, 28, 440, DateTimeKind.Utc).AddTicks(3688)
                         });
                 });
 
@@ -1330,9 +1325,9 @@ namespace AMAK.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("AMAK.Domain.Models.Option", null)
+                    b.HasOne("AMAK.Domain.Models.Product", null)
                         .WithMany()
-                        .HasForeignKey("OptionId")
+                        .HasForeignKey("ProductId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });

@@ -27,6 +27,8 @@ namespace AMAK.Infrastructure.Context {
         public required DbSet<EmailTemplate> Templates { get; init; }
         public required DbSet<ReviewPhoto> ReviewPhotos { get; init; }
         public required DbSet<Voucher> Vouchers { get; init; }
+        public required DbSet<FlashSale> FlashSales { get; init; }
+        public required DbSet<FlashSaleProduct> FlashSaleProducts { get; init; }
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder) {
@@ -53,6 +55,7 @@ namespace AMAK.Infrastructure.Context {
                 entity.ToTable("Options");
                 entity.Property(x => x.Name).HasMaxLength(256);
                 entity.Property(x => x.IsActive).HasDefaultValue(true);
+                entity.Property(x => x.IsFlashSale).HasDefaultValue(false);
             });
 
             modelBuilder.Entity<Product>(e => {
@@ -111,6 +114,11 @@ namespace AMAK.Infrastructure.Context {
                 .HasMany(e => e.Categories)
                 .WithMany(e => e.Products)
                 .UsingEntity<ProductCategory>();
+
+            modelBuilder.Entity<FlashSale>()
+                .HasMany(e => e.Options)
+                .WithMany(e => e.FlashSales)
+                .UsingEntity<FlashSaleProduct>();
 
             modelBuilder.Entity<Notification>()
                 .HasMany(e => e.Users)

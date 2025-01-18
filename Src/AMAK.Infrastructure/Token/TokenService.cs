@@ -86,7 +86,7 @@ namespace AMAK.Infrastructure.Token {
         }
 
         public JwtPayload DecodeAccessToken(string token) {
-            return this.DecodeToken(token, _authSecret);
+            return DecodeToken(token, _authSecret);
         }
 
 
@@ -140,7 +140,5 @@ namespace AMAK.Infrastructure.Token {
                 provider
                );
         }
-
-
     }
 }
