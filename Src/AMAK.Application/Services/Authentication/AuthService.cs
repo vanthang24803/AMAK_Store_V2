@@ -14,6 +14,7 @@ using AMAK.Application.Providers.Cache;
 using AMAK.Application.Providers.Mail.Dtos;
 using AMAK.Application.Providers.RabbitMq;
 using AMAK.Application.Providers.RabbitMq.Common;
+using Microsoft.Extensions.Logging;
 
 
 namespace AMAK.Application.Services.Authentication {
@@ -24,14 +25,16 @@ namespace AMAK.Application.Services.Authentication {
         private readonly ICacheService _cacheService;
         private readonly IMapper _mapper;
         private readonly IRabbitProducer _rabbitProducer;
+        private readonly ILogger<AuthService> _logger;
 
-        public AuthService(UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager, IMapper mapper, ITokenService tokenService, ICacheService cacheService, IRabbitProducer rabbitProducer) {
+        public AuthService(UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager, IMapper mapper, ITokenService tokenService, ICacheService cacheService, IRabbitProducer rabbitProducer, ILogger<AuthService> logger) {
             _userManager = userManager;
             _roleManager = roleManager;
             _tokenService = tokenService;
             _cacheService = cacheService;
             _mapper = mapper;
             _rabbitProducer = rabbitProducer;
+            _logger = logger;
         }
 
         public async Task<Response<RegisterResponse>> RegisterAsync(RegisterRequest request) {
@@ -54,7 +57,6 @@ namespace AMAK.Application.Services.Authentication {
             if (!createUserResult.Succeeded) {
                 throw new BadRequestException("Wrong Data!");
             }
-
 
             if (!await _roleManager.RoleExistsAsync(Role.Customer)) {
                 throw new BadRequestException("Customer Role Not found!");
@@ -123,7 +125,6 @@ namespace AMAK.Application.Services.Authentication {
             await _userManager.RemoveAuthenticationTokenAsync(existingUser, Provider.Account, Token.RefreshToken);
 
             await _userManager.SetAuthenticationTokenAsync(existingUser, Provider.Account, Token.RefreshToken, token.RefreshToken);
-
 
             var result = new Response<TokenResponse>(HttpStatusCode.OK, token);
 
@@ -208,7 +209,7 @@ namespace AMAK.Application.Services.Authentication {
             bool isAdminRoleExists = await _roleManager.RoleExistsAsync(Role.Admin);
             bool isUserRoleExists = await _roleManager.RoleExistsAsync(Role.Customer);
 
-            if (isOwnerRoleExists && isAdminRoleExists && isUserRoleExists) throw new BadRequestException("Roles Seeding is Already Done");
+            if (isOwnerRoleExists && isAdminRoleExists && isUserRoleExists) throw new BadRequestException("Roles seeding is already done!");
 
 
             await _roleManager.CreateAsync(new IdentityRole(Role.Customer));
@@ -395,7 +396,5 @@ namespace AMAK.Application.Services.Authentication {
                 Avatar = newBot.Avatar
             });
         }
-
-
     }
 }
