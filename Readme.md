@@ -15,6 +15,7 @@ AMAK API is an API for AMAK application written in .NET Core (version >= 8) and 
 - [x] [Cloudinary](https://cloudinary.com/)
 - [x] [CI/CD Github Actions](https://docs.github.com/en/actions)
 - [x] [Unit Test With Moq](https://github.com/moq/moq4), [XUnit](https://xunit.net/)
+- [x] [Nginx](https://nginx.org/en/)
 
 ## Roadmap
 
