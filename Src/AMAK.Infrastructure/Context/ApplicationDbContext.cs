@@ -30,14 +30,13 @@ namespace AMAK.Infrastructure.Context {
         public required DbSet<FlashSale> FlashSales { get; init; }
         public required DbSet<FlashSaleProduct> FlashSaleProducts { get; init; }
 
-
         protected override void OnModelCreating(ModelBuilder modelBuilder) {
             base.OnModelCreating(modelBuilder);
 
             modelBuilder.Entity<ApplicationUser>(entity => {
                 entity.Property(x => x.FirstName).HasMaxLength(128);
                 entity.Property(x => x.LastName).HasMaxLength(128);
-                entity.Property(x => x.PhoneNumber).HasMaxLength(12);
+                entity.Property(x => x.PhoneNumber).HasMaxLength(50);
                 entity.Property(x => x.Email).HasMaxLength(128);
                 entity.HasIndex(x => x.Email).IsUnique();
             });
