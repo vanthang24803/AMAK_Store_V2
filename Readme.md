@@ -39,7 +39,7 @@ To run the application, follow these steps:
 1. Clone the repository:
 
    ```bash
-   git clone https://github.com/vanthang24803/AMAK_Store_V2
+    git clone https://github.com/vanthang24803/AMAK_Store_V2
    ```
 
 2. Navigate to the project directory:
