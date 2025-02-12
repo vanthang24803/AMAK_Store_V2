@@ -7,9 +7,10 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System.Net;
 
-namespace AMAK.Application.Services.Order.Commands.Cancellation {
-    public class CancellationOrderCommandHandler : IRequestHandler<CancellationOrderCommand, Response<string>> {
-
+namespace AMAK.Application.Services.Order.Commands.Cancellation
+{
+    public class CancellationOrderCommandHandler : IRequestHandler<CancellationOrderCommand, Response<string>>
+    {
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IRepository<Domain.Models.Order> _orderRepository;
         private readonly IRepository<OrderDetail> _orderDetailRepository;
@@ -17,7 +18,8 @@ namespace AMAK.Application.Services.Order.Commands.Cancellation {
         private readonly IRepository<CancelOrder> _cancelOrderRepository;
         private readonly IRepository<OrderStatus> _orderStatusRepository;
 
-        public CancellationOrderCommandHandler(UserManager<ApplicationUser> userManager, IRepository<Domain.Models.Order> orderRepository, IRepository<OrderDetail> orderDetailRepository, IRepository<Option> optionRepository, IRepository<CancelOrder> cancelOrderRepository, IRepository<OrderStatus> orderStatusRepository) {
+        public CancellationOrderCommandHandler(UserManager<ApplicationUser> userManager, IRepository<Domain.Models.Order> orderRepository, IRepository<OrderDetail> orderDetailRepository, IRepository<Option> optionRepository, IRepository<CancelOrder> cancelOrderRepository, IRepository<OrderStatus> orderStatusRepository)
+        {
             _userManager = userManager;
             _orderRepository = orderRepository;
             _orderDetailRepository = orderDetailRepository;
@@ -26,7 +28,8 @@ namespace AMAK.Application.Services.Order.Commands.Cancellation {
             _orderStatusRepository = orderStatusRepository;
         }
 
-        public async Task<Response<string>> Handle(CancellationOrderCommand request, CancellationToken cancellationToken) {
+        public async Task<Response<string>> Handle(CancellationOrderCommand request, CancellationToken cancellationToken)
+        {
 
             var existingAccount = await _userManager.GetUserAsync(request.User) ?? throw new UnauthorizedException();
 
@@ -43,18 +46,22 @@ namespace AMAK.Application.Services.Order.Commands.Cancellation {
                      .FirstOrDefault() ?? throw new NotFoundException("Order status not found!");
 
             await _orderRepository.BeginTransactionAsync();
-            try {
-                if (latestStatus.Status != Domain.Enums.EOrderStatus.PENDING) {
+            try
+            {
+                if (latestStatus.Status != Domain.Enums.EOrderStatus.PENDING)
+                {
                     throw new BadRequestException("Cannot cancel the order as it is no longer in PENDING status.");
                 }
 
-                foreach (var detail in orderDetails) {
+                foreach (var detail in orderDetails)
+                {
                     var existingOption = await _optionRepository.GetById(detail.OptionId) ?? throw new NotFoundException("Option not found");
 
                     existingOption.Quantity += detail.Quantity;
                 }
 
-                var cancelStatus = new OrderStatus() {
+                var cancelStatus = new OrderStatus()
+                {
                     OrderId = existingOrder.Id,
                     Status = Domain.Enums.EOrderStatus.CANCEL,
                     TimeStamp = DateTime.UtcNow
@@ -67,12 +74,15 @@ namespace AMAK.Application.Services.Order.Commands.Cancellation {
                 await _orderRepository.SaveChangesAsync();
                 await _orderRepository.CommitTransactionAsync();
 
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 await _orderRepository.RollbackTransactionAsync();
                 throw new BadRequestException($"An error occurred: {ex.Message}");
             }
 
-            var newCancelOrder = new CancelOrder() {
+            var newCancelOrder = new CancelOrder()
+            {
                 OrderId = existingOrder.Id,
                 Message = request.OrderCancel.Message,
             };

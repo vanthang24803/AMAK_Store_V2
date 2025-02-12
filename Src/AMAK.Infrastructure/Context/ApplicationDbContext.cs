@@ -30,7 +30,8 @@ namespace AMAK.Infrastructure.Context {
         public required DbSet<FlashSale> FlashSales { get; init; }
         public required DbSet<FlashSaleProduct> FlashSaleProducts { get; init; }
         public required DbSet<CancelOrder> CancelOrders { get; init; }
-
+        public required DbSet<OrderRefund> OrderRefunds { get; init; }
+        public required DbSet<RefundTimeline> RefundTimelines { get; init; }
         protected override void OnModelCreating(ModelBuilder modelBuilder) {
             base.OnModelCreating(modelBuilder);
 
@@ -113,6 +114,11 @@ namespace AMAK.Infrastructure.Context {
                 .WithOne(c => c.Order)
                 .HasForeignKey<CancelOrder>(c => c.OrderId);
 
+            modelBuilder.Entity<Order>()
+                .HasOne(o => o.OrderRefund)
+                .WithOne(c => c.Order)
+                .HasForeignKey<OrderRefund>(c => c.OrderId);
+
 
             // TODO: May-to-Many
             modelBuilder.Entity<Product>()
@@ -151,6 +157,12 @@ namespace AMAK.Infrastructure.Context {
                 .WithMany(a => a.Addresses)
                 .HasForeignKey(u => u.UserId)
                 .IsRequired();
+
+            modelBuilder.Entity<RefundTimeline>()
+                .HasOne<OrderRefund>()
+                .WithMany(o => o.Timelines)
+                .HasForeignKey(rt => rt.OrderId)
+                .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<Blog>()
                 .HasOne(u => u.Author)

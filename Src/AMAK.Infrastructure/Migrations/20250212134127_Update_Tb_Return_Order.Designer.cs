@@ -4,6 +4,7 @@ using System.Text.Json;
 using AMAK.Infrastructure.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -12,9 +13,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace AMAK.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250212134127_Update_Tb_Return_Order")]
+    partial class Update_Tb_Return_Order
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -435,66 +438,66 @@ namespace AMAK.Infrastructure.Migrations
                     b.HasData(
                         new
                         {
-                            Id = new Guid("b63299e5-b7aa-445a-aae5-3017d45e1325"),
-                            CreateAt = new DateTime(2025, 2, 12, 14, 0, 5, 24, DateTimeKind.Utc).AddTicks(3370),
+                            Id = new Guid("2216d586-b229-4921-b147-7a1c5c77c71c"),
+                            CreateAt = new DateTime(2025, 2, 12, 13, 41, 26, 395, DateTimeKind.Utc).AddTicks(568),
                             DeleteAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             IsDeleted = false,
                             Key = "Google",
-                            UpdateAt = new DateTime(2025, 2, 12, 14, 0, 5, 24, DateTimeKind.Utc).AddTicks(3374)
+                            UpdateAt = new DateTime(2025, 2, 12, 13, 41, 26, 395, DateTimeKind.Utc).AddTicks(571)
                         },
                         new
                         {
-                            Id = new Guid("85ea000b-f90f-4484-9f45-d4398d915cd3"),
-                            CreateAt = new DateTime(2025, 2, 12, 14, 0, 5, 24, DateTimeKind.Utc).AddTicks(3415),
+                            Id = new Guid("a6a7a7ef-da77-4f80-8575-4c9d09c27b41"),
+                            CreateAt = new DateTime(2025, 2, 12, 13, 41, 26, 395, DateTimeKind.Utc).AddTicks(610),
                             DeleteAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             IsDeleted = false,
                             Key = "Cloudinary",
-                            UpdateAt = new DateTime(2025, 2, 12, 14, 0, 5, 24, DateTimeKind.Utc).AddTicks(3415)
+                            UpdateAt = new DateTime(2025, 2, 12, 13, 41, 26, 395, DateTimeKind.Utc).AddTicks(610)
                         },
                         new
                         {
-                            Id = new Guid("cf5469b3-c6fb-4ab8-8792-85da00d52600"),
-                            CreateAt = new DateTime(2025, 2, 12, 14, 0, 5, 24, DateTimeKind.Utc).AddTicks(3418),
+                            Id = new Guid("ab6f709b-7b75-43e0-90a8-17797bf47d12"),
+                            CreateAt = new DateTime(2025, 2, 12, 13, 41, 26, 395, DateTimeKind.Utc).AddTicks(613),
                             DeleteAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             IsDeleted = false,
                             Key = "Email",
-                            UpdateAt = new DateTime(2025, 2, 12, 14, 0, 5, 24, DateTimeKind.Utc).AddTicks(3418)
+                            UpdateAt = new DateTime(2025, 2, 12, 13, 41, 26, 395, DateTimeKind.Utc).AddTicks(613)
                         },
                         new
                         {
-                            Id = new Guid("47bbd07d-ea44-43f7-8ba1-82b6c4440270"),
-                            CreateAt = new DateTime(2025, 2, 12, 14, 0, 5, 24, DateTimeKind.Utc).AddTicks(3420),
+                            Id = new Guid("60776ca2-c974-47fe-a5c3-d976b5168394"),
+                            CreateAt = new DateTime(2025, 2, 12, 13, 41, 26, 395, DateTimeKind.Utc).AddTicks(615),
                             DeleteAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             IsDeleted = false,
                             Key = "Momo",
-                            UpdateAt = new DateTime(2025, 2, 12, 14, 0, 5, 24, DateTimeKind.Utc).AddTicks(3420)
+                            UpdateAt = new DateTime(2025, 2, 12, 13, 41, 26, 395, DateTimeKind.Utc).AddTicks(615)
                         },
                         new
                         {
-                            Id = new Guid("009e00df-c197-4b63-9916-b34ff4ac83e7"),
-                            CreateAt = new DateTime(2025, 2, 12, 14, 0, 5, 24, DateTimeKind.Utc).AddTicks(3422),
+                            Id = new Guid("6f21c9e8-5524-49f7-bb1d-9c23061e944d"),
+                            CreateAt = new DateTime(2025, 2, 12, 13, 41, 26, 395, DateTimeKind.Utc).AddTicks(617),
                             DeleteAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             IsDeleted = false,
                             Key = "Gemini",
-                            UpdateAt = new DateTime(2025, 2, 12, 14, 0, 5, 24, DateTimeKind.Utc).AddTicks(3422)
+                            UpdateAt = new DateTime(2025, 2, 12, 13, 41, 26, 395, DateTimeKind.Utc).AddTicks(618)
                         },
                         new
                         {
-                            Id = new Guid("28b4cbd6-6812-477c-87a2-3bac6a2bca06"),
-                            CreateAt = new DateTime(2025, 2, 12, 14, 0, 5, 24, DateTimeKind.Utc).AddTicks(3435),
+                            Id = new Guid("962b0326-38e3-4380-8678-b84e71de558d"),
+                            CreateAt = new DateTime(2025, 2, 12, 13, 41, 26, 395, DateTimeKind.Utc).AddTicks(619),
                             DeleteAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             IsDeleted = false,
                             Key = "ChatGPT4",
-                            UpdateAt = new DateTime(2025, 2, 12, 14, 0, 5, 24, DateTimeKind.Utc).AddTicks(3435)
+                            UpdateAt = new DateTime(2025, 2, 12, 13, 41, 26, 395, DateTimeKind.Utc).AddTicks(620)
                         },
                         new
                         {
-                            Id = new Guid("d4d084f1-c918-4f66-bdda-d7ad0dfc7122"),
-                            CreateAt = new DateTime(2025, 2, 12, 14, 0, 5, 24, DateTimeKind.Utc).AddTicks(3437),
+                            Id = new Guid("33774ce0-7ac9-42a4-acaa-1bcf58b4de62"),
+                            CreateAt = new DateTime(2025, 2, 12, 13, 41, 26, 395, DateTimeKind.Utc).AddTicks(621),
                             DeleteAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             IsDeleted = false,
                             Key = "ChatGPT4o",
-                            UpdateAt = new DateTime(2025, 2, 12, 14, 0, 5, 24, DateTimeKind.Utc).AddTicks(3438)
+                            UpdateAt = new DateTime(2025, 2, 12, 13, 41, 26, 395, DateTimeKind.Utc).AddTicks(622)
                         });
                 });
 
@@ -807,15 +810,14 @@ namespace AMAK.Infrastructure.Migrations
                     b.Property<Guid>("OrderId")
                         .HasColumnType("uuid");
 
-                    b.Property<bool>("IsRefund")
-                        .HasColumnType("boolean");
+                    b.Property<string>("Discriminator")
+                        .IsRequired()
+                        .HasMaxLength(21)
+                        .HasColumnType("character varying(21)");
 
                     b.Property<string>("OptionName")
                         .IsRequired()
                         .HasColumnType("text");
-
-                    b.Property<Guid?>("OrderRefundOrderId")
-                        .HasColumnType("uuid");
 
                     b.Property<double>("Price")
                         .HasColumnType("double precision");
@@ -841,12 +843,14 @@ namespace AMAK.Infrastructure.Migrations
 
                     b.HasIndex("OrderId");
 
-                    b.HasIndex("OrderRefundOrderId");
-
                     b.ToTable("OrderDetail");
+
+                    b.HasDiscriminator<string>("Discriminator").HasValue("OrderDetail");
+
+                    b.UseTphMappingStrategy();
                 });
 
-            modelBuilder.Entity("AMAK.Domain.Models.OrderRefund", b =>
+            modelBuilder.Entity("AMAK.Domain.Models.OrderReturn", b =>
                 {
                     b.Property<Guid>("OrderId")
                         .HasColumnType("uuid");
@@ -869,7 +873,7 @@ namespace AMAK.Infrastructure.Migrations
 
                     b.HasKey("OrderId");
 
-                    b.ToTable("OrderRefunds");
+                    b.ToTable("OrderReturns");
                 });
 
             modelBuilder.Entity("AMAK.Domain.Models.OrderStatus", b =>
@@ -1025,56 +1029,34 @@ namespace AMAK.Infrastructure.Migrations
                     b.HasData(
                         new
                         {
-                            Id = new Guid("98ca924e-62e6-4510-abc2-c274c2368ee5"),
+                            Id = new Guid("80ea8e23-82f9-4c55-801b-e0e6a5d70e67"),
                             Context = "                        Bạn là một AI Phân tích dữ liệu \r\n                        - Chỉ trả lời bằng tiếng Việt.\r\n                        - Dựa vào các dữ liệu đã gửi hãy phân tích chi tiết dữ liệu tăng giảm\r\n                        - Đây là dữ liệu tổng doanh thu trong các thời điểm trong năm với year month week đều là tháng hiện tại hãy đưa ra các phân tích theo từng\r\n                        mục thời gian rồi tóm lại tổng quát \r\n                        - Có thể viết thành 1 bài phân tích ngắn không được nói chuyện dở dang khoảng 1000 ký tự\r\n                        Vui lòng phân tích dữ liệu sau: {DATA}.",
-                            CreateAt = new DateTime(2025, 2, 12, 14, 0, 5, 24, DateTimeKind.Utc).AddTicks(3892),
+                            CreateAt = new DateTime(2025, 2, 12, 13, 41, 26, 395, DateTimeKind.Utc).AddTicks(931),
                             DeleteAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             IsDeleted = false,
                             Type = 0,
-                            UpdateAt = new DateTime(2025, 2, 12, 14, 0, 5, 24, DateTimeKind.Utc).AddTicks(3893)
+                            UpdateAt = new DateTime(2025, 2, 12, 13, 41, 26, 395, DateTimeKind.Utc).AddTicks(932)
                         },
                         new
                         {
-                            Id = new Guid("46ce63f7-cbd3-4dfd-b2d5-b5088c8c3e16"),
+                            Id = new Guid("beea1ea4-3eae-495b-8588-ba993393d88e"),
                             Context = "                        Bạn là một AI Phân tích dữ liệu \r\n                        - Chỉ trả lời bằng tiếng Việt.\r\n                        - Dựa vào các dữ liệu đã gửi hãy phân tích và đưa ra đánh giá về các review đơn hàng hãy đưa ra phân tích chung về các review tốt và xấu của sản phẩm và đưa ra số liệu trung bình đây là 1 sản phẩm tốt hay xấu đáng mua hay không ?\r\n                        - Có thể viết thành 1 bài phân tích ngắn không được nói chuyện dở dang khoảng 500 ký tự\r\n                        Vui lòng phân tích dữ liệu sau: {DATA}.",
-                            CreateAt = new DateTime(2025, 2, 12, 14, 0, 5, 24, DateTimeKind.Utc).AddTicks(3898),
+                            CreateAt = new DateTime(2025, 2, 12, 13, 41, 26, 395, DateTimeKind.Utc).AddTicks(936),
                             DeleteAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             IsDeleted = false,
                             Type = 2,
-                            UpdateAt = new DateTime(2025, 2, 12, 14, 0, 5, 24, DateTimeKind.Utc).AddTicks(3898)
+                            UpdateAt = new DateTime(2025, 2, 12, 13, 41, 26, 395, DateTimeKind.Utc).AddTicks(937)
                         },
                         new
                         {
-                            Id = new Guid("826b4327-ced0-4ea1-8634-fb4d006bde28"),
+                            Id = new Guid("646532a0-3732-4a09-a046-33deb79e2a3c"),
                             Context = "                        Bạn là một AI Phân tích dữ liệu \r\n                        - Chỉ trả lời bằng tiếng Việt.\r\n                        - Dựa vào các dữ liệu đã gửi hãy phân tích chi tiết dữ liệu tăng giảm\r\n                        - Nếu isStock là false thì đó là % giảm so với tháng trước tương ứng với stock ví dụ isStock là false và stock là 20% là giảm 20% so với tháng trước , total là tổng số dữ liệu trong tháng hiện tại hãy đưa ra các nhận xét về việc kinh doanh trong tháng hiện tại \r\n                        - Trả lời không trả về ## đầu dòng\r\n                        - Mỗi ý trả lời xong phải . xuống dòng là có dấu cách đầu dòng và viết hoa chữ cái đầu mỗi dòng\r\n                        - Chỉ trả các phân tích chứ k cần thiết nói ra các trường data bằng tiếng anh\r\n                        - Không nói xen lẫn tiếng anh tiếng việt\r\n                        - Có thể viết thành 1 bài phân tích ngắn không được nói chuyện dở dang khoảng 1000 ký tự\r\n                        Vui lòng phân tích dữ liệu sau: {DATA}.",
-                            CreateAt = new DateTime(2025, 2, 12, 14, 0, 5, 24, DateTimeKind.Utc).AddTicks(3900),
+                            CreateAt = new DateTime(2025, 2, 12, 13, 41, 26, 395, DateTimeKind.Utc).AddTicks(939),
                             DeleteAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             IsDeleted = false,
                             Type = 1,
-                            UpdateAt = new DateTime(2025, 2, 12, 14, 0, 5, 24, DateTimeKind.Utc).AddTicks(3901)
+                            UpdateAt = new DateTime(2025, 2, 12, 13, 41, 26, 395, DateTimeKind.Utc).AddTicks(939)
                         });
-                });
-
-            modelBuilder.Entity("AMAK.Domain.Models.RefundTimeline", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("OrderId")
-                        .HasColumnType("uuid");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTime>("TimeStamp")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("OrderId");
-
-                    b.ToTable("RefundTimelines");
                 });
 
             modelBuilder.Entity("AMAK.Domain.Models.Review", b =>
@@ -1333,6 +1315,18 @@ namespace AMAK.Infrastructure.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("AMAK.Domain.Models.OrderReturnItem", b =>
+                {
+                    b.HasBaseType("AMAK.Domain.Models.OrderDetail");
+
+                    b.Property<Guid?>("OrderReturnOrderId")
+                        .HasColumnType("uuid");
+
+                    b.HasIndex("OrderReturnOrderId");
+
+                    b.HasDiscriminator().HasValue("OrderReturnItem");
+                });
+
             modelBuilder.Entity("AMAK.Domain.Models.AccountConfig", b =>
                 {
                     b.HasOne("AMAK.Domain.Models.ApplicationUser", "User")
@@ -1483,17 +1477,13 @@ namespace AMAK.Infrastructure.Migrations
                         .HasForeignKey("OrderId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.HasOne("AMAK.Domain.Models.OrderRefund", null)
-                        .WithMany("Items")
-                        .HasForeignKey("OrderRefundOrderId");
                 });
 
-            modelBuilder.Entity("AMAK.Domain.Models.OrderRefund", b =>
+            modelBuilder.Entity("AMAK.Domain.Models.OrderReturn", b =>
                 {
                     b.HasOne("AMAK.Domain.Models.Order", "Order")
-                        .WithOne("OrderRefund")
-                        .HasForeignKey("AMAK.Domain.Models.OrderRefund", "OrderId")
+                        .WithOne("OrderReturn")
+                        .HasForeignKey("AMAK.Domain.Models.OrderReturn", "OrderId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -1535,23 +1525,6 @@ namespace AMAK.Infrastructure.Migrations
                         .HasForeignKey("ProductId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-                });
-
-            modelBuilder.Entity("AMAK.Domain.Models.RefundTimeline", b =>
-                {
-                    b.HasOne("AMAK.Domain.Models.Order", "Order")
-                        .WithMany()
-                        .HasForeignKey("OrderId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("AMAK.Domain.Models.OrderRefund", null)
-                        .WithMany("Timelines")
-                        .HasForeignKey("OrderId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Order");
                 });
 
             modelBuilder.Entity("AMAK.Domain.Models.Review", b =>
@@ -1635,6 +1608,13 @@ namespace AMAK.Infrastructure.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("AMAK.Domain.Models.OrderReturnItem", b =>
+                {
+                    b.HasOne("AMAK.Domain.Models.OrderReturn", null)
+                        .WithMany("Items")
+                        .HasForeignKey("OrderReturnOrderId");
+                });
+
             modelBuilder.Entity("AMAK.Domain.Models.ApplicationUser", b =>
                 {
                     b.Navigation("Addresses");
@@ -1666,16 +1646,14 @@ namespace AMAK.Infrastructure.Migrations
                 {
                     b.Navigation("CancelOrder");
 
-                    b.Navigation("OrderRefund");
+                    b.Navigation("OrderReturn");
 
                     b.Navigation("Status");
                 });
 
-            modelBuilder.Entity("AMAK.Domain.Models.OrderRefund", b =>
+            modelBuilder.Entity("AMAK.Domain.Models.OrderReturn", b =>
                 {
                     b.Navigation("Items");
-
-                    b.Navigation("Timelines");
                 });
 
             modelBuilder.Entity("AMAK.Domain.Models.Product", b =>
