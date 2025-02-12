@@ -29,7 +29,7 @@ namespace AMAK.Infrastructure.Context {
         public required DbSet<Voucher> Vouchers { get; init; }
         public required DbSet<FlashSale> FlashSales { get; init; }
         public required DbSet<FlashSaleProduct> FlashSaleProducts { get; init; }
-
+        public required DbSet<CancelOrder> CancelOrders { get; init; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder) {
             base.OnModelCreating(modelBuilder);
@@ -37,7 +37,7 @@ namespace AMAK.Infrastructure.Context {
             modelBuilder.Entity<ApplicationUser>(entity => {
                 entity.Property(x => x.FirstName).HasMaxLength(128);
                 entity.Property(x => x.LastName).HasMaxLength(128);
-                entity.Property(x => x.PhoneNumber).HasMaxLength(12);
+                entity.Property(x => x.PhoneNumber).HasMaxLength(50);
                 entity.Property(x => x.Email).HasMaxLength(128);
                 entity.HasIndex(x => x.Email).IsUnique();
             });
@@ -107,6 +107,11 @@ namespace AMAK.Infrastructure.Context {
                 .HasOne(u => u.Config)
                 .WithOne(c => c.User)
                 .HasForeignKey<AccountConfig>(c => c.UserId);
+
+            modelBuilder.Entity<Order>()
+                .HasOne(o => o.CancelOrder)
+                .WithOne(c => c.Order)
+                .HasForeignKey<CancelOrder>(c => c.OrderId);
 
 
             // TODO: May-to-Many
@@ -215,7 +220,7 @@ namespace AMAK.Infrastructure.Context {
                 .HasForeignKey(rp => rp.ReviewId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            // TODO: Seed Data
+            // // TODO: Seed Data
 
             modelBuilder.Entity<Configuration>().HasData(
                 new Configuration() {
