@@ -1,6 +1,7 @@
 using AMAK.Application.Common.Constants;
 using AMAK.Application.Common.Query;
 using AMAK.Application.Services.Order.Commands.Cancellation;
+using AMAK.Application.Services.Order.Commands.Cancellation.Dto;
 using AMAK.Application.Services.Order.Commands.Create;
 using AMAK.Application.Services.Order.Commands.Delete;
 using AMAK.Application.Services.Order.Commands.Update;
@@ -68,11 +69,10 @@ namespace AMAK.API.Controllers.v1 {
             return Ok(await _mediator.Send(new UpdateOrderStatusCommand(id, request)));
         }
 
-        [HttpDelete]
-        [Route("{id:guid}/Cancel")]
-
-        public async Task<IActionResult> Cancellation([FromRoute] Guid id) {
-            return Ok(await _mediator.Send(new CancellationOrderCommand(User, id)));
+        [HttpPut]
+        [Route("Cancel")]
+        public async Task<IActionResult> Cancellation([FromBody] OrderCancelRequest request) {
+            return Ok(await _mediator.Send(new CancellationOrderCommand(User, request)));
         }
 
         [HttpDelete]

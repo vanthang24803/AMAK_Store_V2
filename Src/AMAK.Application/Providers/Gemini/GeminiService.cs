@@ -188,20 +188,12 @@ namespace AMAK.Application.Providers.Gemini {
                 [
                     new GeminiRequest.Content
                     {
-                        Role = "user",
                         Parts =
                         [
                             new GeminiRequest.Part { Text = prompt }
                         ]
                     }
                 ],
-                GenerationConfig = new GeminiRequest.GenerationConfig {
-                    Temperature = 1,
-                    TopK = 40, //! Old: 65
-                    TopP = 0.95,
-                    MaxOutputTokens = 8192,
-                    ResponseMimeType = "text/plain"
-                }
             };
 
             return request;

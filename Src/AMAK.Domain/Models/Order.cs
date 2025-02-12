@@ -18,5 +18,7 @@ namespace AMAK.Domain.Models {
         public ApplicationUser? User { get; set; }
         public ICollection<Option> Options { get; } = [];
         public ICollection<OrderStatus> Status { get; set; } = [];
+        public CancelOrder? CancelOrder { get; set; }
+
     }
 }
