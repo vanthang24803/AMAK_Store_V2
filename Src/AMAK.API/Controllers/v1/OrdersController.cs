@@ -8,6 +8,7 @@ using AMAK.Application.Services.Order.Commands.Update;
 using AMAK.Application.Services.Order.Dtos;
 using AMAK.Application.Services.Order.Queries.GetAllOrder;
 using AMAK.Application.Services.Order.Queries.GetByUser;
+using AMAK.Application.Services.Order.Queries.GetDetailOderByUser;
 using AMAK.Application.Services.Order.Queries.GetOrderById;
 using Asp.Versioning;
 using MediatR;
@@ -35,6 +36,12 @@ namespace AMAK.API.Controllers.v1 {
         [HttpGet]
         public async Task<IActionResult> GetByUser([FromQuery] OrderQuery query) {
             return Ok(await _mediator.Send(new GetAllOrderByAccountQuery(query, User)));
+        }
+
+        [HttpGet]
+        [Route("Me/{orderId:guid}")]
+        public async Task<IActionResult> GetMeOrderById([FromRoute] Guid orderId) {
+            return Ok(await _mediator.Send(new GetDetailOderByUserQuery(orderId, User)));
         }
 
         [HttpGet]
