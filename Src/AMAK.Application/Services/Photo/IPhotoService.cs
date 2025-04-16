@@ -5,9 +5,7 @@ using Microsoft.AspNetCore.Http;
 namespace AMAK.Application.Services.Photo {
     public interface IPhotoService {
         Task<Response<string>> CreateAsync(Guid productId, List<IFormFile> files);
-
         Task<Response<List<PhotoResponse>>> GetAllAsync(Guid productId);
-
         Task<Response<string>> DeleteAsync(Guid productId, Guid id);
     }
 }

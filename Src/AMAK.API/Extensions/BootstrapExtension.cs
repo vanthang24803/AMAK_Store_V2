@@ -1,7 +1,6 @@
 using AMAK.API.Configurations;
 using AMAK.Application.Configs;
 using AMAK.Application.Providers.RabbitMq;
-
 using Serilog;
 
 namespace AMAK.API.Extensions {
