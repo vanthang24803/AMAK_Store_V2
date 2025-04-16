@@ -9,5 +9,6 @@ namespace AMAK.Domain.Models {
         public int Quantity { get; set; }
         public double Price { get; set; }
         public int Sale { get; set; }
+        public bool IsRefund { get; set; } = false;
     }
 }

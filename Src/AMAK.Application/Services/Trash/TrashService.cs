@@ -7,13 +7,9 @@ using System.Net;
 
 namespace AMAK.Application.Services.Trash {
     public class TrashService : ITrashService {
-
-        private readonly IRepository<Domain.Models.Option> _optionRepository;
-
+        private readonly IRepository<Option> _optionRepository;
         private readonly IRepository<Domain.Models.Product> _productRepository;
-
         private readonly IRepository<Domain.Models.Photo> _photoRepository;
-
         public TrashService(IRepository<Domain.Models.Product> productRepository, IRepository<Option> optionRepository, IRepository<Domain.Models.Photo> photoRepository) {
             _productRepository = productRepository;
             _optionRepository = optionRepository;
@@ -36,7 +32,6 @@ namespace AMAK.Application.Services.Trash {
             return new Response<List<OptionDeletedResponse>>(HttpStatusCode.OK, options);
         }
 
-
         public async Task<Response<List<PhotoDeletedResponse>>> GetPhotoResponse() {
             var media = await _photoRepository.GetAll()
                 .Where(o => o.IsDeleted)
@@ -56,8 +51,8 @@ namespace AMAK.Application.Services.Trash {
             .Select(p => new ProductDeletedResponse() {
                 Id = p.Id,
                 Name = p.Name,
-                Thumbnail = p.Thumbnail ?? "",
-                Brand = p.Brand ?? "",
+                Thumbnail = p.Thumbnail ?? string.Empty,
+                Brand = p.Brand ?? string.Empty,
                 Options = p.Options.Count(),
                 Sold = p.Sold,
                 DeletedAt = p.DeleteAt
