@@ -491,3 +491,4 @@ appsettings.Development.json
 appsettings.Production.json
 
 key.json
+db_production.sh

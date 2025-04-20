@@ -1,39 +1,32 @@
 version: "3.8"
+
 services:
   api:
     build:
       context: ../
       dockerfile: Dockerfile
+    image: amak_api
+    container_name: amak_be
     ports:
       - "8080:8080"
     depends_on:
-      - db
-      - redis
-      - rabbitmq
+      rabbitmq:
+        condition: service_healthy
+      redis:
+        condition: service_started
     networks:
       - amak
-
-  db:
-    image: postgres:latest
-    container_name: amak_db
     environment:
-      - POSTGRES_DB=Amak
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=password
-    ports:
-      - 5432:5432
-    volumes:
-      - amak_db:/var/lib/postgresql/data
-    networks:
-      - amak
+      - ASPNETCORE_URLS=http://*:8080
+      - ASPNETCORE_ENVIRONMENT=Production
 
   redis:
     image: redis:latest
     container_name: amak_redis
-    volumes:
-      - amak_redis:/data
     ports:
       - "6379:6379"
+    volumes:
+      - amak_redis:/data
     networks:
       - amak
 
@@ -41,18 +34,20 @@ services:
     image: rabbitmq:latest
     container_name: amak_rabbit
     ports:
-      - "15672:15672"
       - "5672:5672"
     volumes:
       - amak_rabbit:/var/lib/rabbitmq
     networks:
       - amak
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
 
 networks:
   amak:
     driver: bridge
-
 volumes:
-  amak_db:
   amak_redis:
   amak_rabbit:
