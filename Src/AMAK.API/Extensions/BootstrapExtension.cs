@@ -63,8 +63,12 @@ namespace AMAK.API.Extensions {
             services.AddScoped<IRabbitProducer, RabbitProducer>();
             services.AddHostedService<RabbitConsumer>();
 
+
             // TODO: Cron Job
             services.AddTaskScheduling();
+
+            // TODO: Gzip Response
+            services.AddCompressionResponse();
 
 
             return services;
@@ -81,6 +85,7 @@ namespace AMAK.API.Extensions {
             app.UseSerilogRequestLogging();
             app.UseAuthentication();
             app.UseAuthorization();
+            app.UseResponseCompression();
 
             app.Run();
 
