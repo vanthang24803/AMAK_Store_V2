@@ -9,6 +9,8 @@ namespace AMAK.API.Configurations {
                     builder.WithOrigins(
                         "https://amak-client.vercel.app",
                         "http://localhost:3000",
+                        "http://localhost",
+                        "http://ec2-54-169-229-46.ap-southeast-1.compute.amazonaws.com",
                         "https://amak-client-poryzoztz-vanthang24803s-projects.vercel.app",
                         "https://zc2l5h18-3000.asse.devtunnels.ms"
                     )
